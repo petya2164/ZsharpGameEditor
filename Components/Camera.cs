@@ -122,6 +122,8 @@ namespace ZGE.Components
         public float PanSpeed = 1.5f;
         public float ZoomSpeed = 0.5f;
         Vector3 startVector;
+        Vector3 startEyeVector;
+        //Quaternion lastRot;
         Vector2 startPos;
 
         public InteractiveCamera()
@@ -140,6 +142,7 @@ namespace ZGE.Components
             {
                 //Console.WriteLine("Start Rotating - X: {0} Y: {1}", e.X, e.Y);
                 startVector = MapToSphere((float)e.X, (float)e.Y);
+                startEyeVector = Position - Target;
                 //startPos = new Vector2((float) e.X, (float) e.Y);
                 return true;
             }
@@ -298,17 +301,18 @@ namespace ZGE.Components
                 //Quaternion quat = new Quaternion(cross, Vector3.Dot(startVector, vec));                
                 //return new float[] { cross.X, cross.Y, cross.Z, startVector.ScalarProduct(currentVector) };
 
-                Vector3 axisInWorldCoord = Vector3.TransformVector(cross, Matrix4.Invert(ViewMatrix));
-                Quaternion quat = Quaternion.FromAxisAngle(axisInWorldCoord, -angle);
+                //Vector3 axisInWorldCoord = Vector3.TransformVector(cross, Matrix4.Invert(ViewMatrix));
+                //Quaternion quat = Quaternion.FromAxisAngle(axisInWorldCoord, -angle);
+                Quaternion quat = Quaternion.FromAxisAngle(cross, -angle);
 
                 Vector3 eyeVector = Position - Target;
                 //float len = eyeVector.Length;
                 //eyeVector.Normalize();
-                eyeVector = Vector3.Transform(eyeVector, quat);
+                eyeVector = Vector3.Transform(startEyeVector, quat);
                // eyeVector = Vector3.Transform(eyeVector, Matrix4.CreateFromAxisAngle(axisInWorldCoord, -angle));
                 Position = Target + eyeVector;
 
-                startVector = vec;
+                //startVector = vec;
             }                    
         }
     }
