@@ -1,16 +1,17 @@
 +arcball camera
--mouse event handling: gui, cam, dragbox
--gui components
--save object state for reset and pause
--Shaders
--zcode with generics
 -standalone code generator
+-zcode with generics
 -definitions in model and app: vars & methods
+-save object state for reset and pause
+-gui components
+-proper mouse event handling: gui, cam, dragbox
+-GLSL shaders
 -drag&drop from toolbox
--reorder with drag&drop in treeview
+-intuitive reordering with drag&drop in treeview
 -buttons in treeviews for adding, resetting and pausing components
 -animations
 -collisions
 -app states
 -bitmap generators
 -mesh producers
+-sound with OpenAL

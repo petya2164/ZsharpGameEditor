@@ -9,8 +9,6 @@ using OpenTK.Input;
 
 namespace ZGE.Components
 {
-    //public enum CameraKind { Perspective, Orthographic }
-
     [HideComponent]
     public abstract class Camera : ZComponent
     {

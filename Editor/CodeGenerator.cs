@@ -22,8 +22,8 @@ namespace ZGE
             string indent = new string(' ', tabs * 4);
             foreach (var line in text.Split('\n'))
                 sb.AppendLine(indent + line.Trim());
-        }    }
-
+        }
+    }
 
     public class CodeGenerator
     {
@@ -37,9 +37,7 @@ namespace ZGE
         public void GenerateGameFromXml(XmlNode rootElement)
         {
 
-        }
-
-        
+        }        
 
         public bool GenerateGameCode(ZApplication app)
         {
