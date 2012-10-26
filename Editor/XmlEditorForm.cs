@@ -23,5 +23,12 @@ namespace ZGE
         {
             xmlEditorControl.Text = text;
         }
+
+        // Use this event handler for the FormClosing event.
+        private void XmlEditorForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.Hide();
+            e.Cancel = true; // this cancels the close event.
+        }
     }
 }

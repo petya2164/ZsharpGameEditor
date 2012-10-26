@@ -54,6 +54,7 @@
             this.Controls.Add(this.xmlEditorControl);
             this.Name = "XmlEditorForm";
             this.Text = "XML Project File";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.XmlEditorForm_FormClosing);
             this.ResumeLayout(false);
 
         }
