@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{AFFDBE91-D3E9-4D4C-A05B-11A551FF5EED}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ZSGameEditor</RootNamespace>
+    <AssemblyName>ZSGameEditor</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ApplicationIcon>Resources\SharpGL.ico</ApplicationIcon>
+    <StartupObject>ZGE.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>.\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.TextEditor">
+      <HintPath>ICSharpCode.TextEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CodeGen\CodeDomHostLoader.cs" />
+    <Compile Include="CodeGen\CodeGen.cs" />
+    <Compile Include="CodeGen\TypeResolutionService.cs" />
+    <Compile Include="Editor\ComponentList.cs" />
+    <Compile Include="Editor\ModelBehavior.cs" />
+    <Compile Include="Editor\CodeGenerator.cs" />
+    <Compile Include="Editor\FieldPropertyDescriptor.cs" />
+    <Compile Include="Editor\FieldsProperties.cs" />
+    <Compile Include="Editor\FieldsProxy.cs" />
+    <Compile Include="Editor\Small.cs" />
+    <Compile Include="Editor\StructConverter.cs" />
+    <Compile Include="Editor\TextBoxStreamWriter.cs" />
+    <Compile Include="Editor\Factory.cs" />
+    <Compile Include="Editor\XmlEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Editor\XmlEditorForm.Designer.cs">
+      <DependentUpon>XmlEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editor\ZCustomClass.cs" />
+    <Compile Include="Editor\ZNodeProperties.cs" />
+    <Compile Include="Editor\ZTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editor\ZTreeView.designer.cs">
+      <DependentUpon>ZTreeView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Editor\XmlEditorForm.resx">
+      <DependentUpon>XmlEditorForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Editor\Editor.resx">
+      <DependentUpon>Editor.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Toolbox\Toolbox.resx">
+      <DependentUpon>Toolbox.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Editor\Editor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Editor\Editor.designer.cs">
+      <DependentUpon>Editor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editor\Program.cs" />
+    <Compile Include="Toolbox\Toolbox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Toolbox\ToolboxItem.cs" />
+    <Compile Include="Toolbox\ToolboxItemCollection.cs" />
+    <Compile Include="Toolbox\ToolboxTab.cs" />
+    <Compile Include="Toolbox\ToolboxTabCollection.cs" />
+    <Compile Include="Toolbox\ToolboxUIManagerVS.cs" />
+    <Compile Include="Toolbox\ToolboxXmlManager.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\i0.png" />
+    <Content Include="Resources\File.ico" />
+    <Content Include="Resources\Images_32bit.bmp" />
+    <Content Include="Resources\Package.ico" />
+    <Content Include="Resources\SharpGL.ico" />
+    <Content Include="Resources\xmlatt.gif" />
+    <Content Include="Resources\xmlerr.gif" />
+    <Content Include="Resources\xmlgrp.gif" />
+    <Content Include="Resources\xmlnode.gif" />
+    <Content Include="Resources\xmlval.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Components\Components.csproj">
+      <Project>{0EE6809F-114A-41C6-BA8A-70CCB1E29998}</Project>
+      <Name>Components</Name>
+    </ProjectReference>
+    <ProjectReference Include="Dependencies\OpenTK\Source\GLControl\OpenTK.GLControl.csproj">
+      <Project>{A625BE88-0000-0000-0000-000000000000}</Project>
+      <Name>OpenTK.GLControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="Dependencies\OpenTK\Source\OpenTK\OpenTK.csproj">
+      <Project>{A37A7E14-0000-0000-0000-000000000000}</Project>
+      <Name>OpenTK</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

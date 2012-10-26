@@ -1,0 +1,1 @@
+bind -o:nodocs -o:keep_untyped_enums -o:nodebug -o:simple_enums

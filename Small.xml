@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ZApplication Name="App" Title="Small" Camera="Camera1" MouseVisible="255" NoSound="1">
+  <OnLoad></OnLoad>
+  <OnRender>
+    <RenderSetColor Color="0.1176471 0.5647059 1 1" />
+    <RenderMesh Mesh="Box" Enabled="True" />
+  </OnRender>
+  <Content>
+    <Material Name="IslandMaterial">
+      <Textures>
+        <Texture FileName="island.jpg" />
+      </Textures>
+    </Material>
+    <Mesh Name="Mesh1">
+      <Producers>
+        <MeshSphere ZSamples="3" RadialSamples="6" />
+      </Producers>
+    </Mesh>
+    <Mesh Name="Box">
+      <Producers>
+        <MeshBox XCount="20" YCount="20" Grid2DOnly="False" Scale="2 2 0.1" />
+      </Producers>
+    </Mesh>
+    <Mesh Name="IslandMesh">
+      <Producers>
+        <MeshHeightmap FileName="islandHeight.png" Scale="5 5 2" />
+      </Producers>
+    </Mesh>
+    <Model Name="Player" CollisionBounds="0.5 0.5 0 0">
+      <OnRender>
+        <RenderSetColor Color="0 0.5019608 0 1" />
+        <RenderMesh Mesh="Mesh1" />
+      </OnRender>
+      <OnUpdate>
+        <ZExpression>
+          <Expression><![CDATA[//ApplyGravity(model);
+model.Rotation.Z += 80.0f * (float) App.DeltaTime;
+model.Position.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
+        </ZExpression>
+      </OnUpdate>
+    </Model>
+    <Model Name="Island">
+      <OnRender>
+        <UseMaterial Material="IslandMaterial" />
+        <RenderMesh Mesh="IslandMesh" />
+      </OnRender>
+      <OnUpdate>
+        <ZExpression>
+          <Expression><![CDATA[//model.Rotation.Y += 80.0f * (float) App.DeltaTime;
+model.Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
+        </ZExpression>
+      </OnUpdate>
+    </Model>
+  </Content>
+  <GUI>
+    <RenderText Text="FPS: " Position="5 0 0" Scale="1" />
+  </GUI>
+  <Scene>
+    <Group Name="DesignPrimitives" />
+    <Group Name="Cameras">
+      <InteractiveCamera Name="Camera1" Position="0 -10 5" UpVector="0 0 1" />
+    </Group>
+    <Group Name="Lights" />
+    <GameObject Model="Player" Name="Player1" Position="-4 5 0" />
+    <GameObject Model="Player" Name="Player2" Position="4 5 0" />
+    <GameObject Model="Player" Name="Player3" Position="-3 0 0" />
+    <GameObject Model="Player" Name="Player4" Position="3 0 0" Scale="1 1 1" />
+    <GameObject Model="Island" Name="Island1" Position="0 3 -1" Scale="1 1 2" />
+  </Scene>
+</ZApplication>

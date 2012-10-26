@@ -1,0 +1,16 @@
++arcball camera
+-mouse event handling: gui, cam, dragbox
+-gui components
+-save object state for reset and pause
+-Shaders
+-zcode with generics
+-standalone code generator
+-definitions in model and app: vars & methods
+-drag&drop from toolbox
+-reorder with drag&drop in treeview
+-buttons in treeviews for adding, resetting and pausing components
+-animations
+-collisions
+-app states
+-bitmap generators
+-mesh producers

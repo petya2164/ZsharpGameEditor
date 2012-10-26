@@ -4,3 +4,9 @@ obj
 
 # mstest test results
 TestResults
+Backup
+Delphi
+*.pdb
+*.vshost.exe
+*.manifest
+*.suo
