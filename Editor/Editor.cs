@@ -180,7 +180,7 @@ namespace ZGE
         private void showXmlBtn_Click(object sender, EventArgs e)
         {
             _xmlForm.SetText(xmlEditor.Content);
-            _xmlForm.Show();
+            _xmlForm.ShowDialog();
         }
 
         private void showCodeBtn_Click(object sender, EventArgs e)
