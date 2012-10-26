@@ -10,3 +10,8 @@ Delphi
 *.vshost.exe
 *.manifest
 *.suo
+/Dependencies/OpenTK/Binaries
+/OpenTK.xml
+/OpenTK.GLControl.xml
+/Dependencies/OpenTK/Source/OpenTK/OpenTK.xml
+/Dependencies/OpenTK/Source/GLControl/OpenTK.GLControl.xml
