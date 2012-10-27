@@ -14,3 +14,11 @@ Main features:
 + 3D graphics and game-play components
 + XML-based project files: only one file for each project
 + Customize your apps with C# scripts \(well, these are not really scripts since everything gets compiled\)
+
+## How to compile (on Windows XP, Vista and 7)
+
+1. Install .NET framework 4.0 \([Download](http://www.microsoft.com/en-us/download/details.aspx?id=17851)\)
+2. Install SharpDevelop 4.2 \([Download](http://www.icsharpcode.net/OpenSource/SD/Download/GetFile.aspx?What=Setup&Release=Mirador)\)
+3. Open ZSGameEditor-SharpDev.sln with SharpDevelop
+4. Switch to Release configuration
+5. Press F5 to Build & Run the editor
