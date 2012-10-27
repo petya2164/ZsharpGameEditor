@@ -1,21 +1,23 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ZSGameEditor.Properties" GeneratedClassName="Settings">
-  <Profiles />
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SettingsFile CurrentProfile="(Default)" GeneratedClassNamespace="ZSGameEditor.Properties" GeneratedClassName="Settings" xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings">
+  <Profiles>
+    <Profile Name="(Default)" />
+  </Profiles>
   <Settings>
-    <Setting Name="LastProjectPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="IDEWidth" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">1000</Value>
-    </Setting>
-    <Setting Name="IDEHeight" Type="System.Int32" Scope="User">
+    <Setting Name="IDEHeight" Type="System.Int32" Scope="User" Roaming="false">
       <Value Profile="(Default)">700</Value>
     </Setting>
-    <Setting Name="IDELeft" Type="System.Int32" Scope="User">
+    <Setting Name="IDELeft" Type="System.Int32" Scope="User" Roaming="false">
       <Value Profile="(Default)">10</Value>
     </Setting>
-    <Setting Name="IDETop" Type="System.Int32" Scope="User">
+    <Setting Name="IDETop" Type="System.Int32" Scope="User" Roaming="false">
       <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="IDEWidth" Type="System.Int32" Scope="User" Roaming="false">
+      <Value Profile="(Default)">1000</Value>
+    </Setting>
+    <Setting Name="LastProjectPath" Type="System.String" Scope="User" Roaming="false">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

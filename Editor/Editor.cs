@@ -220,6 +220,7 @@ namespace ZGE
                     app = zapp;
 
                     //  Add the element to the tree.
+                    sceneTreeView.Nodes.Clear();
                     foreach(ZComponent comp in app.Scene)
                         AddElementToTree(comp, sceneTreeView.Nodes);
                     sceneTreeView.ExpandAll();
@@ -449,7 +450,7 @@ namespace ZGE
         private void Render()
         {
             if (!loaded) return;
-            if (app == null)
+            if (app == null || ZComponent.App == null)
             {
                 glControl1.SwapBuffers();
                 return;

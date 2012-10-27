@@ -320,12 +320,15 @@ namespace ZGE.Components
                 //Console.WriteLine("Cross: "+cross.ToString());
                 //  The quaternion is the transform.
                 //float angle = RotationSpeed*(float)Math.Acos(Math.Min(1.0f,Vector3.Dot(startVector, vec)));
-                float angle = RotationSpeed * Vector3.CalculateAngle(startVector, vec);            
                 
-                //Quaternion quat = new Quaternion(cross, Vector3.Dot(startVector, vec));                
-                //return new float[] { cross.X, cross.Y, cross.Z, startVector.ScalarProduct(currentVector) };
+                float angle = RotationSpeed * Vector3.CalculateAngle(startVector, vec);
+                if (float.IsNaN(angle)) return;
+                
+                //Quaternion quat = new Quaternion(cross, Vector3.Dot(startVector, vec));
+                //return new float[] { cross.X, cross.Y, cross.Z, startVector.ScalarProduct(currentVector) }; 
 
                 Vector3 axisInWorldCoord = Vector3.TransformVector(cross, Matrix4.Invert(ViewMatrix));
+                
                 Quaternion quat = Quaternion.FromAxisAngle(axisInWorldCoord, -angle);
                 // Calculate rotation relative to the start vector
                 //Quaternion quat = Quaternion.FromAxisAngle(cross, -angle);
