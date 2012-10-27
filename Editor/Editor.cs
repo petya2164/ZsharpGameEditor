@@ -540,6 +540,7 @@ namespace ZGE
 
         private void xmlEditor_PropertiesSetChanged(object sender, EventArgs e)
         {
+            if (xmlEditor.SelectedComponent == null) return;
             ZComponent comp = xmlEditor.SelectedComponent as ZComponent;
             if (comp != null) SelectedComponent = comp;        
         }

@@ -151,6 +151,7 @@ namespace ZGE
             get
             {
                 TreeNode node = SelectedNode;
+                if (node == null || node.Tag == null) return null;
                 ZNodeProperties nodeProperties = node.Tag as ZNodeProperties;
                 if (nodeProperties != null)                
                     return nodeProperties.Component;
