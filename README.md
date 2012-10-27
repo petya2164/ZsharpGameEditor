@@ -20,8 +20,8 @@ Main features:
 #### Using SharpDevelop 4.2 or Visual Studio 2010 Express:
 
 1. Install .NET Framework 4.0 \([Download](http://www.microsoft.com/en-us/download/details.aspx?id=17851)\)
-2. \[Optional\] Install SharpDevelop 4.2 \([Download](http://www.icsharpcode.net/OpenSource/SD/Download/GetFile.aspx?What=Setup&Release=Mirador)\)
-2. \[Optional\] Install Visual C# 2010 Express \([Download](http://www.microsoft.com/visualstudio/eng/downloads#d-2010-express)\)
+2. \[Option A\] Install SharpDevelop 4.2 \([Download](http://www.icsharpcode.net/OpenSource/SD/Download/GetFile.aspx?What=Setup&Release=Mirador)\)  
+   \[Option B\] Install Visual C# 2010 Express \([Download](http://www.microsoft.com/visualstudio/eng/downloads#d-2010-express)\)
 3. Open ZSGameEditor-SharpDev.sln with SharpDevelop 4.2 or VS 2010
 4. Switch to Release configuration (for maximum performance)
 5. Press F5 to Build & Run the editor
