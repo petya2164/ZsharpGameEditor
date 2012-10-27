@@ -1,6 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
+# SharpDevelop 3.2.1.6466
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZSGameEditor", "ZSGameEditor.csproj", "{AFFDBE91-D3E9-4D4C-A05B-11A551FF5EED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpGL", "..\SharpGL-vs2008\Core\SharpGL\SharpGL.csproj", "{5EF45533-E2C7-46F2-B4A3-B8F36CD406E0}"

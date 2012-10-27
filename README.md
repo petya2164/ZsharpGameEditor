@@ -17,8 +17,20 @@ Main features:
 
 ## How to compile (on Windows XP, Vista and 7)
 
-1. Install .NET framework 4.0 \([Download](http://www.microsoft.com/en-us/download/details.aspx?id=17851)\)
-2. Install SharpDevelop 4.2 \([Download](http://www.icsharpcode.net/OpenSource/SD/Download/GetFile.aspx?What=Setup&Release=Mirador)\)
-3. Open ZSGameEditor-SharpDev.sln with SharpDevelop
-4. Switch to Release configuration
+#### Using SharpDevelop 4.2 or Visual Studio 2010 Express:
+
+1. Install .NET Framework 4.0 \([Download](http://www.microsoft.com/en-us/download/details.aspx?id=17851)\)
+2. \[Optional\] Install SharpDevelop 4.2 \([Download](http://www.icsharpcode.net/OpenSource/SD/Download/GetFile.aspx?What=Setup&Release=Mirador)\)
+2. \[Optional\] Install Visual C# 2010 Express \([Download](http://www.microsoft.com/visualstudio/eng/downloads#d-2010-express)\)
+3. Open ZSGameEditor-SharpDev.sln with SharpDevelop 4.2 or VS 2010
+4. Switch to Release configuration (for maximum performance)
 5. Press F5 to Build & Run the editor
+
+#### Using SharpDevelop 3.2 or Visual Studio 2008:
+
+1. Install .NET Framework 3.5 SP1 \([Download](http://www.microsoft.com/en-us/download/details.aspx?id=22)\)
+2. Install SharpDevelop 3.2 \([Download](http://www.icsharpcode.net/OpenSource/SD/Download/GetFile.aspx?What=Setup&Release=Montferrer)\)
+3. Open ZSGameEditor-VS2008.sln with SharpDevelop 3.2 or VS 2008
+4. Switch to Release configuration (for maximum performance)
+5. Press F5 to Build & Run the editor
+
