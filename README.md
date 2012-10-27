@@ -2,7 +2,9 @@ Z# Game Editor
 ================
 
 Inspired by [ZGameEditor](http://www.zgameeditor.org/), this project aims to make OpenGL game development easier than ever before!
-You always wanted to learn OpenGL, but never liked its low-level API?
+
+You always wanted to learn OpenGL, but never liked its low-level API?  
+Guess what!? Now you can build an OpenGL game without writing a single line of code
 
 Main features:
 + Integrated developer environment where you build, preview and test your game
