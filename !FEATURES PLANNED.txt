@@ -14,5 +14,4 @@
 -app states
 -bitmap generators
 -mesh producers
--sound with OpenAL
--Lord Naki is here
+-audio with OpenAL
