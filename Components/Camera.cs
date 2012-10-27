@@ -116,18 +116,26 @@ namespace ZGE.Components
         }
     }
 
-    public class InteractiveCamera : ProjectiveCamera
+    public class InteractiveCamera : ProjectiveCamera, INeedRefresh
     {
-        public float RotationSpeed = 0.5f;
+        public float RotationSpeed = 1.0f;
         public float PanSpeed = 1.5f;
         public float ZoomSpeed = 0.5f;
         Vector3 startVector;
-        Vector3 startEyeVector;
-        //Quaternion lastRot;
+        //Vector3 defaultEyeVector = new Vector3(0,0,1);
+        //Vector3 defaultUpVector = new Vector3(0,1,0);
+        //Quaternion lastRot = Quaternion.Identity;
+        //Quaternion currentRot = Quaternion.Identity;
         Vector2 startPos;
 
         public InteractiveCamera()
         {            
+        }
+
+        public void Refresh()
+        {
+            // The accumulated rotation becomes invalid if the camera coords are changed manually
+            //currentRot = Quaternion.Identity;
         }
 
         public override bool MouseDown(MouseDescriptor e) 
@@ -142,7 +150,24 @@ namespace ZGE.Components
             {
                 //Console.WriteLine("Start Rotating - X: {0} Y: {1}", e.X, e.Y);
                 startVector = MapToSphere((float)e.X, (float)e.Y);
-                startEyeVector = Position - Target;
+                //startEyeVector = Position - Target;
+                /*lastRot = currentRot;
+                // Calculate the current rotation for the first time
+                if (currentRot == Quaternion.Identity)
+                {
+                    Vector3 eyeVector = Position - Target;                    
+                    eyeVector.Normalize();
+                    //  Compute the cross product of the default and current eye vectors.
+                    Vector3 cross = Vector3.Cross(defaultEyeVector, eyeVector);
+
+                    //  Is the perpendicular length essentially non-zero?
+                    if (cross.Length > 1.0e-5f)
+                    {
+                        float angle = (float) Math.Acos(Vector3.Dot(defaultEyeVector, eyeVector));
+                        // Calculate rotation relative to the default eye vector (0,0,1)
+                        lastRot = Quaternion.FromAxisAngle(cross, angle);
+                    }
+                }*/
                 //startPos = new Vector2((float) e.X, (float) e.Y);
                 return true;
             }
@@ -294,27 +319,32 @@ namespace ZGE.Components
             {
                 //Console.WriteLine("Cross: "+cross.ToString());
                 //  The quaternion is the transform.
-                float angle = RotationSpeed*(float)Math.Acos(Math.Min(1.0f,Vector3.Dot(startVector, vec)));
-                //float angle = Vector3.CalculateAngle(startVector, vec);
-                //Quaternion quat = Quaternion.FromAxisAngle(cross, angle);
+                //float angle = RotationSpeed*(float)Math.Acos(Math.Min(1.0f,Vector3.Dot(startVector, vec)));
+                float angle = RotationSpeed * Vector3.CalculateAngle(startVector, vec);            
                 
                 //Quaternion quat = new Quaternion(cross, Vector3.Dot(startVector, vec));                
                 //return new float[] { cross.X, cross.Y, cross.Z, startVector.ScalarProduct(currentVector) };
 
-                //Vector3 axisInWorldCoord = Vector3.TransformVector(cross, Matrix4.Invert(ViewMatrix));
-                //Quaternion quat = Quaternion.FromAxisAngle(axisInWorldCoord, -angle);
-                Quaternion quat = Quaternion.FromAxisAngle(cross, -angle);
+                Vector3 axisInWorldCoord = Vector3.TransformVector(cross, Matrix4.Invert(ViewMatrix));
+                Quaternion quat = Quaternion.FromAxisAngle(axisInWorldCoord, -angle);
+                // Calculate rotation relative to the start vector
+                //Quaternion quat = Quaternion.FromAxisAngle(cross, -angle);
 
                 Vector3 eyeVector = Position - Target;
-                //float len = eyeVector.Length;
+                //float len = eyeVector.Length; //keep the length
                 //eyeVector.Normalize();
-                eyeVector = Vector3.Transform(startEyeVector, quat);
+                // Accumulate last Rotation into this One
+                //currentRot = lastRot * quat;
+                // Apply the accumulated rotation to the default eye vector
+                //eyeVector = Vector3.Transform(defaultEyeVector, currentRot);
+                //UpVector = Vector3.Transform(defaultUpVector, currentRot);
                // eyeVector = Vector3.Transform(eyeVector, Matrix4.CreateFromAxisAngle(axisInWorldCoord, -angle));
+                eyeVector = Vector3.Transform(eyeVector, quat);
                 Position = Target + eyeVector;
 
-                //startVector = vec;
+                startVector = vec;
             }                    
-        }
+        }        
     }
 
     /*public class ArcBall
