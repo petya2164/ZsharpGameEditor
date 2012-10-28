@@ -21,3 +21,6 @@ Delphi
 /OpenTK.dll.config
 /OpenTK.GLControl.dll
 /*.user
+/DynamicGame.cs
+/*.config
+/test.png

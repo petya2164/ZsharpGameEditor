@@ -14,6 +14,7 @@ Main features:
 + 3D graphics and game-play components
 + XML-based project files: only one file for each project
 + Customize your apps with C# scripts \(well, these are not really scripts since everything gets compiled\)
++ Total Freedom: The project is distributed under the permissive MIT/X11 license and is absolutely free.
 
 ## How to compile (on Windows XP, Vista and 7)
 
