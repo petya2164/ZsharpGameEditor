@@ -40,9 +40,11 @@ namespace ZGE
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolboxSplitter = new System.Windows.Forms.SplitContainer();
+            this.toolbox1 = new ToolboxLibrary.Toolbox();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.xmlEditor = new ZGE.ZTreeView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.xmlTreeView = new System.Windows.Forms.TreeView();
@@ -66,8 +68,6 @@ namespace ZGE
             this.showXmlBtn = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.playBtn = new System.Windows.Forms.ToolStripButton();
-            this.toolbox1 = new ToolboxLibrary.Toolbox();
-            this.xmlEditor = new ZGE.ZTreeView();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -245,6 +245,17 @@ namespace ZGE
             this.toolboxSplitter.SplitterDistance = 124;
             this.toolboxSplitter.TabIndex = 2;
             // 
+            // toolbox1
+            // 
+            this.toolbox1.DesignerHost = null;
+            this.toolbox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.toolbox1.FilePath = null;
+            this.toolbox1.Location = new System.Drawing.Point(0, 0);
+            this.toolbox1.Name = "toolbox1";
+            this.toolbox1.SelectedCategory = null;
+            this.toolbox1.Size = new System.Drawing.Size(124, 100);
+            this.toolbox1.TabIndex = 0;
+            // 
             // splitContainer3
             // 
             this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -285,6 +296,25 @@ namespace ZGE
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Project";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // xmlEditor
+            // 
+            this.xmlEditor.AllowDrop = true;
+            this.xmlEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.xmlEditor.HideSelection = false;
+            this.xmlEditor.ImageIndex = 0;
+            this.xmlEditor.Indent = 15;
+            this.xmlEditor.LabelEdit = true;
+            this.xmlEditor.Location = new System.Drawing.Point(3, 3);
+            this.xmlEditor.Name = "xmlEditor";
+            this.xmlEditor.SelectedImageIndex = 0;
+            this.xmlEditor.Size = new System.Drawing.Size(206, 549);
+            this.xmlEditor.StatusString = "Data is not TreeNode";
+            this.xmlEditor.TabIndex = 0;
+            this.xmlEditor.PropertiesSetChanged += new System.EventHandler(this.xmlEditor_PropertiesSetChanged);
+            this.xmlEditor.ContentChanged += new System.EventHandler(this.xmlEditor_ContentChanged);
+            this.xmlEditor.StatusStringChanged += new System.EventHandler(this.xmlEditor_StatusStringChanged);
+            this.xmlEditor.PropertiesWindowActivated += new System.EventHandler(this.xmlEditor_PropertiesWindowActivated);
             // 
             // tabPage2
             // 
@@ -435,6 +465,7 @@ namespace ZGE
             this.newToolStripButton.Name = "newToolStripButton";
             this.newToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.newToolStripButton.Text = "&New";
+            this.newToolStripButton.Click += new System.EventHandler(this.newProjectBtn_Click);
             // 
             // openToolStripButton
             // 
@@ -444,7 +475,7 @@ namespace ZGE
             this.openToolStripButton.Name = "openToolStripButton";
             this.openToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.openToolStripButton.Text = "&Open";
-            this.openToolStripButton.Click += new System.EventHandler(this.openXmlBtn_Click);
+            this.openToolStripButton.Click += new System.EventHandler(this.openProjectBtn_Click);
             // 
             // saveToolStripButton
             // 
@@ -454,7 +485,7 @@ namespace ZGE
             this.saveToolStripButton.Name = "saveToolStripButton";
             this.saveToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.saveToolStripButton.Text = "&Save";
-            this.saveToolStripButton.Click += new System.EventHandler(this.saveXmlBtn_Click);
+            this.saveToolStripButton.Click += new System.EventHandler(this.saveProjectBtn_Click);
             // 
             // toolStripSeparator
             // 
@@ -538,36 +569,6 @@ namespace ZGE
             this.playBtn.Text = "Play in Editor";
             this.playBtn.Click += new System.EventHandler(this.playInEditorBtn_Click);
             // 
-            // toolbox1
-            // 
-            this.toolbox1.DesignerHost = null;
-            this.toolbox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.toolbox1.FilePath = null;
-            this.toolbox1.Location = new System.Drawing.Point(0, 0);
-            this.toolbox1.Name = "toolbox1";
-            this.toolbox1.SelectedCategory = null;
-            this.toolbox1.Size = new System.Drawing.Size(124, 100);
-            this.toolbox1.TabIndex = 0;
-            // 
-            // xmlEditor
-            // 
-            this.xmlEditor.AllowDrop = true;
-            this.xmlEditor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.xmlEditor.HideSelection = false;
-            this.xmlEditor.ImageIndex = 0;
-            this.xmlEditor.Indent = 15;
-            this.xmlEditor.LabelEdit = true;
-            this.xmlEditor.Location = new System.Drawing.Point(3, 3);
-            this.xmlEditor.Name = "xmlEditor";
-            this.xmlEditor.SelectedImageIndex = 0;
-            this.xmlEditor.Size = new System.Drawing.Size(206, 549);
-            this.xmlEditor.StatusString = "Data is not TreeNode";
-            this.xmlEditor.TabIndex = 0;
-            this.xmlEditor.PropertiesSetChanged += new System.EventHandler(this.xmlEditor_PropertiesSetChanged);
-            this.xmlEditor.ContentChanged += new System.EventHandler(this.xmlEditor_ContentChanged);
-            this.xmlEditor.StatusStringChanged += new System.EventHandler(this.xmlEditor_StatusStringChanged);
-            this.xmlEditor.PropertiesWindowActivated += new System.EventHandler(this.xmlEditor_PropertiesWindowActivated);
-            // 
             // Editor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -576,7 +577,9 @@ namespace ZGE
             this.Controls.Add(this.toolStripContainer1);
             this.Icon = ((System.Drawing.Icon) (resources.GetObject("$this.Icon")));
             this.Name = "Editor";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Z# Game Editor";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Editor_FormClosing);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.Panel2.PerformLayout();

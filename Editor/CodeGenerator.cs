@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using ZGE.Components;
 using System.Xml;
-using Loader;
 using System.IO;
 using System.CodeDom.Compiler;
 using System.Reflection;

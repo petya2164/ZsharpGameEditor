@@ -722,7 +722,7 @@ namespace ZGE
         /// </summary>
         private void TreeViewEditor_Leave(object sender, EventArgs e)
         {
-            OnPropertiesChanged();
+            //OnPropertiesChanged();
         }
 
         /// <summary>

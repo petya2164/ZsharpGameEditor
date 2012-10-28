@@ -19,7 +19,6 @@ using OpenTK.Graphics;
 using System.IO;
 using System.Collections;
 using System.Reflection;
-using Loader;
 using ZGE.Components;
 using System.CodeDom.Compiler;
 using ICSharpCode.TextEditor.Document;
@@ -28,19 +27,11 @@ using ICSharpCode.TextEditor.Document;
 namespace ZGE
 {
     public partial class Editor : Form
-    {       
-        //Cube cube;
-        //ArcBallCamera camera;
-        
+    {         
         bool loaded = false;
         ZApplication app = null;
-        string projectFileName = null;
-        //ModelBehavior behavior = null;
-        //Scene scene = new Scene();
-
-        ZNodeProperties codeProperties = null;
-        string codePropertyName = null;
-        ZCode currentCode = null;
+        Project project;
+        string loadThisProject = null;
 
         CodeGenerator codegen = new CodeGenerator();
         TextBoxStreamWriter _writer = null;
@@ -55,36 +46,58 @@ namespace ZGE
         {
             InitializeComponent();
 
+            // Use C# highlighting strategy
             codeBox.Document.HighlightingStrategy =
                         HighlightingStrategyFactory.CreateHighlightingStrategyForFile("dummy.cs");
 
+            // TypeDescriptor magic to allow convenient editing for primitive vector types in PropertyGrid
             Type[] targets = { typeof(Vector2), typeof(Vector3), typeof(Vector4), typeof(Color4) };
             foreach (Type t in targets)
             {
                 TypeDescriptor.AddAttributes(t, new TypeConverterAttribute(typeof(StructConverter)));
                 TypeDescriptor.AddProvider(new FieldsToPropertiesTypeDescriptionProvider(t), t);
-            }            
-            //propertyGrid1.SelectedObject = v1;
-            
+            }              
 
             // Instantiate the writer
             _writer = new TextBoxStreamWriter(outputBox);
             // Redirect the out Console stream
             Console.SetOut(_writer);
 
-            int w = (int)(Screen.PrimaryScreen.Bounds.Width * 0.9);
-            int h = (int)(Screen.PrimaryScreen.Bounds.Height * 0.9);
-            this.Size = new Size(w, h);
+            try
+            {
+                Width = ZSGameEditor.Properties.Settings.Default.IDEWidth;
+                Height = ZSGameEditor.Properties.Settings.Default.IDEHeight;                               
 
-            LoadToolboxComponents();
+                Left = ZSGameEditor.Properties.Settings.Default.IDELeft;
+                Top = ZSGameEditor.Properties.Settings.Default.IDETop;
+                loadThisProject = ZSGameEditor.Properties.Settings.Default.LastProjectPath;
+                if (File.Exists(loadThisProject) == false)
+                {
+                    loadThisProject = null;
+                    ZSGameEditor.Properties.Settings.Default.LastProjectPath = null;
+                    ZSGameEditor.Properties.Settings.Default.Save();
+                }
+            }
+            catch (Exception ex)
+            {
+                int w = (int)(Screen.PrimaryScreen.Bounds.Width * 0.9);
+                int h = (int)(Screen.PrimaryScreen.Bounds.Height * 0.9);
+                this.Size = new Size(w, h);
+            }           
 
-            //app = new Small();
-            //glControl1.VSync = (app.VSync == VSyncMode.On);
+            LoadToolboxComponents();           
 
             glControl1.MouseWheel += new MouseEventHandler(glControl1_MouseWheel);
         }
 
-        
+        private void Editor_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            ZSGameEditor.Properties.Settings.Default.IDEWidth = this.Width;
+            ZSGameEditor.Properties.Settings.Default.IDEHeight = this.Height;
+            ZSGameEditor.Properties.Settings.Default.IDELeft = this.Left;
+            ZSGameEditor.Properties.Settings.Default.IDETop = this.Top;
+            ZSGameEditor.Properties.Settings.Default.Save();
+        }
 
         public static IEnumerable<Type> GetTypesFromNamespace(Assembly assembly,
                                                String myNamespace)
@@ -120,26 +133,7 @@ namespace ZGE
                 }
             }
             toolbox1.AddTab("Components", components.ToArray());
-        }
-
-        private void AddElementToTree(ZComponent component, TreeNodeCollection nodes)
-        {
-            //  Add the element.
-            TreeNode newNode = new TreeNode()
-            {                
-                Tag = component
-            };
-            newNode.Text = component.GetType().Name;
-            if (component.HasName())
-                newNode.Text = newNode.Text + ": " + component.Name;
-            else
-                newNode.Text += " (Unnamed)";
-            nodes.Add(newNode);
-
-            //  Add each child.
-            foreach (var element in component.Children)
-                AddElementToTree(element, newNode.Nodes);
-        }        
+        }               
 
         /// <summary>
         /// The selected scene element.
@@ -188,35 +182,51 @@ namespace ZGE
 
         }
 
-        private void openXmlBtn_Click(object sender, EventArgs e)
+        private void AddElementToTree(ZComponent component, TreeNodeCollection nodes)
         {
-            //openXml();
-            
-//             StreamReader sr = new StreamReader("Small.xml");
-//             string xml = sr.ReadToEnd();
-// 
-//             xmlEditor.LoadXml(xml);
-//             textBox1.Text = xmlEditor.Content;
-            //codeBox.Text = new StreamReader("Editor/Small.cs").ReadToEnd();
-
-
-            outputBox.Text = ""; 
-            statusLabel.Text = "Loading XML...";
-            //try
+            //  Add the element.
+            TreeNode newNode = new TreeNode()
             {
-                statusLabel.Text = "Loading app...";
-                string file = "Small.xml";
-                var zapp = Factory.Load(file, xmlEditor);
-                if (zapp != null)
-                {                    
-                    currentCode = null;
-                    codeProperties = null;
-                    codePropertyName = null;
-                    codeBox.Text = "";
-                    propertyGrid1.Tag = null;
-                    propertyGrid1.SelectedObject = null;
+                Tag = component
+            };
+            newNode.Text = component.GetType().Name;
+            if (component.HasName())
+                newNode.Text = newNode.Text + ": " + component.Name;
+            else
+                newNode.Text += " (Unnamed)";
+            nodes.Add(newNode);
 
-                    projectFileName = file;
+            //  Add each child.
+            foreach (var element in component.Children)
+                AddElementToTree(element, newNode.Nodes);
+        } 
+
+        private void openProject(string filePath)
+        {
+            outputBox.Text = ""; 
+            statusLabel.Text = "Loading project...";
+            Console.WriteLine("Loading project: "+filePath);
+#if !DEBUG
+            try
+            {
+#endif
+                // TODO: All resources should be released at this point
+                SelectedComponent = null;
+                project = null;
+                app = null;
+                ZComponent.App = null;
+                
+                // Just a good practice - change the cursor to a wait cursor during processing
+                this.Cursor = Cursors.WaitCursor;
+                // Freeze the whole form - no interaction during project loading
+                //this.Enabled = false;
+
+                //Try to load the Xml document
+                var zapp = Factory.Load(filePath, xmlEditor);
+                if (zapp != null)
+                {
+                    project = new Project(filePath);                                     
+                    codeBox.Text = "";                                      
                     app = zapp;
 
                     //  Add the element to the tree.
@@ -228,160 +238,89 @@ namespace ZGE
 
                     glControl1_Load(this, null);
                     glControl1_Resize(this, null);
-                    statusLabel.Text = "App loaded.";
+                    SelectedComponent = app;
+                    statusLabel.Text = "Project loaded.";
+                    ZSGameEditor.Properties.Settings.Default.LastProjectPath = filePath;
+                    ZSGameEditor.Properties.Settings.Default.Save();
                 }
+#if !DEBUG
             }
-            /*catch (Exception exception)
+            catch (Exception ex)
             {
-                //this.Nodes.Clear();
-                statusLabel.Text = exception.Message;
-                throw (exception);
-            }*/
+                statusLabel.Text = "Exception occurred: " + ex.Message;
+                Console.WriteLine(ex.ToString());
+                project = null;
+                app = null;
+                ZComponent.App = null;
+                sceneTreeView.Nodes.Clear();
+                xmlTreeView.Nodes.Clear();
+            }            
+            finally
+            {                
+                // Also unfreeze the form
+                //this.Enabled = true;
+                this.Cursor = Cursors.Default; //Change the cursor back
+            }
+#endif
         }
-        private void saveXmlBtn_Click(object sender, EventArgs e)
+
+        private void openProjectBtn_Click(object sender, EventArgs e)
         {
-            if (projectFileName != null)
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Title = "Open project file";
+            dlg.Filter = "XML Files (*.xml)|*.xml";
+            dlg.InitialDirectory = Path.Combine(Application.StartupPath, "Projects");            
+            dlg.FileName = "Island.xml";
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                openProject(dlg.FileName);
+            }
+        }
+
+        private void newProjectBtn_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Title = "Create new project file";
+            dlg.FileName = "Project1.xml";
+            dlg.Filter = "XML Files (*.xml)|*.xml";
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                //exportToXml2(xmlTreeView, dlg.FileName);
+                MessageBox.Show("Creating new projects is not yet supported :(");
+            }
+        } 
+
+        private void saveProjectBtn_Click(object sender, EventArgs e)
+        {
+            if (project != null)
             {
                 statusLabel.Text = "Saving project...";
-                using (StreamWriter writer = new StreamWriter(projectFileName, false))
+                using (StreamWriter writer = new StreamWriter(project.filePath, false))
                 {
                     writer.Write(xmlEditor.Content);                
                 }
                 statusLabel.Text = "Project saved.";
             }
-        }
+        }                 
 
-        #region Treeview Population
-        private void openXml()
-        {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Title = "Open XML Document";
-            dlg.Filter = "XML Files (*.xml)|*.xml";
-            dlg.FileName = "Small.xml";
-            if (dlg.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    //Just a good practice -- change the cursor to a wait cursor while the nodes populate
-                    this.Cursor = Cursors.WaitCursor;
-
-                    //First, we'll load the Xml document
-                    XmlDocument xDoc = new XmlDocument();
-                    xDoc.Load(dlg.FileName);
-
-                    //Now, clear out the treeview, and add the first (root) node
-                    xmlTreeView.Nodes.Clear();
-                    xmlTreeView.Nodes.Add(new TreeNode(xDoc.DocumentElement.Name));
-                    TreeNode tNode = new TreeNode();
-                    tNode = (TreeNode) xmlTreeView.Nodes[0];
-
-                    //We make a call to AddNode, where we'll add all of our nodes
-                    addTreeNode(xDoc.DocumentElement, tNode);
-
-                    //Expand the treeview to show all nodes
-                    xmlTreeView.ExpandAll();
-
-                }
-                catch (XmlException xExc) //Exception is thrown is there is an error in the Xml
-                {
-                    MessageBox.Show(xExc.Message);
-                }
-                catch (Exception ex) //General exception
-                {
-                    MessageBox.Show(ex.Message);
-                }
-                finally
-                {
-                    this.Cursor = Cursors.Default; //Change the cursor back
-                }
-            }
-        }
-
-        //This function is called recursively until all nodes are loaded
-        private void addTreeNode(XmlNode xmlNode, TreeNode treeNode)
-        {
-            XmlNode xNode;
-            TreeNode tNode;
-            XmlNodeList xNodeList;
-
-            if (xmlNode.HasChildNodes) //The current node has children
-            {
-                xNodeList = xmlNode.ChildNodes;
-
-                for (int x = 0; x <= xNodeList.Count - 1; x++) //Loop through the child nodes
-                {
-                    xNode = xmlNode.ChildNodes[x];
-                    treeNode.Nodes.Add(new TreeNode(xNode.Name));
-                    tNode = treeNode.Nodes[x];
-                    addTreeNode(xNode, tNode);
-                }
-            }
-            else //No children, so add the outer xml (trimming off whitespace)
-                treeNode.Text = xmlNode.OuterXml.Trim();
-        }
-        #endregion
-
-        #region XML Writer Methods
-
-        private void serializeTreeview2()
-        {
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.FileName = this.xmlTreeView.Nodes[0].Text + ".xml";
-            dlg.Filter = "XML Files (*.xml)|*.xml";
-            if (dlg.ShowDialog() == DialogResult.OK)
-            {
-                exportToXml2(xmlTreeView, dlg.FileName);
-            }
-        }
-
-        //We use this in the exportToXml2 and the saveNode functions, though it's only instantiated once.
-        private XmlTextWriter xr;
-
-        public void exportToXml2(TreeView tv, string filename)
-        {
-            xr = new XmlTextWriter(filename, System.Text.Encoding.UTF8);
-
-            xr.WriteStartDocument();
-            //Write our root node
-            xr.WriteStartElement(xmlTreeView.Nodes[0].Text);
-            foreach (TreeNode node in tv.Nodes)
-            {
-                saveNode(node.Nodes);
-            }
-            //Close the root node
-            xr.WriteEndElement();
-            xr.Close();
-        }
-
-        private void saveNode(TreeNodeCollection tnc)
-        {
-            foreach (TreeNode node in tnc)
-            {
-                //If we have child nodes, we'll write a parent node, then iterrate through
-                //the children
-                if (node.Nodes.Count > 0)
-                {
-                    xr.WriteStartElement(node.Text);
-                    saveNode(node.Nodes);
-                    xr.WriteEndElement();
-                }
-                else //No child nodes, so we just write the text
-                {
-                    xr.WriteString(node.Text);
-                }
-            }
-        }
-
-        #endregion
 
         #region GLControl
         private void glControl1_Load(object sender, EventArgs e)
         {
             loaded = true;
-            if (app == null) return;
+            if (app == null)
+            {
+                if (loadThisProject != null && loadThisProject.Length > 0)
+                {
+                    openProject(loadThisProject);
+                    loadThisProject = null;
+                }
+                return;
+            }
             app.Load();
-            //propertyGrid1.SelectedObject = app.cube;
+            glControl1.VSync = (app.VSync == VSyncMode.On);
 
+            Application.Idle -= Application_Idle;
             Application.Idle += Application_Idle; // press TAB twice after +=            
         }
 
@@ -404,21 +343,16 @@ namespace ZGE
         }
 
         private void Animate()
-        {
-            //float deltaRotation = (float) milliseconds / 20.0f;
-            //rotation += deltaRotation;
-            //cube.Transformation.RotateZ += deltaRotation;
+        {            
             var fe = new FrameEventArgs();
             app.Update(fe);
-            //glControl1.Invalidate();
+            
             // Refresh the values shown in the PropertyGrid
             //propertyGrid1.Refresh();
             //propertyGrid1.RefreshTabs();
             //if (propertyGrid1.SelectedObject != null)
                 //propertyGrid1.SelectedObject = xmlEditor.PropertiesForSelectedNode;  
-        }
-
-        
+        }        
 
         //         private void Accumulate(double milliseconds)
         //         {
@@ -489,16 +423,7 @@ namespace ZGE
             md.X = e.X; md.Y = e.Y;
             SetMouseButton(e.Button, true);
             app.MouseDown(sender, md);
-            /*SelectedSceneElement = null;
-            listBox1.Items.Clear();
-            var itemsHit = scene.DoHitTest(e.X, e.Y);
-            foreach (var item in itemsHit)
-                listBox1.Items.Add(item);
-            if (listBox1.Items.Count > 0)
-            {
-                listBox1.SetSelected(0, true);
-                // listBox1_SelectedIndexChanged(this, null);
-            }*/
+            //SelectedSceneElement = null;            
         }
 
         private void glControl1_MouseUp(object sender, MouseEventArgs e)
@@ -640,6 +565,8 @@ namespace ZGE
                 if (obj != null) obj.Refresh();
                 if (g.PropertyDescriptor.Name == "Name")
                     ZComponent.App.RefreshName(comp, g.Value as string);
+                if (comp == app && g.PropertyDescriptor.Name == "VSync")
+                    glControl1.VSync = (app.VSync == VSyncMode.On);
             }
         }
 
@@ -651,28 +578,19 @@ namespace ZGE
             {
                 //Console.WriteLine("ZCode selected.");
                 ZCode code = g.Value as ZCode;
-                if (code != null)
+                if (code != null && project != null)
                 {
-                    currentCode = null; // prevent codeBox_TextChanged from changing the previously selected code
+                    project.ClearCode(); // prevent codeBox_TextChanged from changing the previously selected code
                     codeBox.Text = code.Text;
-                    currentCode = code;
-                    ZComponent comp = selectedComponent as ZComponent;
-                    if (comp != null) 
-                        codeProperties = comp.Tag as ZNodeProperties;
-                    codePropertyName = g.PropertyDescriptor.Name;
+                    project.SetCode(code, selectedComponent as ZComponent, g.PropertyDescriptor.Name);
                 }
             }
         }
 
         private void codeBox_TextChanged(object sender, EventArgs e)
         {
-            if (currentCode != null && codeProperties != null && codePropertyName != null)
-            {
-                currentCode.Text = codeBox.Text;
-                PropertyChangedEventArgs ev = new PropertyChangedEventArgs(codePropertyName, codeBox.Text);                
-                ev.Action = PropertyChangeAction.CodeChanged;
-                codeProperties.PropertyHolderChanged(codeBox, ev);
-            }
+            if (project != null)
+                project.CodeChanged(codeBox.Text);            
         }
 
     }

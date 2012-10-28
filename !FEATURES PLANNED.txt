@@ -15,3 +15,4 @@
 -bitmap generators
 -mesh producers
 -audio with OpenAL
+-automatic frustum culling (with octree)

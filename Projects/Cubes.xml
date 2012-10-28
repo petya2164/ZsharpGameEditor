@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ZApplication Name="App" Title="Cubes" Camera="Camera1" VSync="On">
+  <OnLoad></OnLoad>
+  <OnRender></OnRender>
+  <Content>
+    <Material Name="CubeMaterial" Color="1 0 0 1">
+      <Textures></Textures>
+    </Material>
+    <Mesh Name="CubeMesh">
+      <Producers>
+        <MeshBox XCount="20" YCount="20" Grid2DOnly="False" />
+      </Producers>
+    </Mesh>
+    <Model Name="Cube">
+      <OnRender>
+        <UseMaterial Material="CubeMaterial" />
+        <RenderMesh Mesh="CubeMesh" />
+      </OnRender>
+      <OnUpdate>
+        <ZExpression>
+          <Expression><![CDATA[//ApplyGravity(model);
+model.Rotation.Z += 80.0f * (float) App.DeltaTime;
+model.Position.Z = -3.0f*(float)Math.Sin(App.Time);]]></Expression>
+        </ZExpression>
+      </OnUpdate>
+    </Model>
+  </Content>
+  <GUI>
+    <RenderText Text="FPS: " Position="5 0 0" Scale="1" />
+  </GUI>
+  <Scene>
+    <Group Name="DesignPrimitives" />
+    <Group Name="Cameras">
+      <InteractiveCamera Name="Camera1" Position="4 -10 7" UpVector="0 0 1" />
+    </Group>
+    <Group Name="Lights" />
+    <GameObject Model="Cube" Name="Player1" Position="-4 5 0" />
+    <GameObject Model="Cube" Name="Player2" Position="4 5 0" />
+    <GameObject Model="Cube" Name="Player3" Position="-3 0 0" />
+    <GameObject Model="Cube" Name="Player4" Position="3 0 0" />
+    <GameObject Model="Cube" Name="Plane" Position="0 3 0" Scale="0.1 6 2" />
+  </Scene>
+</ZApplication>

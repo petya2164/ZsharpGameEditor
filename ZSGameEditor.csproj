@@ -75,15 +75,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeGen\CodeDomHostLoader.cs" />
-    <Compile Include="CodeGen\CodeGen.cs" />
-    <Compile Include="CodeGen\TypeResolutionService.cs" />
     <Compile Include="Editor\ComponentList.cs" />
     <Compile Include="Editor\ModelBehavior.cs" />
     <Compile Include="Editor\CodeGenerator.cs" />
     <Compile Include="Editor\FieldPropertyDescriptor.cs" />
     <Compile Include="Editor\FieldsProperties.cs" />
     <Compile Include="Editor\FieldsProxy.cs" />
+    <Compile Include="Editor\Project.cs" />
     <Compile Include="Editor\Small.cs" />
     <Compile Include="Editor\StructConverter.cs" />
     <Compile Include="Editor\TextBoxStreamWriter.cs" />
@@ -118,6 +116,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Toolbox\Toolbox.resx">
       <DependentUpon>Toolbox.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -140,6 +139,7 @@
       <DependentUpon>Editor.cs</DependentUpon>
     </Compile>
     <Compile Include="Editor\Program.cs" />
+    <Compile Include="Editor\Settings.cs" />
     <Compile Include="Toolbox\Toolbox.cs">
       <SubType>UserControl</SubType>
     </Compile>

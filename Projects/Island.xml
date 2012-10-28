@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ZApplication Name="App" Title="Small" Camera="Camera1" MouseVisible="255" NoSound="1">
+<ZApplication Name="App" Title="Island" Camera="Camera1" MouseVisible="255" NoSound="1">
   <OnLoad></OnLoad>
   <OnRender>
     <RenderSetColor Color="0.1176471 0.5647059 1 1" />
@@ -35,7 +35,7 @@
         <ZExpression>
           <Expression><![CDATA[//ApplyGravity(model);
 model.Rotation.Z += 80.0f * (float) App.DeltaTime;
-model.Position.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
+model.Position.Z = -3.0f*(float)Math.Sin(App.Time);]]></Expression>
         </ZExpression>
       </OnUpdate>
     </Model>
