@@ -5,6 +5,7 @@
 -save object state for reset and pause
 -gui components
 -proper mouse event handling: gui, cam, dragbox
+-better heightmaps: CW, CCW, round and sharp triangulation modes
 -GLSL shaders
 -drag&drop from toolbox
 -intuitive reordering with drag&drop in treeview

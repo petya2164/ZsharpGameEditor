@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ZApplication Name="App" Title="Plateau" Camera="Camera1" MouseVisible="255" NoSound="1" VSync="On">
+  <OnLoad></OnLoad>
+  <OnRender></OnRender>
+  <Content>
+    <Material Name="PlateauMaterial" Wireframe="True" Lighting="False">
+      <Textures></Textures>
+    </Material>
+    <Mesh Name="PlateauMesh">
+      <Producers>
+        <MeshHeightmap FileName="Plateau8x8.png" Scale="5 5 1" />
+      </Producers>
+    </Mesh>
+    <Model Name="Plateau">
+      <OnRender>
+        <UseMaterial Material="PlateauMaterial" />
+        <RenderMesh Mesh="PlateauMesh" />
+      </OnRender>
+      <OnUpdate></OnUpdate>
+    </Model>
+  </Content>
+  <GUI>
+    <RenderText Text="FPS: " Position="5 0 0" Scale="1" />
+  </GUI>
+  <Scene>
+    <Group Name="DesignPrimitives" />
+    <Group Name="Cameras">
+      <InteractiveCamera Name="Camera1" Position="9 -9 13" UpVector="0 0 1" />
+    </Group>
+    <Group Name="Lights" />
+    <GameObject Model="Plateau" Name="Plateau1" Position="0 0 0" Scale="1 1 1" />
+  </Scene>
+</ZApplication>
