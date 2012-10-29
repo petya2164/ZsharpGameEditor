@@ -422,8 +422,7 @@ namespace ZGE
             if (app == null) return;
             md.X = e.X; md.Y = e.Y;
             SetMouseButton(e.Button, true);
-            app.MouseDown(sender, md);
-            //SelectedSceneElement = null;            
+            app.MouseDown(sender, md);                 
         }
 
         private void glControl1_MouseUp(object sender, MouseEventArgs e)
@@ -431,7 +430,9 @@ namespace ZGE
             if (app == null) return;
             md.X = e.X; md.Y = e.Y;
             SetMouseButton(e.Button, false);            
-            app.MouseUp(sender, md);
+            GameObject selected = app.MouseUp(sender, md);
+            if (app.SelectionEnabled && selected != null)
+                SelectedComponent = selected;       
         }
 
         private void glControl1_MouseMove(object sender, MouseEventArgs e)

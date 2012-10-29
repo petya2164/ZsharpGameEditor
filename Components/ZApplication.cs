@@ -88,7 +88,10 @@ namespace ZGE.Components
         public bool Lighting = true;
         public Vector4 LightPosition = new Vector4(0, 0, 1, 0);
 
-        public Camera Camera;        
+        public Camera Camera;
+        public MouseButton SelectButton = MouseButton.Left;
+        public bool SelectionEnabled = true;
+        public GameObject SelectedObject = null;
 
         public int RenderPasses = 1;
         [ReadOnlyAttribute(true)]
@@ -261,7 +264,7 @@ namespace ZGE.Components
             }            
         }
 
-        public virtual void MouseUp(object sender, MouseDescriptor e)
+        public virtual GameObject MouseUp(object sender, MouseDescriptor e)
         {
             // GUI has priority in handling mouse events
             
@@ -269,17 +272,19 @@ namespace ZGE.Components
             if (Camera == null || Camera.MouseUp(e) == false)
             {            
                 // Selection & Dragbox Selection                
-                if (e.Button == MouseButton.Left)
+                if (SelectionEnabled && e.Button == SelectButton)
                 {
                     //  Do a hit test.
                     ZComponent comp = MousePick(e.X, e.Y);
                     if (comp != null)
                     {
                         Console.WriteLine("MousePick result: {0}", comp.Name);
-                        //SelectedComponent = comp;
+                        SelectedObject = comp as GameObject;
+                        return SelectedObject;
                     }
                 }                
             }
+            return null;
         }
 
         public virtual void MouseMove(object sender, MouseDescriptor e)
