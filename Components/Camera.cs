@@ -237,7 +237,12 @@ namespace ZGE.Components
             Vector3 front = Vector3.Cross(right, UpVector);
             right.Normalize();
             front.Normalize();
-            if (Position.Z < 0) ver_offset = -ver_offset;
+            
+            Vector3 eyeVector = Position - Target;
+            float angle = Vector3.CalculateAngle(eyeVector, UpVector);
+            // If we are below the ground plane, reverse vertical panning direction
+            if (!float.IsNaN(angle) && angle > MathHelper.PiOver2)
+                ver_offset = -ver_offset;
             
             Target += right * hor_offset;
             Position += right * hor_offset;
