@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZSGameEditor", "ZSGameEditor.csproj", "{AFFDBE91-D3E9-4D4C-A05B-11A551FF5EED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Components", "Components\Components.csproj", "{0EE6809F-114A-41C6-BA8A-70CCB1E29998}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTK", "Dependencies\OpenTK\Source\OpenTK\OpenTK.csproj", "{A37A7E14-0000-0000-0000-000000000000}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTK.GLControl", "Dependencies\OpenTK\Source\GLControl\OpenTK.GLControl.csproj", "{A625BE88-0000-0000-0000-000000000000}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0EE6809F-114A-41C6-BA8A-70CCB1E29998}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EE6809F-114A-41C6-BA8A-70CCB1E29998}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EE6809F-114A-41C6-BA8A-70CCB1E29998}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EE6809F-114A-41C6-BA8A-70CCB1E29998}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A37A7E14-0000-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A37A7E14-0000-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A37A7E14-0000-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A37A7E14-0000-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A625BE88-0000-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A625BE88-0000-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A625BE88-0000-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A625BE88-0000-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFFDBE91-D3E9-4D4C-A05B-11A551FF5EED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFFDBE91-D3E9-4D4C-A05B-11A551FF5EED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFFDBE91-D3E9-4D4C-A05B-11A551FF5EED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFFDBE91-D3E9-4D4C-A05B-11A551FF5EED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = ZSGameEditor.csproj
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
