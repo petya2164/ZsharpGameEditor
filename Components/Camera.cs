@@ -118,6 +118,9 @@ namespace ZGE.Components
 
     public class InteractiveCamera : ProjectiveCamera, INeedRefresh
     {
+        public enum VerticalPanningMode { AlongGroundPlane, AlongUpVector };
+
+        public VerticalPanningMode VerticalPanning = VerticalPanningMode.AlongGroundPlane;
         public MouseButton PanButton = MouseButton.Middle;
         public MouseButton RotateButton = MouseButton.Right;        
 
@@ -233,21 +236,35 @@ namespace ZGE.Components
             float hor_offset = -(newPos.X - panStartPos.X) / 100.0f * PanSpeed;
             float ver_offset = -(newPos.Y - panStartPos.Y) / 100.0f * PanSpeed;
             Matrix4 ivm = Matrix4.Invert(ViewMatrix);
-            Vector3 right = new Vector3(ivm.Row0);
-            Vector3 front = Vector3.Cross(right, UpVector);
-            right.Normalize();
-            front.Normalize();
-            
-            Vector3 eyeVector = Position - Target;
-            float angle = Vector3.CalculateAngle(eyeVector, UpVector);
-            // If we are below the ground plane, reverse vertical panning direction
-            if (!float.IsNaN(angle) && angle > MathHelper.PiOver2)
-                ver_offset = -ver_offset;
-            
+            Vector3 right = new Vector3(ivm.Row0);            
+            right.Normalize();            
+
+            // Horizontal panning
             Target += right * hor_offset;
             Position += right * hor_offset;
-            Target += front * ver_offset;
-            Position += front * ver_offset;            
+
+            // Vertical panning
+            if (VerticalPanning == VerticalPanningMode.AlongGroundPlane)
+            {
+                Vector3 front = Vector3.Cross(right, UpVector);  //this along the ground plane
+                front.Normalize();
+
+                Vector3 eyeVector = Position - Target;
+                float angle = Vector3.CalculateAngle(eyeVector, UpVector);
+                // If we are below the ground plane, reverse vertical panning direction
+                if (!float.IsNaN(angle) && angle > MathHelper.PiOver2)
+                    ver_offset = -ver_offset;
+
+                Target += front * ver_offset;
+                Position += front * ver_offset;
+            }
+            else if (VerticalPanning == VerticalPanningMode.AlongUpVector)
+            {
+                Vector3 up = new Vector3(ivm.Row1);
+                up.Normalize();
+                Target += up * -ver_offset;
+                Position += up * -ver_offset;
+            }                      
         }
 
         public void RotateAroundUpVector(Vector2 newPos)
