@@ -25,6 +25,9 @@ namespace ZGE.Components
     [ToolboxItem(false)]
     public class ZCode
     {
+        [Browsable(false)]
+        public ZComponent Owner;
+        
         public string Text;
 
         public delegate void ModelMethod(Model model);

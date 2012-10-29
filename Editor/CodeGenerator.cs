@@ -36,11 +36,11 @@ namespace ZGE
         public void GenerateGameFromXml(XmlNode rootElement)
         {
 
-        }        
+        }
 
-        public bool GenerateGameCode(ZApplication app)
+        public string GenerateGameCode(ZApplication app, Dictionary<ZCode, string> codeMap)
         {
-            
+
             StringBuilder str = new StringBuilder();
 
             str.AppendLine(
@@ -51,54 +51,97 @@ using System.Text;
 using ZGE.Components;
 using OpenTK;
 
+// User-defined using statements
+
 namespace ZGE
 {
-    // Model classes
+    // Model classes");
 
-    class DynamicGame: ZComponent
+            Indenter.tabs = 1;
+            // Enumerate the model classes
+            foreach (var comp in app.typeMap[typeof(Model)])
+            {
+                if (comp.GetType() == typeof(GameObject)) continue;
+                Model model = comp as Model;
+                if (model == null) continue;                
+                str.IndentedLines(String.Format("public class {0}: Model", model.Name+"_Model"));
+                str.IndentedLines("{");
+                //Indenter.tabs = 2;
+                //User-defined definitions
+
+                //Include ZExpressions as methods
+                //Find children of type ZCode
+                str.IndentedLines("}");
+            }
+
+            
+
+            str.AppendLine(@"    
+    // The main Application class
+    public class DynamicGame: ZApplication
     {
         // Named components");
 
+            Indenter.tabs = 2;            
+            foreach (var kvp in app.nameMap)
+            {
+                str.IndentedLines(String.Format("public {0} {1};",kvp.Value.GetType().Name,kvp.Value.Name));
+            }
 
             str.AppendLine(@"
         // Constructor
         public DynamicGame(bool createAll)
         {
-            
-        }");
+            if (createAll)
+                InitializeComponents();
+        }
+
+        public void InitializeComponents()
+        {
+            //Create all the components and their children");
+
+            //Use the XML here
+
+            Indenter.tabs = 2;
+            str.IndentedLines("}\n");
 
             int i = 0;
-            
-            // Enumerate code components
-            Dictionary<ZCode, string> codeMap = new Dictionary<ZCode, string>();
+
+            // Enumerate code components            
             for (i = 0; i < app.code.Count; i++)
             {
                 string methodName = String.Format("Method_{0}", i);
-                codeMap[app.code[i]] = methodName;
+                if (codeMap != null) codeMap[app.code[i]] = methodName;
                 Indenter.tabs = 2;
                 str.IndentedLines("public void " + methodName + "(Model model)\n{");
                 Indenter.tabs = 3;
                 str.IndentedLines(app.code[i].Text);
                 Indenter.tabs = 2;
                 str.IndentedLines("}");
-            }                        
-                            
-            //model.Rotation += new Vector3(0, 180.0f * (float) App.DeltaTime, 0);            
-                        
+            }                     
+
             str.AppendLine(@"
      }
 }");
+            return str.ToString();
+        }            
 
+
+        public bool GenerateGameAssembly(ZApplication app)
+        {
+            Dictionary<ZCode, string> codeMap = new Dictionary<ZCode, string>();
+            string str = GenerateGameCode(app, codeMap);            
+            
+            // Save the file for debugging
             using (StreamWriter writer = new StreamWriter("DynamicGame.cs", false))
             {
-                writer.Write(str.ToString());                
+                writer.Write(str);                
             }
-
 
             // Generate AppBehavior class
 
            
-            var res = BuildAssembly("dummy", str.ToString(), true);
+            var res = BuildAssembly("dummy", str, true);
             if (res.Errors.HasErrors)
             {                
                 Console.WriteLine("Errors during compile:\n");
@@ -128,8 +171,7 @@ namespace ZGE
                             Console.WriteLine("Setting callback: " + pair.Value);
                             pair.Key.callback = (ZCode.ModelMethod) Delegate.CreateDelegate(typeof(ZCode.ModelMethod), behavior, mi);
                         }
-                    }
-                    
+                    }                    
                 }
 
                 return true;

@@ -113,8 +113,7 @@ namespace ZGE.Components
         double lastUpdate = 0.0;
         double lastRender = 0.0;
         MovingAverage fpsMA = new MovingAverage();
-        internal Dictionary<string, ZComponent> nameMap = new Dictionary<string, ZComponent>();
-        internal Dictionary<Type, List<ZComponent>> typeMap = new Dictionary<Type, List<ZComponent>>();
+        
 
         [Browsable(false)]
         public Standalone frame = null;
@@ -141,13 +140,21 @@ namespace ZGE.Components
         [Browsable(false)]
         public List<ZComponent> Content = new List<ZComponent>();
         [Browsable(false)]
-        public List<ZComponent> Scene = new List<ZComponent>();
-        [Browsable(false)]
         public List<ZComponent> GUI = new List<ZComponent>();
+        [Browsable(false)]
+        public List<ZComponent> Scene = new List<ZComponent>();
         
+        
+        // --  INTERNAL LISTS --
         [Browsable(false)]
         public List<ZCode> code = new List<ZCode>();
-        private List<ZContent> content = new List<ZContent>();
+        [Browsable(false)]
+        public List<ZContent> content = new List<ZContent>();
+        [Browsable(false)]
+        public Dictionary<string, ZComponent> nameMap = new Dictionary<string, ZComponent>();
+        [Browsable(false)]
+        public Dictionary<Type, List<ZComponent>> typeMap = new Dictionary<Type, List<ZComponent>>();
+        // --  INTERNAL LISTS --
 
         /*public delegate void EmptyHandler();
         public delegate void FrameHandler(FrameEventArgs e);

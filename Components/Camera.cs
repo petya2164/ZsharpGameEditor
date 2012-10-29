@@ -260,45 +260,20 @@ namespace ZGE.Components
             eyeVector.Normalize();
 
             float ver_angle = RotationSpeed * MathHelper.DegreesToRadians((newPos.Y - startPos.Y) / 5.0f);
-            Vector3 right = -Vector3.Cross(eyeVector, UpVector);
-            //Matrix4 ivm = Matrix4.Invert(ViewMatrix);
-            //Vector3 right = new Vector3(ivm.Row0);
-            //Vector3 up = new Vector3(ivm.Row1);
-            //Vector3 front = Vector3.Cross(right, UpVector);
+            Vector3 right = -Vector3.Cross(eyeVector, UpVector);            
             right.Normalize();
             float angle = Vector3.CalculateAngle(eyeVector, UpVector);
             if (float.IsNaN(angle)) return;
-            if (ver_angle > angle) return;
+            // To avoid jumps when vertical rotation goes beyond the UpVector
+            if (ver_angle > angle) return;  // Up
             //if (angle > MathHelper.PiOver2 && -ver_angle > MathHelper.Pi - angle) return;
-            if (ver_angle < 0 && angle - ver_angle > MathHelper.Pi) return;
+            if (ver_angle < 0 && angle - ver_angle > MathHelper.Pi) return; // Down
 
             eyeVector = Vector3.TransformVector(eyeVector, Matrix4.CreateFromAxisAngle(right, -ver_angle));            
 
             float hor_angle = RotationSpeed * MathHelper.DegreesToRadians((newPos.X - startPos.X) / 5.0f);
             eyeVector = Vector3.TransformVector(eyeVector, Matrix4.CreateFromAxisAngle(UpVector, -hor_angle));
-            Position = Target + eyeVector * len;
-
-            //Vector3 newRight = Vector3.Cross(-eyeVector, ReferenceUpVector);
-            //UpVector = Vector3.Cross(newRight, -eyeVector);
-
-            //  Compute the cross product of the begin and end vectors.
-            /*Vector3 cross = Vector3.Cross(startVector, vec);
-
-            //  Is the perpendicular length essentially non-zero?
-            if (cross.Length > 1.0e-5f)
-            {
-                //Console.WriteLine("Cross: "+cross.ToString());
-                //  The quaternion is the transform.
-                float angle = 0.2f * (float) Math.Acos(Math.Min(1.0f, Vector3.Dot(startVector, vec)));
-                //float angle = Vector3.CalculateAngle(startVector, vec);
-                //Quaternion quat = Quaternion.FromAxisAngle(cross, angle);
-
-                //Quaternion quat = new Quaternion(cross, Vector3.Dot(startVector, vec));                
-                //return new float[] { cross.X, cross.Y, cross.Z, startVector.ScalarProduct(currentVector) };
-
-                Vector3 axisInWorldCoord = Vector3.TransformVector(cross, Matrix4.Invert(ViewMatrix));
-                Quaternion quat = Quaternion.FromAxisAngle(axisInWorldCoord, -angle);                
-            }*/
+            Position = Target + eyeVector * len;            
         }
 
         public Vector3 MapToSphere(float x, float y)

@@ -37,6 +37,7 @@ namespace ZGE
         TextBoxStreamWriter _writer = null;
 
         XmlEditorForm _xmlForm = new XmlEditorForm();
+        CodeViewForm _codeForm = new CodeViewForm();
         MouseDescriptor md = new MouseDescriptor();
         
         /// <summary>
@@ -179,7 +180,8 @@ namespace ZGE
 
         private void showCodeBtn_Click(object sender, EventArgs e)
         {
-
+            _codeForm.SetText(codegen.GenerateGameCode(app, null));
+            _codeForm.Show();
         }
 
         private void AddElementToTree(ZComponent component, TreeNodeCollection nodes)
@@ -503,7 +505,7 @@ namespace ZGE
         {
             outputBox.Text="";
             statusLabel.Text = "Starting code compilation...";
-            if (codegen.GenerateGameCode(app))
+            if (codegen.GenerateGameAssembly(app))
                 statusLabel.Text = "App running";
             else
                 statusLabel.Text = "Compilation failed";          

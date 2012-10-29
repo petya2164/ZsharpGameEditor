@@ -117,14 +117,15 @@ namespace ZGE
                         object obj = Deserialize(val, fi.FieldType);
                         if (obj != null)
                             fi.SetValue(comp, obj);
-                        else if (typeof(ZCode).IsAssignableFrom(fi.FieldType))
+                        /*else if (typeof(ZCode).IsAssignableFrom(fi.FieldType))  //CODE CANNOT BE STORED AS A PROPERTY
                         {
                             ZCode code = (ZCode)Activator.CreateInstance(fi.FieldType);
                             code.Text = val;
+                            code.Owner = comp;
                             //Console.WriteLine("Code Text:\n{0}", code.Text);
                             fi.SetValue(comp, code);
                             //_app.AddComponent(code);
-                        }
+                        }*/
                         else if (fi.FieldType.IsSubclassOf(typeof(ZComponent)))
                         {
                             _unresolved.Add(new Unresolved { comp = comp, prop = fi, value = val });
@@ -186,7 +187,8 @@ namespace ZGE
                 {
                     ZCode code = (ZCode)Activator.CreateInstance(fi.FieldType);
                     code.Text = xmlNode.InnerText;
-                    //Console.WriteLine("Code Text:\n{0}", code.Text);
+                    code.Owner = parent;
+                    Console.WriteLine("Code Text:\n{0}", code.Text);
                     fi.SetValue(comp, code);
                     //_app.AddComponent(code);
                     return; //no TreeNode should be created for this
