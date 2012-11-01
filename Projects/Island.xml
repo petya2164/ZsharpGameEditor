@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ZApplication Name="App" Title="Island" Camera="Camera1" MouseVisible="255" NoSound="1">
+<ZApplication Name="App" Title="Island" Camera="Camera1" MouseVisible="255" NoSound="1" Width="1000" Height="700">
   <OnLoad></OnLoad>
   <OnRender>
     <RenderSetColor Color="0.1176471 0.5647059 1 1" />
@@ -33,9 +33,8 @@
       </OnRender>
       <OnUpdate>
         <ZExpression>
-          <Expression><![CDATA[//ApplyGravity(model);
-model.Rotation.Z += 80.0f * (float) App.DeltaTime;
-model.Position.Z = -3.0f*(float)Math.Sin(App.Time);]]></Expression>
+          <Expression><![CDATA[model.Rotation.Z += 80.0f * (float) App.DeltaTime;
+model.Position.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
         </ZExpression>
       </OnUpdate>
     </Model>
@@ -53,7 +52,9 @@ model.Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
     </Model>
   </Content>
   <GUI>
-    <RenderText Text="FPS: " Position="5 0 0" Scale="1" />
+    <RenderText Text="FPS: " Position="5 0 0" Scale="1">
+      <TextExpression><![CDATA[return "FPS: "+App.FpsEstimated.ToString("F0");]]></TextExpression>
+    </RenderText>
   </GUI>
   <Scene>
     <Group Name="DesignPrimitives" />

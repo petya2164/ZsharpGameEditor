@@ -10,11 +10,14 @@ using System.ComponentModel;
 
 namespace ZGE.Components
 {
-    
-    
-    public class Model : ZComponent, IRenderable, IUpdateable
+
+
+    public class Model : ZComponent, ICloneable, IRenderable, IUpdateable, INeedRefresh
     {
-        public bool Active; // Currently added to the scene?
+        [Browsable(false)]
+        public Model model;  //Used in GameObject
+        //public GameObject Parent;
+        public bool Active; // Currently added to the scene as a GameObject?
         public int Category;
         public Vector3 Position;
         public Vector3 Rotation;
@@ -34,7 +37,29 @@ namespace ZGE.Components
         {
             Active = false;
             Scale = new Vector3(1, 1, 1);
+        }        
+
+        public void Refresh()
+        {
+            //CloneBehavior();
         }
+
+        public object Clone()
+        {
+            Model clone = this.MemberwiseClone() as Model;
+            clone.Active = true; //cloned Model automatically becomes a GameObject
+            return clone;
+        }
+
+        /*public virtual void CloneBehavior()
+        {            
+            if (model == null) return;
+           
+            //Clone the behavior and the non-volatile properties of the model
+            OnUpdate = model.OnUpdate;
+            OnRender = model.OnRender;
+            Category = model.Category;                        
+        }*/
 
         public void Update()
         {
@@ -70,7 +95,7 @@ namespace ZGE.Components
         }
     }
 
-    public class GameObject : Model, INeedRefresh
+    /*public class GameObject : Model, INeedRefresh
     {
         public Model Model;
         //public GameObject Parent;
@@ -93,7 +118,7 @@ namespace ZGE.Components
             OnRender = Model.OnRender;
             Category = Model.Category;                        
         }
-    }
+    }*/
 
 
 

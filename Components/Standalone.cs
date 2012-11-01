@@ -40,6 +40,7 @@ namespace ZGE
             app = _app;
             app.frame = this;
             VSync = app.VSync;
+            this.Title = app.Title;
 
             Keyboard.KeyDown += Keyboard_KeyDown;
             Keyboard.KeyUp += Keyboard_KeyUp;
@@ -71,19 +72,14 @@ namespace ZGE
         void Mouse_WheelChanged(object sender, MouseWheelEventArgs e)
         {
             md.X = e.X; md.Y = e.Y;
-            md.WheelDelta = e.Delta;            
+            md.WheelDelta = e.Delta * 120;            
             app.MouseWheel(sender, md);
-        }
-
-        
-
-        
-
-        
+        }        
 
         void Keyboard_KeyDown(object sender, KeyboardKeyEventArgs e)
         {
             app.KeyDown(sender, e);
+            //if (Keyboard[Key.Escape])  Exit();
         }
 
         void Keyboard_KeyUp(object sender, KeyboardKeyEventArgs e)
@@ -96,44 +92,7 @@ namespace ZGE
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            app.Load();
-
-            /*
-            //  Create a sphere.
-            Sphere sphere = new Sphere();
-            sphere.Transformation.TranslateX = 2;
-            sphere.Transformation.TranslateY = 2;
-
-            //  Create a cone.
-            Cylinder cone = new Cylinder() { Name = "Cone" };
-            cone.BaseRadius = 1.5;
-            cone.TopRadius = 0;
-            cone.Height = 2;
-            cone.Transformation.TranslateX = -2;
-            cone.Transformation.TranslateY = -2;
-
-            //  Create a cylinder.
-            Cylinder cylinder = new Cylinder() { Name = "Cylinder" };
-            cylinder.BaseRadius = 1.5;
-            cylinder.TopRadius = 1.5;
-            cylinder.Height = 2;
-            cylinder.Transformation.TranslateX = -2;
-            cylinder.Transformation.TranslateY = 2;
-
-            //  Create a cube.
-            cube = new Cube();
-            cube.Transformation.ScaleX = 5;
-            cube.Transformation.TranslateX = 2;
-            cube.Transformation.TranslateY = -2;
-            cube.Transformation.RotateZ = 45f;
-            
-
-            //  Add them.
-            scene.SceneContainer.AddChild(sphere);
-            scene.SceneContainer.AddChild(cube);
-            scene.SceneContainer.AddChild(cone);
-            scene.SceneContainer.AddChild(cylinder);*/
-                    
+            app.Load();                   
         }
 
         /// <summary>
@@ -155,11 +114,7 @@ namespace ZGE
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
-            app.Update(e);
-
-            //cube.Transformation.RotateZ += 180.0f * (float) e.Time;
-
-            //if (Keyboard[Key.Escape])  Exit();
+            app.Update();            
         }
 
         /// <summary>
@@ -170,45 +125,15 @@ namespace ZGE
         {              
             base.OnRenderFrame(e);
 
-            app.Render(e);
-            this.Title = "FPS: " + app.FpsCounter.ToString("0.") + " / " + (1 / e.Time).ToString("0.");
-
-
-            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            //GL.Enable(EnableCap.Texture2D);
-            //GL.BindTexture(TextureTarget.Texture2D, texture.TextureName);
-            //texture.Bind(gl);
-            //	Do the scene drawing.
-            //scene.Draw(null);
-
-
-// 
-//             GL.Begin(BeginMode.Triangles);
-//             GL.Color3(1.0f, 1.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, 4.0f);
-//             GL.Color3(1.0f, 0.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, 4.0f);
-//             GL.Color3(0.2f, 0.9f, 1.0f); GL.Vertex3(0.0f, 1.0f, 4.0f);
-//             GL.End();
-
-//              Matrix4 lookat = Matrix4.LookAt(0, 5, 5, 0, 0, 0, 0, 1, 0);
-//              GL.MatrixMode(MatrixMode.Modelview);
-//              GL.LoadMatrix(ref lookat);
-// 
-//             angle += rotation_speed * (float) e.Time;
-//             GL.Rotate(angle, 0.0f, 1.0f, 0.0f);
-// 
-//             DrawCube();
-
-            SwapBuffers();
-            
-        }
-
-        
+            app.Render();
+            //this.Title = "FPS: " + app.FpsCounter.ToString("0.") + " / " + (1 / e.Time).ToString("0.");
+            SwapBuffers();            
+        }        
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        [STAThread]
+        /*[STAThread]
         static void Main()
         {
             // The 'using' idiom guarantees proper resource cleanup.
@@ -218,6 +143,6 @@ namespace ZGE
             {
                 game.Run(30.0);
             }
-        }
+        }*/
     }
 }

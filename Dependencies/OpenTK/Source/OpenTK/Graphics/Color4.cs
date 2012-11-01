@@ -98,7 +98,7 @@ namespace OpenTK.Graphics
         /// Constructs a new Color4 structure from the specified System.Drawing.Color.
         /// </summary>
         /// <param name="color">The System.Drawing.Color containing the component values.</param>
-        [Obsolete("Use new Color4(r, g, b, a) instead.")]
+        //[Obsolete("Use new Color4(r, g, b, a) instead.")]
         public Color4(System.Drawing.Color color)
             : this(color.R, color.G, color.B, color.A)
         { }
@@ -160,7 +160,7 @@ namespace OpenTK.Graphics
         /// </summary>
         /// <param name="color">The Color4 to convert.</param>
         /// <returns>A new System.Drawing.Color structure containing the converted components.</returns>
-        public static explicit operator System.Drawing.Color(Color4 color)
+        public static implicit operator System.Drawing.Color(Color4 color)
         {
             return System.Drawing.Color.FromArgb(
                 (int)(color.A * Byte.MaxValue),

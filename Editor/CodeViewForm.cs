@@ -22,6 +22,7 @@ namespace ZGE
         public void SetText(string text)
         {
             codeEditorControl.Text = text;
+            codeEditorControl.Refresh();
         }
 
         // Use this event handler for the FormClosing event.

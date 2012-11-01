@@ -18,6 +18,41 @@ using System.ComponentModel;
 
 namespace ZGE
 {
+    #region PropertyChangedEvent
+    public enum PropertyChangeAction
+    {
+        AttributeChanged,
+        ElementNodeRenamed,
+        CodeChanged
+    }
+
+    /// <summary>
+    /// Provides a data for XmlNodeProperties.PropertyChanged event.
+    /// </summary>
+    /// <remarks>Used to pass information to the handler which 
+    /// processes changes to the underlying object.
+    /// </remarks>
+    public class PropertyChangedEventArgs : EventArgs
+    {
+        public PropertyChangeAction Action { get; set; }
+        public string PropName { get; private set; }
+        public object NewValue { get; private set; }
+
+        public PropertyChangedEventArgs(string propName, object newValue)
+            : base()
+        {
+            PropName = propName;
+            NewValue = newValue;
+        }
+    }
+
+    /// <summary>
+    /// Represents the method that will handle the CustomClass.PropertyChanged event    
+    /// </summary>
+    public delegate void PropertyChangedEventHandler(Object sender, PropertyChangedEventArgs e);
+    #endregion
+
+
     /// <summary>
     /// Implements middle layer between an XmlNode and XmlNodeProperties classes.
     /// It provides concrete XmlProperties object as a wrapper for XmlNode to be used in Property Editor control.
@@ -262,19 +297,35 @@ namespace ZGE
         private bool ChangeElementNodeText(string propName, string newValue)
         {
             //Console.WriteLine("ChangeElementNodeText");
-            bool needCommit = false;
+            bool found = false;
+            XmlNode child = null;
 
             foreach (XmlNode childNode in xmlNode.ChildNodes)
             {
                 if (childNode.Name == propName)
                 {
+                    child = childNode;
                     foreach (XmlCDataSection cData in childNode.ChildNodes)
                     {
                         cData.InnerText = newValue;
-                        needCommit = true;
+                        found = true;
                     }
                 }
-            }          
+            }
+
+            // Need to create the childNode and the CDATA section
+            if (found == false)
+            {
+                if (child == null)
+                {
+                    //  Create new child node
+                    child = xmlNode.OwnerDocument.CreateNode(XmlNodeType.Element, propName, xmlNode.NamespaceURI);
+                    xmlNode.AppendChild(child);
+                }
+                XmlNode cdata = xmlNode.OwnerDocument.CreateNode(XmlNodeType.CDATA, newValue, xmlNode.NamespaceURI);
+                child.AppendChild(cdata);
+                found = true;
+            }
 
             /*if (xmlNode.InnerText.CompareTo(newValue) != 0 && IsLeafNode(xmlNode))
                 //properties.GetType() == typeof (XmlLeafNodeProperties))
@@ -283,7 +334,7 @@ namespace ZGE
                  needCommit = true;
             }*/
 
-            return needCommit;
+            return found;
         }
 
         /// <summary>

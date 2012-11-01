@@ -32,6 +32,8 @@ namespace ZGE
         ZApplication app = null;
         Project project;
         string loadThisProject = null;
+        string DefaultFormTitle = "Z# Game Editor";
+        bool idleLoop = true;
 
         CodeGenerator codegen = new CodeGenerator();
         TextBoxStreamWriter _writer = null;
@@ -79,7 +81,7 @@ namespace ZGE
                     ZSGameEditor.Properties.Settings.Default.Save();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 int w = (int)(Screen.PrimaryScreen.Bounds.Width * 0.9);
                 int h = (int)(Screen.PrimaryScreen.Bounds.Height * 0.9);
@@ -172,18 +174,6 @@ namespace ZGE
             SelectedComponent = e.Node.Tag as ZComponent;
         }
 
-        private void showXmlBtn_Click(object sender, EventArgs e)
-        {
-            _xmlForm.SetText(xmlEditor.Content);
-            _xmlForm.Show();
-        }
-
-        private void showCodeBtn_Click(object sender, EventArgs e)
-        {
-            _codeForm.SetText(codegen.GenerateGameCode(app, null));
-            _codeForm.Show();
-        }
-
         private void AddElementToTree(ZComponent component, TreeNodeCollection nodes)
         {
             //  Add the element.
@@ -199,9 +189,26 @@ namespace ZGE
             nodes.Add(newNode);
 
             //  Add each child.
+            //if (component.GetType() == typeof(Model))
             foreach (var element in component.Children)
                 AddElementToTree(element, newNode.Nodes);
-        } 
+        }
+
+        private void closeProject()
+        {            
+            SelectedComponent = null;
+            this.Text = DefaultFormTitle;
+            sceneTreeView.Nodes.Clear();
+            sceneTreeView.Invalidate();
+            xmlTreeView.Nodes.Clear();
+            xmlTreeView.Invalidate();
+            project = null;
+            app = null;
+            ZComponent.App = null;
+            codeBox.Text = "";
+            codeBox.Refresh();
+            // TODO: All resources should be released at this point / verify finalizers!
+        }
 
         private void openProject(string filePath)
         {
@@ -212,11 +219,7 @@ namespace ZGE
             try
             {
 #endif
-                // TODO: All resources should be released at this point
-                SelectedComponent = null;
-                project = null;
-                app = null;
-                ZComponent.App = null;
+                closeProject();          
                 
                 // Just a good practice - change the cursor to a wait cursor during processing
                 this.Cursor = Cursors.WaitCursor;
@@ -224,15 +227,15 @@ namespace ZGE
                 //this.Enabled = false;
 
                 //Try to load the Xml document
-                var zapp = Factory.Load(filePath, xmlEditor);
-                if (zapp != null)
-                {
-                    project = new Project(filePath);                                     
-                    codeBox.Text = "";                                      
-                    app = zapp;
+                project = Project.CreateProject(filePath, xmlEditor, codegen);
+                if (project != null && project.app != null)
+                {                                                            
+                    app = project.app;
+                    app.Pause();
+                    this.Text = DefaultFormTitle + " - " + project.Name;
 
                     //  Add the element to the tree.
-                    sceneTreeView.Nodes.Clear();
+                    //sceneTreeView.Nodes.Clear();
                     foreach(ZComponent comp in app.Scene)
                         AddElementToTree(comp, sceneTreeView.Nodes);
                     sceneTreeView.ExpandAll();
@@ -244,6 +247,7 @@ namespace ZGE
                     statusLabel.Text = "Project loaded.";
                     ZSGameEditor.Properties.Settings.Default.LastProjectPath = filePath;
                     ZSGameEditor.Properties.Settings.Default.Save();
+                    this.Cursor = Cursors.Default;
                 }
 #if !DEBUG
             }
@@ -251,11 +255,7 @@ namespace ZGE
             {
                 statusLabel.Text = "Exception occurred: " + ex.Message;
                 Console.WriteLine(ex.ToString());
-                project = null;
-                app = null;
-                ZComponent.App = null;
-                sceneTreeView.Nodes.Clear();
-                xmlTreeView.Nodes.Clear();
+                closeProject();                
             }            
             finally
             {                
@@ -326,17 +326,9 @@ namespace ZGE
             Application.Idle += Application_Idle; // press TAB twice after +=            
         }
 
-        private void glControl1_KeyDown(object sender, KeyEventArgs e)
+        public void Application_Idle(object sender, EventArgs e)
         {
-            if (app == null) return;
-            //             if (e.KeyCode == Keys.Space)
-            //             {                
-            //                 glControl1.Invalidate();
-            //             }
-        }
-
-        void Application_Idle(object sender, EventArgs e)
-        {           
+            if (idleLoop == false) return;
             while (app != null && glControl1.IsIdle)
             {
                 Animate();
@@ -346,8 +338,7 @@ namespace ZGE
 
         private void Animate()
         {            
-            var fe = new FrameEventArgs();
-            app.Update(fe);
+            app.Update();
             
             // Refresh the values shown in the PropertyGrid
             //propertyGrid1.Refresh();
@@ -391,13 +382,21 @@ namespace ZGE
                 glControl1.SwapBuffers();
                 return;
             }
-
-            var fe = new FrameEventArgs();
-            app.Render(fe);
+            
+            app.Render();
             label1.Text = app.FpsCounter.ToString();
 
 
             glControl1.SwapBuffers();
+        }
+
+        private void glControl1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (app == null) return;
+            //             if (e.KeyCode == Keys.Space)
+            //             {                
+            //                 glControl1.Invalidate();
+            //             }
         }
 
         private void SetMouseButton(MouseButtons btn, bool value)
@@ -432,7 +431,7 @@ namespace ZGE
             if (app == null) return;
             md.X = e.X; md.Y = e.Y;
             SetMouseButton(e.Button, false);            
-            GameObject selected = app.MouseUp(sender, md);
+            Model selected = app.MouseUp(sender, md);
             if (app.SelectionEnabled && selected != null)
                 SelectedComponent = selected;       
         }
@@ -483,12 +482,25 @@ namespace ZGE
             statusLabel.Text = xmlEditor.StatusString;
         }
 
+        private void showXmlBtn_Click(object sender, EventArgs e)
+        {
+            _xmlForm.SetText(xmlEditor.Content);
+            _xmlForm.Show();
+        }
+
+        private void showCodeBtn_Click(object sender, EventArgs e)
+        {
+            _codeForm.SetText(codegen.GenerateCodeFromXml(project.xmlDoc, true));
+            _codeForm.Show();
+        }
+
         private void runStandaloneBtn_Click(object sender, EventArgs e)
         {
             // Standalone compilation
             outputBox.Text = "";
             statusLabel.Text = "Compiling standalone game...";
-            var res = codegen.BuildAssembly(Path.Combine(Application.StartupPath, "Small.exe"), codeBox.Text, false);
+            string code = codegen.GenerateCodeFromXml(project.xmlDoc, true);
+            var res = codegen.BuildAssembly(Path.Combine(Application.StartupPath, project.Name+".exe"), code, false);
 
             if (res.Errors.HasErrors)
             {
@@ -497,49 +509,28 @@ namespace ZGE
             else
             {
                 statusLabel.Text = "Compilation successful.";
-                codegen.Run();
+                
+                // Disable render loop while the standalone app is running
+                EventHandler onStart = (s, ev) => { Console.WriteLine("Standalone app started."); idleLoop = false; };
+                EventHandler onExit = (s, ev) => { Console.WriteLine("Standalone app exited."); idleLoop = true; };
+                codegen.Run(onStart, onExit);
             }
         }
 
-        private void playInEditorBtn_Click(object sender, EventArgs e)
+        private void startBtn_Click(object sender, EventArgs e)
         {
-            outputBox.Text="";
-            statusLabel.Text = "Starting code compilation...";
-            if (codegen.GenerateGameAssembly(app))
-                statusLabel.Text = "App running";
-            else
-                statusLabel.Text = "Compilation failed";          
-            
-            
-//             var res = loader.BuildAssembly(Path.Combine(Application.StartupPath, "Small.exe"), codeBox.Text, true);            
-//             if (res.Errors.HasErrors)
-//             {
-//                 statusLabel.Text = "Compilation failed.";
-//                 string errors = "Errors during compile:\n\n";
-// 
-//                 foreach (CompilerError error in res.Errors)
-//                 {
-//                     errors += error.ErrorText + "\n";
-//                 }
-// 
-//                 textBox1.Text = errors;
-//                 //MessageBox.Show(errors, "Errors during compile.");
-//             }
+//             outputBox.Text="";
+//             statusLabel.Text = "Starting code compilation...";
+//             if (codegen.GenerateGameAssembly(app))
+//                 statusLabel.Text = "App running";
 //             else
-//             {
-//                 statusLabel.Text = "Compilation successful.";
-//                 // If there weren't any errors get an instance of "Small"           
-//             
-//                 var zapp = res.CompiledAssembly.CreateInstance("ZGE.Small") as ZApplication;
-//                 if (zapp != null)
-//                 {
-//                     statusLabel.Text = "Loading app.";
-//                     app = zapp;
-//                     glControl1_Load(this, null);
-//                     glControl1_Resize(this, null);
-//                 }
-//                 
-//             }
+//                 statusLabel.Text = "Compilation failed";
+            app.Pause();
+        }
+
+        private void compileCodeBtn_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("On-the-fly code compilation is not working yet :(\nYou can save and reload the project to compile the code.", "Sorry!");
         }
 
         private void propertyGrid1_PropertyValueChanged(object sender, PropertyValueChangedEventArgs e)
@@ -577,14 +568,16 @@ namespace ZGE
         {
             //Console.WriteLine("GridItem Changed.");
             GridItem g = e.NewSelection;
-            if (g.PropertyDescriptor.PropertyType == typeof(ZCode))
+            if (typeof(CodeLike).IsAssignableFrom(g.PropertyDescriptor.PropertyType))
             {
-                //Console.WriteLine("ZCode selected.");
-                ZCode code = g.Value as ZCode;
+                Console.WriteLine("CodeLike selected.");
+                CodeLike code = g.Value as CodeLike;
                 if (code != null && project != null)
                 {
-                    project.ClearCode(); // prevent codeBox_TextChanged from changing the previously selected code
+                    project.ClearCode(); // prevent codeBox_TextChanged from changing the previously selected code                    
                     codeBox.Text = code.Text;
+                    //codeBox.Invalidate();
+                    codeBox.Refresh();
                     project.SetCode(code, selectedComponent as ZComponent, g.PropertyDescriptor.Name);
                 }
             }

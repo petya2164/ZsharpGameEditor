@@ -21,7 +21,9 @@ namespace ZGE
 
         public void SetText(string text)
         {
+            //TODO: Keep scroll state
             xmlEditorControl.Text = text;
+            xmlEditorControl.Refresh();
         }
 
         // Use this event handler for the FormClosing event.

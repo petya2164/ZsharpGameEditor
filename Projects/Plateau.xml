@@ -20,7 +20,9 @@
     </Model>
   </Content>
   <GUI>
-    <RenderText Text="FPS: " Position="5 0 0" Scale="1" />
+    <RenderText Text="FPS: " Position="5 0 0" Scale="1">
+      <TextExpression><![CDATA[return "FPS: "+App.FpsCounter.ToString();]]></TextExpression>
+    </RenderText>
   </GUI>
   <Scene>
     <Group Name="DesignPrimitives" />

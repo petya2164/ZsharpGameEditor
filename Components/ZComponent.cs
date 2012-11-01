@@ -38,7 +38,7 @@ namespace ZGE.Components
     }
 
     [HideComponent]
-    public class ZComponent: ICloneable
+    public class ZComponent
     {
         [Browsable(false)]
         public static ZApplication App = null; // there can be only one ZApplication at a time
@@ -48,7 +48,7 @@ namespace ZGE.Components
         [CategoryAttribute("Component")]
         public string Comment;
         [CategoryAttribute("Component")]
-        public bool Enabled;
+        public bool Enabled = true;
         [Browsable(false)]
         public ZComponent Owner;
         [Browsable(false)]
@@ -57,19 +57,35 @@ namespace ZGE.Components
         public object Tag;
 
         public ZComponent()
-        {
-            Enabled = true;           
+        {           
+            //if (App != null) App.AddComponent(this);           
         }
+
+        ~ZComponent()
+        {
+            if (App != null) App.RemoveComponent(this);
+            //Console.WriteLine("ZComponent finalized: " + Name);
+        }
+
         public bool HasName()
         {
             return (Name != null && Name.Length > 0);    
         }
-        public object Clone()
-        {
-            return this.MemberwiseClone();
-        }
+        
 
-        //public virtual void Update() { }   
+        //public virtual void Update() { } 
+
+        public List<T> FindChildrenOfType<T>() where T : class
+        {
+            List<T> res = new List<T>();
+            foreach (ZComponent child in Children)
+            {
+                if (child.GetType() == typeof(T))
+                    res.Add(child as T);
+            }
+
+            return res;
+        }
     }
 
     public class Group : ZComponent, IRenderable, IUpdateable

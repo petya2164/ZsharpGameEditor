@@ -8,45 +8,57 @@ namespace ZGE.Components
 {
     public class ZExpression : ZCommand
     {
-        public ZCode Expression;
+        public delegate void ModelMethod(ZComponent caller);
+        public ZCode<ModelMethod> Expression;
 
         public ZExpression()
         {
+            Expression = new ZCode<ModelMethod>(this);
+            //Expression.Header = "public void #METHOD#()";
         }
 
         public override void Execute(ZComponent caller)
         {
-            if (Expression != null)
-                Expression.Run(caller);
+            if (Expression != null && Expression.callback != null)
+                Expression.callback(caller);
         }
     }
 
-    // TODO: Make it generic
     [ToolboxItem(false)]
-    public class ZCode
+    public class CodeLike
     {
         [Browsable(false)]
         public ZComponent Owner;
-        
         public string Text;
 
-        public delegate void ModelMethod(Model model);
-        public ModelMethod callback;
-
-        public ZCode()
+        public CodeLike(ZComponent owner)
         {
-            ZComponent.App.AddCode(this);
+            Owner = owner;
+            ZComponent.App.AddCodeLike(this);
         }
 
-        public string ToString()
+        public override string ToString()
         {
             return @"//Code";
         }
+    }
 
-        public void Run(ZComponent caller)
+    
+    [ToolboxItem(false)]
+    public class ZCode<T>: CodeLike
+    {
+        public string Header;
+        public T callback;
+
+        public ZCode(ZComponent owner): base(owner)
+        {            
+        }
+        
+
+        /*public void Run(ZComponent caller)
         {
             Model currentModel = caller as Model;
             if (callback != null) callback(currentModel);
-        }
+        }*/
     }
 }

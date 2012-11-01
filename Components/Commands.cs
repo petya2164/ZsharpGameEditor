@@ -26,14 +26,17 @@ namespace ZGE.Components
     public class Repeat : ZCommand
     {
         public int Count;  //Set for a fixed nr of iterations
-        public ZCode WhileExp;
+        public delegate bool BoolMethod(ZComponent caller);
+        public ZCode<BoolMethod> WhileExp;
 
         [Browsable(false)]
         public List<ZCommand> OnIteration = new List<ZCommand>();
         public int Iteration;
 
         public Repeat()
-        {           
+        {
+            //WhileExp.Header = "public bool #METHOD#()";
+            WhileExp = new ZCode<BoolMethod>(this);
         }
 
         public override void Execute(ZComponent caller)
@@ -49,18 +52,19 @@ namespace ZGE.Components
             }
             else if (WhileExp != null && WhileExp.callback != null)
             {
-                /*while(WhileExp.callback(caller)==true)
+                while(WhileExp.callback(caller)==true)
                 {
                     OnIteration.ExecuteAll(caller);
                     Iteration++;
-                }*/
+                }
             }
         }
     }
 
     public class Condition : ZCommand
     {
-        public ZCode Expression;
+        public delegate bool BoolMethod(ZComponent caller);
+        public ZCode<BoolMethod> Expression;
 
         [Browsable(false)]
         public List<ZCommand> OnTrue = new List<ZCommand>();
@@ -68,17 +72,19 @@ namespace ZGE.Components
         public List<ZCommand> OnFalse = new List<ZCommand>();
 
         public Condition()
-        {            
+        {
+            //Expression.Header = "public bool #METHOD#()";
+            Expression = new ZCode<BoolMethod>(this);
         }
 
         public override void Execute(ZComponent caller)
         {
             if (Expression != null && Expression.callback != null)
             {
-                /*if (Expression.callback(caller))
+                if (Expression.callback(caller))
                     OnTrue.ExecuteAll(caller);
                 else
-                    OnFalse.ExecuteAll(caller);*/
+                    OnFalse.ExecuteAll(caller);
             }
         }
     }

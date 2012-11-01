@@ -63,12 +63,21 @@ namespace ZGE
 
         }
 
-        public static ZApplication Load(string fileName, ZTreeView treeView)
+        public static Project CreateProject(string filePath, ZTreeView treeView)
+        {
+            Project project = new Project(filePath);
+            project.LoadXml();
+            project.app = Load(project.xmlDoc, treeView);
+            project.SetName(); 
+
+            return project;
+        }
+
+
+        public static ZApplication Load(XmlDocument xmlDocument, ZTreeView treeView)
         {
             _treeView = treeView;
-            if (treeView != null) treeView.Nodes.Clear();
-            XmlDocument xmlDocument = new XmlDocument();
-            xmlDocument.Load(fileName);
+            if (treeView != null) treeView.Nodes.Clear();            
 
             ZApplication app = new ZApplication();
             _app = app;
@@ -183,9 +192,9 @@ namespace ZGE
                     list = (IList) fi.GetValue(parent);
                 }
                 // Check if this node is a ZCode property of the parent
-                else if (parent is ZComponent && fi != null && typeof(ZCode).IsAssignableFrom(fi.FieldType))
+                else if (parent is ZComponent && fi != null && typeof(CodeLike).IsAssignableFrom(fi.FieldType))
                 {
-                    ZCode code = (ZCode)Activator.CreateInstance(fi.FieldType);
+                    CodeLike code = (CodeLike) fi.GetValue(parent); // Activator.CreateInstance(fi.FieldType);
                     code.Text = xmlNode.InnerText;
                     code.Owner = parent;
                     Console.WriteLine("Code Text:\n{0}", code.Text);
@@ -267,6 +276,15 @@ namespace ZGE
                     return v;
                 }                
             }
+            else if (type == typeof(Vector2))
+            {
+                string[] ar = val.Split(' ');
+                if (ar.Length == 2)
+                {
+                    Vector2 v = new Vector2(float.Parse(ar[0]), float.Parse(ar[1]));
+                    return v;
+                }
+            }
             else if (type == typeof(Color))
             {
                 string[] ar = val.Split(' ');
@@ -290,10 +308,15 @@ namespace ZGE
                     
                 return comp.Name;
             }
-            if (type == typeof(Vector3))
+            else if (type == typeof(Vector3))
             {
                 Vector3 v = (Vector3)obj;
                 return String.Format("{0} {1} {2}", v.X, v.Y, v.Z);
+            }
+            else if (type == typeof(Vector2))
+            {
+                Vector2 v = (Vector2) obj;
+                return String.Format("{0} {1}", v.X, v.Y);
             }
             else if (type == typeof(Color))
             {
@@ -303,5 +326,6 @@ namespace ZGE
             
             return obj.ToString();            
         }
+
     }
 }

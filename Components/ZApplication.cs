@@ -68,7 +68,7 @@ namespace ZGE.Components
     [HideComponent]
     public class ZApplication : ZComponent
     {
-        public string Title = "ZApplication";
+        public string Title = "Untitled";
         public string AssetsPath = "Assets/";
 
         public int Width = 800;
@@ -82,6 +82,8 @@ namespace ZGE.Components
         public GraphicsMode Mode = GraphicsMode.Default;
 
         public VSyncMode VSync = VSyncMode.Off;
+        [ReadOnlyAttribute(true)]
+        public bool Paused = false;     //No Update while Paused
         public double UpdateFrequency = 60.0;
         public Color ClearColor = Color.Black;
 
@@ -91,7 +93,7 @@ namespace ZGE.Components
         public Camera Camera;
         public MouseButton SelectButton = MouseButton.Left;
         public bool SelectionEnabled = true;
-        public GameObject SelectedObject = null;
+        public Model SelectedObject = null;
 
         public int RenderPasses = 1;
         [ReadOnlyAttribute(true)]
@@ -109,7 +111,8 @@ namespace ZGE.Components
         public Dictionary<Key, bool> IsKeyDown = new Dictionary<Key, bool>();
 
         List<double> times = new List<double>();
-        Stopwatch stopwatch = new Stopwatch();
+        Stopwatch updateWatch = new Stopwatch();
+        Stopwatch renderWatch = new Stopwatch();
         double lastUpdate = 0.0;
         double lastRender = 0.0;
         MovingAverage fpsMA = new MovingAverage();
@@ -147,13 +150,13 @@ namespace ZGE.Components
         
         // --  INTERNAL LISTS --
         [Browsable(false)]
-        public List<ZCode> code = new List<ZCode>();
+        List<CodeLike> codeList = new List<CodeLike>();
         [Browsable(false)]
-        public List<ZContent> content = new List<ZContent>();
+        List<ZContent> contentList = new List<ZContent>();
         [Browsable(false)]
-        public Dictionary<string, ZComponent> nameMap = new Dictionary<string, ZComponent>();
+        Dictionary<string, ZComponent> nameMap = new Dictionary<string, ZComponent>();
         [Browsable(false)]
-        public Dictionary<Type, List<ZComponent>> typeMap = new Dictionary<Type, List<ZComponent>>();
+        Dictionary<Type, List<ZComponent>> typeMap = new Dictionary<Type, List<ZComponent>>();
         // --  INTERNAL LISTS --
 
         /*public delegate void EmptyHandler();
@@ -173,19 +176,60 @@ namespace ZGE.Components
         public ZApplication()
         {
             App = this; // there can be only one ZApplication at a time                     
-            stopwatch.Start(); // start at application boot
+            updateWatch.Start(); // start App.Time at boot
+            renderWatch.Start();
+        }
+
+        // It can also Unpause the app
+        public void Pause()
+        {
+            if (Paused == false)
+            {
+                Paused = true;
+                updateWatch.Stop();
+            }
+            else
+            {
+                Paused = false;
+                updateWatch.Start();
+            }
         }
 
         public void AddComponent(ZComponent comp)
         {
+            Type type = comp.GetType();
+            // Do NOT register ZApplication and its derived classes
+            if (typeof(ZApplication).IsAssignableFrom(type)) return;
             if (comp.HasName())
                 nameMap[comp.Name] = comp;
 
-            Type type = comp.GetType(); // TODO: consider all ancestor types
+             // TODO: consider all ancestor types
             if (!typeMap.ContainsKey(type))
                 typeMap[type] = new List<ZComponent>();
 
-            typeMap[type].Add(comp);
+            if (typeMap[type].Contains(comp) == false)
+                typeMap[type].Add(comp);
+        }
+
+        public void RemoveComponent(ZComponent comp)
+        {
+            Type type = comp.GetType();
+            // Do NOT register ZApplication and its derived classes
+            if (typeof(ZApplication).IsAssignableFrom(type)) return;
+            if (comp.HasName())
+            {
+                // Remove the component from the nameMap - if necessary
+                foreach (var item in nameMap.Where(kvp => kvp.Value == comp).ToList())
+                {
+                    nameMap.Remove(item.Key);
+                }
+            }                
+
+            // TODO: consider all ancestor types
+            if (typeMap.ContainsKey(type))
+            {
+                typeMap[type].Remove(comp);
+            }            
         }
 
         public ZComponent Find(string name)
@@ -193,6 +237,19 @@ namespace ZGE.Components
             ZComponent result = null;
             nameMap.TryGetValue(name, out result);
             return result;
+        }
+
+        public List<ZComponent> GetComponents(Type type)
+        {
+            if (typeMap.ContainsKey(type))
+                return typeMap[type];
+            else
+                return new List<ZComponent>();
+        }
+
+        public List<ZComponent> GetNamedComponents()
+        {
+            return nameMap.Values.ToList();            
         }
 
         public void RefreshName(ZComponent comp, string name)
@@ -216,16 +273,69 @@ namespace ZGE.Components
             return result;
         }
 
-        public void AddContent(ZContent item)
+        public string CreateComponentName(Type type)
         {
-            if (!content.Contains(item))
-                content.Add(item);
+            int min = Int32.MaxValue;
+            int max = Int32.MinValue;
+            int count = 0;
+            if (typeMap.ContainsKey(type))
+            {
+                List<ZComponent> cc = typeMap[type];
+                
+                for (int i = 0; i < cc.Count; i++)
+                {
+                    ZComponent comp = cc[i];
+
+                    if (comp.GetType() == type)
+                    {
+                        count++;
+
+                        string name = comp.Name;
+                        if (name.StartsWith(type.Name))
+                        {
+                            try
+                            {
+                                int value = Int32.Parse(name.Substring(type.Name.Length));
+
+                                if (value < min)
+                                    min = value;
+
+                                if (value > max)
+                                    max = value;
+                            }
+                            catch (Exception ex)
+                            {
+                                Trace.WriteLine(ex.ToString());
+                            }
+                        }
+                    }
+                }
+            }            
+
+            if (count == 0)
+                return type.Name + "1";
+            else if (min > 1)
+            {
+                int j = min - 1;
+                return type.Name + j.ToString();
+            }
+            else
+            {
+                int j = max + 1;
+                return type.Name + j.ToString();
+            }
         }
 
-        public void AddCode(ZCode item)
+        public void AddContent(ZContent item)
         {
-            if (!code.Contains(item))
-                code.Add(item);
+            if (!contentList.Contains(item))
+                contentList.Add(item);
+        }
+
+        public void AddCodeLike(CodeLike item)
+        {
+            if (!codeList.Contains(item))
+                codeList.Add(item);
         }
 
         public void AddToScene(Model model)
@@ -271,7 +381,7 @@ namespace ZGE.Components
             }            
         }
 
-        public virtual GameObject MouseUp(object sender, MouseDescriptor e)
+        public virtual Model MouseUp(object sender, MouseDescriptor e)
         {
             // GUI has priority in handling mouse events
             
@@ -286,7 +396,7 @@ namespace ZGE.Components
                     if (comp != null)
                     {
                         Console.WriteLine("MousePick result: {0}", comp.Name);
-                        SelectedObject = comp as GameObject;
+                        SelectedObject = comp as Model;
                         return SelectedObject;
                     }
                 }                
@@ -302,9 +412,7 @@ namespace ZGE.Components
         public virtual void MouseWheel(object sender, MouseDescriptor e)
         {
             if (Camera != null) Camera.MouseWheel(e);
-        }
-
-        
+        }        
 
         public virtual void Load()
         {
@@ -314,17 +422,17 @@ namespace ZGE.Components
             //SharpGL.SceneGraph.Helpers.SceneHelper.InitialiseModelingScene(scene);
 
             // Initialize all content
-            foreach (ZContent comp in content)
+            foreach (ZContent comp in contentList)
             {               
                 if (comp != null) comp.RefreshFromProducers();
             }
 
             // Initialize all GameObjects in the scene
-            foreach (ZComponent comp in Scene)
+            /*foreach (ZComponent comp in Scene)
             {
-                GameObject go = comp as GameObject;
-                if (go != null) go.Init();
-            }
+                Model mo = comp as Model;
+                if (mo != null && mo.model != null) mo.CloneBehavior();
+            }*/
             
             OnLoad.ExecuteAll(this);
         }
@@ -348,13 +456,14 @@ namespace ZGE.Components
             GL.LoadIdentity(); 
         }
 
-        public virtual void Update(FrameEventArgs e)
+        public virtual void Update()
         {
-            double now = stopwatch.Elapsed.TotalMilliseconds;
+            if (Paused) return; // no updates while paused
+            double now = updateWatch.Elapsed.TotalMilliseconds;
             double delta = now - lastUpdate;
             lastUpdate = now;
             DeltaTime = delta / 1000.0;
-            Time = stopwatch.Elapsed.TotalSeconds;
+            Time = updateWatch.Elapsed.TotalSeconds;
             
             OnUpdate.ExecuteAll(this);
             foreach (ZComponent comp in Scene)
@@ -367,19 +476,19 @@ namespace ZGE.Components
         /// <summary>
         /// This function draws all of the objects in the scene.
         /// </summary>
-        public virtual void Render(FrameEventArgs e)
+        public virtual void Render()
         {
-            double now = stopwatch.Elapsed.TotalMilliseconds;
+            double now = renderWatch.Elapsed.TotalMilliseconds;
             times.Add(now);
             while (times[0] < now - 1000.0)
                 times.RemoveAt(0);
             FpsCounter = times.Count;
             double delta = now - lastRender;
             lastRender = now;
-            DeltaTime = delta / 1000.0;
-            fpsMA.AddValue(DeltaTime);
+            //DeltaTime = delta / 1000.0;
+            fpsMA.AddValue(delta / 1000.0);
             FpsEstimated = 1.0 / fpsMA.Average();
-            Time = stopwatch.Elapsed.TotalSeconds;
+            //Time = renderWatch.Elapsed.TotalSeconds;
             //DeltaTime = e.Time;
 
             if (Camera == null) return;

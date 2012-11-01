@@ -68,7 +68,7 @@ namespace ZGE.Components
 		    float y = y1;
 
             //txt += App.FpsCounter.ToString();
-            txt += App.FpsEstimated.ToString("F0");
+            //txt += App.FpsEstimated.ToString("F0");
             //txt += (App.Find("Camera1") as ProjectiveCamera).Position.ToString();
 
 		    //size = size / (float)height;
@@ -321,9 +321,11 @@ namespace ZGE.Components
         }
     }
 
-    public class RenderText : ZComponent, IRenderable
+    public class RenderText : ZCommand, IRenderable
     {
         public Font Font;
+        public delegate string TextMethod(ZComponent caller, string original);
+        public ZCode<TextMethod> TextExpression;
         public string Text = "";
         public Vector3 Position;
         public Vector3 Rotation;
@@ -331,17 +333,26 @@ namespace ZGE.Components
 
         public RenderText()
         {
-        }        
+            //TextExpression.Header = "public string #METHOD#(RenderText rt)";
+            TextExpression = new ZCode<TextMethod>(this);
+        }
+
+        public override void Execute(ZComponent caller)
+        {
+            string txt = Text;
+            if (TextExpression != null && TextExpression.callback != null)
+                txt = TextExpression.callback(caller, Text);
+            if (txt == null || txt.Length == 0) return;
+            Font fnt = Font ?? Renderer.defaultFont;
+
+            fnt.Bind();
+            fnt.Print(Position.X, Position.Y, Scale, txt);
+        }
 
         public void Render()
         {
             if (!Enabled) return;
-        
-            if (Text == null || Text.Length == 0) return;
-            Font fnt = Font ?? Renderer.defaultFont;
-
-            fnt.Bind();
-            fnt.Print(Position.X, Position.Y, Scale, Text);             
+            Execute(this);                        
         }
     }
 
