@@ -30,6 +30,7 @@ namespace ZGE.Components
         [Browsable(false)]
         public ZComponent Owner;
         public string Text;
+        //public string ID = Guid.NewGuid().ToString();
 
         public CodeLike(ZComponent owner)
         {

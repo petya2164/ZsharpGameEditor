@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ZApplication Name="App" Title="Plateau" Camera="Camera1" MouseVisible="255" NoSound="1" VSync="On">
+<ZApplication Name="App" Title="Plateau" Camera="Camera1" VSync="On">
   <OnLoad></OnLoad>
   <OnRender></OnRender>
   <Content>
     <Material Name="PlateauMaterial" Wireframe="True" Lighting="False">
       <Textures></Textures>
     </Material>
+    <Heightmap Name="PlateauHm" FileName="Plateau8x8.png" />
     <Mesh Name="PlateauMesh">
       <Producers>
-        <MeshHeightmap FileName="Plateau8x8.png" Scale="5 5 1" />
+        <MeshHeightmap Heightmap="PlateauHm" Scale="5 5 1" />
       </Producers>
     </Mesh>
     <Model Name="Plateau">

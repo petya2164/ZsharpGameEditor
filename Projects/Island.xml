@@ -21,9 +21,10 @@
         <MeshBox XCount="20" YCount="20" Grid2DOnly="False" Scale="2 2 0.1" />
       </Producers>
     </Mesh>
+    <Heightmap Name="IslandHm" FileName="islandHeight.png" />
     <Mesh Name="IslandMesh">
       <Producers>
-        <MeshHeightmap FileName="islandHeight.png" Scale="5 5 2" />
+        <MeshHeightmap Heightmap="IslandHm" Scale="5 5 2" />
       </Producers>
     </Mesh>
     <Model Name="Player" CollisionBounds="0.5 0.5 0 0">

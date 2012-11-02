@@ -132,7 +132,7 @@ namespace ZGE.Components
             RefreshFromProducers();
         }
 
-        public void RefreshFromProducers()
+        public virtual void RefreshFromProducers()
         {
             foreach (var prod in Producers)
                 prod.ProduceOutput(this);

@@ -210,41 +210,5 @@ namespace ZGE.Components
             Mesh mesh = content as Mesh;
             mesh.CreateVBO(shape);
         }
-    }
-
-    public class MeshHeightmap : MeshProducer
-    {
-        public string FileName;
-        //public int XCount;
-        //public int YCount;
-
-        public override void ProduceOutput(ZContent content)
-        {
-            Shape shape = new Shape();
-
-            using (Bitmap bmp = (Bitmap) Image.FromFile(App.AssetsPath+FileName))
-            {
-                Console.WriteLine("Heightmap loaded: {0}", App.AssetsPath + FileName);
-                int w = bmp.Width;
-                int h = bmp.Height;
-                float[,] hm = new float[w, h];
-                for (int i = 0; i < w; i++)
-                    for (int j = 0; j < h; j++)
-                    {
-                        hm[i, j] = bmp.GetPixel(i, j).GetBrightness();
-                    }
-
-                //Create a simple 2d-grid, and scale it up to [-1, 1]
-                shape.MakeNet(w-2, h-2);
-                shape.Scale(new Vector3(2, 2, 1));
-                shape.ApplyHeightMap(hm, w, h);
-
-                shape.Scale(Scale);
-                shape.ComputeNormals();
-
-                Mesh mesh = content as Mesh;
-                mesh.CreateVBO(shape);
-            }                        
-        }
-    }
+    }    
 }

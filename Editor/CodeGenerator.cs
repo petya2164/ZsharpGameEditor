@@ -388,7 +388,11 @@ namespace ZGE
                 }
 
                 ParseAttributes(targetClass, obj, xmlNode);
-                targetClass.init.AddLine(String.Format("AddComponent({0});", obj.name));                
+                targetClass.init.AddLine(String.Format("AddComponent({0});", obj.name));
+                // We always need an Owner
+                if (parent != null)               
+                    targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
+
                 if (targetList != null) // components in member lists are not considered children!
                 {
                     //Console.WriteLine("Adding to list: {0}", parent_list.GetType().Name);                        
@@ -396,7 +400,7 @@ namespace ZGE
                 }
                 else if (parent != null)
                 {
-                    targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
+                    //targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
                     targetClass.init.AddLine(String.Format("{0}.Children.Add({1});", parent.name, obj.name));
                 }
                 
@@ -505,7 +509,7 @@ namespace ZGE
                 {
                     ProcessNode(targetClass, obj, list, childNode);
                 }
-            }
+            }            
         }
 
         public string GenerateGameCode(ZApplication app, Dictionary<CodeLike, string> codeMap)
