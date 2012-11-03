@@ -24,6 +24,22 @@ namespace ZGE.Components
         }
     }
 
+    // This is a dummy parent class for all "Definitions"
+    public abstract class Definition : ZComponent
+    {
+        public Definition() { }
+    }
+
+    public class CustomCode : Definition
+    {        
+        public CustomCodeDefinition Code;
+
+        public CustomCode()
+        {
+            Code = new CustomCodeDefinition(this);            
+        }       
+    }
+
     [ToolboxItem(false)]
     public class CodeLike
     {
@@ -31,8 +47,7 @@ namespace ZGE.Components
         public ZComponent Owner;
         public string Text;
         [Browsable(false)]
-        public string GUID;
-        //public string ID = Guid.NewGuid().ToString();
+        public string GUID; //= Guid.NewGuid().ToString();        
 
         public CodeLike(ZComponent owner)
         {
@@ -46,11 +61,19 @@ namespace ZGE.Components
         }
     }
 
+    [ToolboxItem(false)]
+    public class CustomCodeDefinition : CodeLike
+    {
+        public CustomCodeDefinition(ZComponent owner): base(owner)
+        {
+        }
+    }
+
     
     [ToolboxItem(false)]
     public class ZCode<T>: CodeLike
     {
-        public string Header;
+        //public string Header;
         public T callback;
 
         public ZCode(ZComponent owner): base(owner)

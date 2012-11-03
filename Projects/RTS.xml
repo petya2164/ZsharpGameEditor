@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ZApplication Name="App" Title="RTS" Camera="Camera1" Width="1000" Height="700" Resources="2000">
+  <Definitions>
+    <CustomCode>
+      <Code><![CDATA[public int Resources = 1000;]]></Code>
+    </CustomCode>
+  </Definitions>
+  <OnLoad></OnLoad>
+  <OnRender>
+    <RenderSetColor Color="0.1176471 0.5647059 1 1" />
+    <RenderMesh Mesh="Box" Enabled="True" />
+  </OnRender>
+  <Content>
+    <Material Name="IslandMaterial">
+      <Textures>
+        <Texture FileName="island.jpg" />
+      </Textures>
+    </Material>
+    <Mesh Name="Mesh1">
+      <Producers>
+        <MeshSphere ZSamples="3" RadialSamples="6" />
+      </Producers>
+    </Mesh>
+    <Mesh Name="Box">
+      <Producers>
+        <MeshBox XCount="20" YCount="20" Grid2DOnly="False" Scale="2 2 0.1" />
+      </Producers>
+    </Mesh>
+    <Heightmap Name="IslandHm" FileName="islandHeight.png" />
+    <Mesh Name="IslandMesh">
+      <Producers>
+        <MeshHeightmap Heightmap="IslandHm" Scale="10 10 1" />
+      </Producers>
+    </Mesh>
+    <Model Name="Player">
+      <Definitions>
+        <CustomCode>
+          <Code><![CDATA[public Color Color = Color.Red;]]></Code>
+        </CustomCode>
+      </Definitions>
+      <OnRender>
+        <ZExpression>
+          <Expression><![CDATA[GL.Color3(model.Color);]]></Expression>
+        </ZExpression>
+        <RenderMesh Mesh="Mesh1" />
+      </OnRender>
+      <OnUpdate>
+        <ZExpression>
+          <Expression><![CDATA[model.Rotation.Z += 80.0f * (float) App.DeltaTime;
+model.Position.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
+        </ZExpression>
+      </OnUpdate>
+    </Model>
+    <Model Name="Island">
+      <OnRender>
+        <UseMaterial Material="IslandMaterial" />
+        <RenderMesh Mesh="IslandMesh" />
+      </OnRender>
+      <OnUpdate>
+        <ZExpression>
+          <Expression><![CDATA[//model.Rotation.Y += 80.0f * (float) App.DeltaTime;
+model.Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
+        </ZExpression>
+      </OnUpdate>
+    </Model>
+  </Content>
+  <GUI>
+    <RenderText Text="FPS: " Position="5 0 0" Scale="1" Name="FPS">
+      <TextExpression><![CDATA[return "FPS: "+App.FpsEstimated.ToString("F0");]]></TextExpression>
+    </RenderText>
+    <RenderText Text="Time: " Position="5 -1 0" Scale="1" Name="AppTime">
+      <TextExpression><![CDATA[return String.Format("Time: {0:F2} / Resources: {1}", App.Time, Resources);]]></TextExpression>
+    </RenderText>
+    <RenderText Text="Paused" Position="-5 -1 0" Scale="1" Name="IsPaused">
+      <TextExpression><![CDATA[return (App.Paused) ? "Paused" : "";]]></TextExpression>
+    </RenderText>
+  </GUI>
+  <Scene>
+    <Group Name="DesignPrimitives" />
+    <Group Name="Cameras">
+      <InteractiveCamera Name="Camera1" Position="0 -10 5" UpVector="0 0 1" />
+    </Group>
+    <Group Name="Lights" />
+    <GameObject Model="Player" Name="Player1" Position="-4 5 0" Color="0.5803922 0 0.827451 1" />
+    <GameObject Model="Player" Name="Player2" Position="4 5 0" />
+    <GameObject Model="Player" Name="Player3" Position="-3 0 0" />
+    <GameObject Model="Player" Name="Player4" Position="3 0 0" Scale="1 1 1" />
+    <GameObject Model="Island" Name="Island1" Position="0 3 -1" Scale="1 1 2" />
+  </Scene>
+</ZApplication>

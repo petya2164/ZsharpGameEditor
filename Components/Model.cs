@@ -32,6 +32,9 @@ namespace ZGE.Components
 
         //public delegate void EmptyHandler();
         //public event EmptyHandler OnRender;
+        // XML Member lists
+        [Browsable(false)]
+        public List<Definition> Definitions = new List<Definition>();
         [Browsable(false)]
         public List<ZCommand> OnUpdate = new List<ZCommand>();
         [Browsable(false)]

@@ -140,7 +140,7 @@ namespace ZGE
             }
             if (definitions.Count > 0)
             {
-                sb.IndentedLines("// Custom definitions");
+                sb.IndentedLines("// Custom code");
                 foreach (var df in definitions)
                     sb.IndentedLines(df);
                 sb.AppendLine("");
@@ -552,10 +552,15 @@ namespace ZGE
                             ns.mainClass.restore.AddLine(String.Format("if ({0} != null) {0}.callback = {1}.{2};", exprName, targetClass.variable, methodName));
                         }
                     }
+                    if (type == typeof(CustomCodeDefinition))
+                    {
+                        targetClass.definitions.Add(xmlNode.InnerText);
+                    }
                     if (standalone == false && fullBuild == true) // assign the GUIDs to the CodeLike components
                     {                        
                         ns.mainClass.init.AddLine(String.Format("{0}.{1}.GUID = \"{2}\";", parent.name, fi.Name, currentGuid));
                     }
+                    // if not shader
                     if (standalone == false && fullBuild == true) // no need for the code text in a standalone build
                     {
                         string escaped = xmlNode.InnerText.Replace("\"", "\"\"");  // escape inner strings " -> ""

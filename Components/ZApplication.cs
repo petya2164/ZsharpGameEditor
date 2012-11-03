@@ -122,7 +122,9 @@ namespace ZGE.Components
         public Standalone frame = null;
         //public static ZApplication inst = null;
 
-        // XML Branches
+        // XML Member lists
+        [Browsable(false)]
+        public List<Definition> Definitions = new List<Definition>();
         [Browsable(false)]
         public List<ZCommand> OnLoad = new List<ZCommand>();
         [Browsable(false)]
@@ -155,7 +157,7 @@ namespace ZGE.Components
         [Browsable(false)]        
         public List<Model> modelList = new List<Model>();
         [Browsable(false)]
-        List<ZContent> contentList = new List<ZContent>();
+        List<ZContent> contentList = new List<ZContent>();  // actual list for content components with producers
         [Browsable(false)]
         Dictionary<string, ZComponent> nameMap = new Dictionary<string, ZComponent>();
         [Browsable(false)]
