@@ -225,6 +225,22 @@ namespace ZGE
             foreach (var ns in namespaces)
                 ns.WriteCode(sb);
         }
+
+        public string GetFullCode()
+        {
+            StringBuilder sb = new StringBuilder();
+            WriteCode(sb);
+            return sb.ToString();
+        }
+    }
+
+    class UnresolvedField
+    {
+        public Class targetClass { get; set; }
+        public string objName { get; set; }
+        public string objTypeName { get; set; }
+        public string fieldName { get; set; }
+        public string value { get; set; }        
     }
 
     public class CodeGenerator
@@ -239,6 +255,7 @@ namespace ZGE
         bool fullBuild;
         public Dictionary<XmlNode, string> nodeMap = new Dictionary<XmlNode, string>();
         public static Editor editor;
+        List<UnresolvedField> unresolved = new List<UnresolvedField>();
 
         public CodeGenerator()
         {
@@ -247,7 +264,7 @@ namespace ZGE
         public string GenerateCodeFromXml(XmlDocument xml, bool standalone, bool fullBuild, Dictionary<XmlNode, string> nodeMap)
         {
             XmlNode rootElement = xml.DocumentElement;
-            StringBuilder sb = new StringBuilder();
+            
             if (standalone && fullBuild == false) fullBuild = true; // no incremental build for standalone
             this.standalone = standalone;
             this.fullBuild = fullBuild;
@@ -293,7 +310,7 @@ namespace ZGE
             
 
             types = Factory.GetTypesFromNamespace(Assembly.GetAssembly(typeof(ZApplication)), "ZGE.Components");
-            Variable dummy = new Variable(typeof(ZApplication), "ZApplication", "this", false);
+            Variable dummy = new Variable(typeof(ZApplication), "DynamicGame", "this", false);
             if (rootElement != null)
                 ProcessNode(main, dummy, null, rootElement);
 
@@ -308,13 +325,13 @@ namespace ZGE
                 mm.AddLine("}");
             }            
 
-            cu.WriteCode(sb);
+            string code = cu.GetFullCode();
             // Save the file for debugging
             using (StreamWriter writer = new StreamWriter("DynamicGame.cs", false))
             {
-                writer.Write(sb.ToString());
+                writer.Write(code);
             }
-            return sb.ToString();
+            return code;
         }
 
         private void ParseAttributes(Class targetClass, Variable obj, XmlNode xmlNode)
@@ -330,36 +347,69 @@ namespace ZGE
                     if (fi != null)
                     {
                         Type type = fi.FieldType;
-                        if (type == typeof(string))
-                            targetClass.init.AddLine(String.Format("{0}.{1} = \"{2}\";", obj.name, attribute.Name, val));
-                        else if (type == typeof(bool))
-                            targetClass.init.AddLine(String.Format("{0}.{1} = {2};", obj.name, attribute.Name, val.ToLowerInvariant()));
-                        else if (type.IsPrimitive)  // a cast might be necessary (e.g. float)                        
-                            targetClass.init.AddLine(String.Format("{0}.{1} = ({2}){3};", obj.name, attribute.Name, GetPlainTypeName(type), val));
-                        else if (type.IsEnum)
-                            targetClass.init.AddLine(String.Format("{0}.{1} = {2}.{3};", obj.name, attribute.Name, type.Name, val));
-                        else if (type.IsSubclassOf(typeof(ZComponent))) // simple assignment to a named component
-                            targetClass.init.AddLine(String.Format("{0}.{1} = {2};", obj.name, attribute.Name, val));
-                        else if (type == typeof(Vector3) || type == typeof(Vector2)) // cast all constuctor parameters to float
-                        {
-                            string commaList = string.Join(", ", val.Split(' ').Select(it => "(float)" + it).ToArray());
-                            targetClass.init.AddLine(String.Format("{0}.{1} = new {2}({3});", obj.name, attribute.Name, type.Name, commaList));
-                        }
-                        else if (type == typeof(Color))  // make a Color4 instead with float parameters
-                        {
-                            string commaList = string.Join(", ", val.Split(' ').Select(it => "(float)" + it).ToArray());
-
-                            targetClass.init.AddLine(String.Format("{0}.{1} = new {2}({3});", obj.name, attribute.Name, "Color4", commaList));
-                        }
-                        else
-                        {
-                            string commaList = string.Join(", ", val.Split(' '));
-                            targetClass.init.AddLine(String.Format("{0}.{1} = new {2}({3});", obj.name, attribute.Name, type.Name, commaList));
-                        }
+                        SetAttribute(targetClass, type, val, obj.name, attribute.Name);
                     }
                     else
-                        Console.WriteLine(" Field not found: {0}-{1}", attribute.Name, val);
+                    {
+                        // These components might have custom fields (those will be resolved after compilation)
+                        if (xmlNode.Name == "ZApplication" || xmlNode.Name == "Model" || xmlNode.Name == "GameObject")
+                        {
+                            unresolved.Add(new UnresolvedField { targetClass = targetClass, objName = obj.name, 
+                                                                 objTypeName = obj.typeName, fieldName = attribute.Name, value = val });
+                        }
+                        else                                                  
+                            Console.WriteLine(" Field not found: {0} - {1}", attribute.Name, val);
+                    }
                 }
+            }
+        }
+
+        private void FixUnresolvedAttribute(UnresolvedField field, Assembly assembly)
+        {
+            Type objType = assembly.GetType("ZGE." + field.objTypeName);
+            if (objType == null)
+            {
+                Console.WriteLine(" Cannot find custom type: {0}", field.objTypeName);
+                return;
+            }
+            FieldInfo fi = objType.GetField(field.fieldName, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+            if (fi != null)
+            {
+                Type type = fi.FieldType;
+                SetAttribute(field.targetClass, type, field.value, field.objName, field.fieldName);
+            }
+            else
+            {
+                Console.WriteLine(" Custom field not found: {0} - {1}", field.fieldName, field.value);
+            }
+        }
+
+        private void SetAttribute(Class targetClass, Type type, string val, string objName, string fieldName)
+        {
+            if (type == typeof(string))
+                targetClass.init.AddLine(String.Format("{0}.{1} = \"{2}\";", objName, fieldName, val));
+            else if (type == typeof(bool))
+                targetClass.init.AddLine(String.Format("{0}.{1} = {2};", objName, fieldName, val.ToLowerInvariant()));
+            else if (type.IsPrimitive)  // a cast might be necessary (e.g. float)                        
+                targetClass.init.AddLine(String.Format("{0}.{1} = ({2}){3};", objName, fieldName, GetPlainTypeName(type), val));
+            else if (type.IsEnum)
+                targetClass.init.AddLine(String.Format("{0}.{1} = {2}.{3};", objName, fieldName, type.Name, val));
+            else if (type.IsSubclassOf(typeof(ZComponent))) // simple assignment to a named component
+                targetClass.init.AddLine(String.Format("{0}.{1} = {2};", objName, fieldName, val));
+            else if (type == typeof(Vector3) || type == typeof(Vector2)) // cast all constuctor parameters to float
+            {
+                string commaList = string.Join(", ", val.Split(' ').Select(it => "(float)" + it).ToArray());
+                targetClass.init.AddLine(String.Format("{0}.{1} = new {2}({3});", objName, fieldName, type.Name, commaList));
+            }
+            else if (type == typeof(Color))  // make a Color4 instead with float parameters
+            {
+                string commaList = string.Join(", ", val.Split(' ').Select(it => "(float)" + it).ToArray());
+                targetClass.init.AddLine(String.Format("{0}.{1} = new {2}({3});", objName, fieldName, "Color4", commaList));
+            }
+            else
+            {
+                string commaList = string.Join(", ", val.Split(' '));
+                targetClass.init.AddLine(String.Format("{0}.{1} = new {2}({3});", objName, fieldName, type.Name, commaList));
             }
         }
 
@@ -775,36 +825,65 @@ namespace ZGE
                     Console.WriteLine("Recompiled ZApplication cannot be instantiated :(");
             }
             return null;
-
-        }
-
-        public ZApplication CreateApplication(XmlDocument xml, bool standalone, bool fullBuild)
-        {
+        }        
             
-            //string str = GenerateGameCode(app, codeMap);           
+        public ZApplication CreateApplication(XmlDocument xml, bool fullBuild)
+        {
+            var res = BuildApplication(xml, false, fullBuild, null);
+            if (res == null) return null;
 
-            string code = GenerateCodeFromXml(xml, standalone, fullBuild, null);
-
-            var res = BuildAssembly("dummy", code, true);
-            if (res.Errors.HasErrors)
-            {
-                return null;
+            // If there weren't any errors, get an instance of "DynamicGame"
+            var type = res.CompiledAssembly.GetType("ZGE.DynamicGame");
+            var app = (ZApplication) Activator.CreateInstance(type, new object[] { fullBuild });
+            if (app != null)
+            {                    
+                Console.WriteLine("New ZApplication created.");                    
+                return app;
             }
             else
             {
-                // If there weren't any errors, get an instance of "DynamicGame"
-                var type = res.CompiledAssembly.GetType("ZGE.DynamicGame");
-                var app = (ZApplication) Activator.CreateInstance(type, new object[] { fullBuild });
-                if (app != null)
-                {                    
-                    Console.WriteLine("New ZApplication created.");                    
-                    return app;
-                }
-            }
-            return null;
+                Console.WriteLine("New ZApplication cannot be instantiated :(");         
+                return null;
+            }           
         }
 
-        public CompilerResults BuildAssembly(string exe, string code, bool inMemory)
+        public bool BuildStandaloneApplication(XmlDocument xml, string exePath)
+        {
+            var res = BuildApplication(xml, true, true, exePath);
+            return (res != null);                           
+        }
+
+
+        private CompilerResults BuildApplication(XmlDocument xml, bool standalone, bool fullBuild, string exePath)
+        {
+            unresolved = new List<UnresolvedField>();
+            string code = GenerateCodeFromXml(xml, standalone, fullBuild, null);
+
+            bool inMemory = !standalone;
+            // Do an inMemory build first if there are unresolved custom fields 
+            if (unresolved.Count > 0 && standalone) inMemory = true;
+
+            CompilerResults res = BuildAssembly(exePath ?? "dummy", code, inMemory);
+            if (res.Errors.HasErrors)
+                return null;
+
+            // Try to fix unresolved custom fields with a rebuild
+            if (unresolved.Count > 0)
+            {
+                foreach (UnresolvedField field in unresolved)
+                    FixUnresolvedAttribute(field, res.CompiledAssembly);                
+
+                unresolved.Clear();
+                code = cu.GetFullCode();
+                // Rebuild the assembly with the fixed code
+                res = BuildAssembly(exePath ?? "dummy", code, !standalone);
+                if (res.Errors.HasErrors)
+                    return null;
+            }
+            return res;
+        }
+
+        private CompilerResults BuildAssembly(string exe, string code, bool inMemory)
         {
             // We need to collect the parameters that our compiler will use.
             CompilerParameters cp = new CompilerParameters();

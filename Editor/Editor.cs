@@ -20,7 +20,7 @@ using System.IO;
 using System.Collections;
 using System.Reflection;
 using ZGE.Components;
-using System.CodeDom.Compiler;
+//using System.CodeDom.Compiler;
 using ICSharpCode.TextEditor.Document;
 
 
@@ -502,7 +502,7 @@ namespace ZGE
         private void showCodeBtn_Click(object sender, EventArgs e)
         {
             if (project == null || project.xmlDoc == null) return;
-            _codeForm.SetText(codegen.GenerateCodeFromXml(project.xmlDoc, false, false, project.nodeMap));
+            _codeForm.SetText(codegen.GenerateCodeFromXml(project.xmlDoc, true, true, project.nodeMap));
             _codeForm.Show();
         }
 
@@ -512,14 +512,7 @@ namespace ZGE
             if (project == null || project.xmlDoc == null) return;
             outputBox.Text = "";
             statusLabel.Text = "Compiling standalone game...";
-            string code = codegen.GenerateCodeFromXml(project.xmlDoc, true, true, null);
-            var res = codegen.BuildAssembly(Path.Combine(Application.StartupPath, project.Name+".exe"), code, false);
-
-            if (res.Errors.HasErrors)
-            {
-                statusLabel.Text = "Compilation failed.";                
-            }
-            else
+            if (codegen.BuildStandaloneApplication(project.xmlDoc, Path.Combine(Application.StartupPath, project.Name+".exe")))            
             {
                 statusLabel.Text = "Compilation successful.";
                 
@@ -528,6 +521,8 @@ namespace ZGE
                 EventHandler onExit = (s, ev) => { Console.WriteLine("Standalone app exited."); idleLoop = true; };
                 codegen.Run(onStart, onExit);
             }
+            else            
+                statusLabel.Text = "Compilation failed.";
         }
 
         private void resetBtn_Click(object sender, EventArgs e)

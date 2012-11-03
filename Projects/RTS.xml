@@ -84,7 +84,7 @@ model.Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
     <GameObject Model="Player" Name="Player1" Position="-4 5 0" Color="0.5803922 0 0.827451 1" />
     <GameObject Model="Player" Name="Player2" Position="4 5 0" />
     <GameObject Model="Player" Name="Player3" Position="-3 0 0" />
-    <GameObject Model="Player" Name="Player4" Position="3 0 0" Scale="1 1 1" />
+    <GameObject Model="Player" Name="Player4" Position="3 0 0" Scale="1 1 1" Color="0.7529412 0.7529412 0.7529412 1" />
     <GameObject Model="Island" Name="Island1" Position="0 3 -1" Scale="1 1 2" />
   </Scene>
 </ZApplication>

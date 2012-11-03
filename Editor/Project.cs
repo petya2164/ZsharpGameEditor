@@ -9,6 +9,7 @@ using System.Collections;
 using System.Windows.Forms;
 using System.Reflection;
 
+
 namespace ZGE
 {
     internal class Project
@@ -89,7 +90,7 @@ namespace ZGE
         public void BuildApplication(CodeGenerator codeGen)
         {
             if (xmlDoc == null) return;
-            app = codeGen.CreateApplication(xmlDoc, false, true);
+            app = codeGen.CreateApplication(xmlDoc, true);
             nodeMap = codeGen.nodeMap;  // we need the GUIDs in the nodeMap for recompilation
         }
 
