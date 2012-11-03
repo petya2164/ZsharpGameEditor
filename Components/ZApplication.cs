@@ -73,16 +73,16 @@ namespace ZGE.Components
 
         public int Width = 800;
         public int Height = 600;
-        [ReadOnlyAttribute(true)]
+        [ReadOnly(true)]
         public int CurrentWidth;
-        [ReadOnlyAttribute(true)]
+        [ReadOnly(true)]
         public int CurrentHeight;
-        [ReadOnlyAttribute(true)]
+        [ReadOnly(true)]
         public float AspectRatio;
         public GraphicsMode Mode = GraphicsMode.Default;
 
         public VSyncMode VSync = VSyncMode.Off;
-        [ReadOnlyAttribute(true)]
+        [ReadOnly(true)]
         public bool Paused = false;     //No Update while Paused
         public double UpdateFrequency = 60.0;
         public Color ClearColor = Color.Black;
@@ -96,16 +96,16 @@ namespace ZGE.Components
         public Model SelectedObject = null;
 
         public int RenderPasses = 1;
-        [ReadOnlyAttribute(true)]
+        [ReadOnly(true)]
         public int CurrentRenderPass = 0;
 
-        [ReadOnlyAttribute(true)]
+        [ReadOnly(true)]
         public double DeltaTime;
-        [ReadOnlyAttribute(true)]
+        [ReadOnly(true)]
         public double Time;
-        [ReadOnlyAttribute(true)]
+        [ReadOnly(true)]
         public double FpsCounter;
-        [ReadOnlyAttribute(true)]
+        [ReadOnly(true)]
         public double FpsEstimated;
         [Browsable(false)]
         public Dictionary<Key, bool> IsKeyDown = new Dictionary<Key, bool>();
@@ -150,7 +150,10 @@ namespace ZGE.Components
         
         // --  INTERNAL LISTS --
         [Browsable(false)]
+        //Dictionary<string, CodeLike> codeMap = new Dictionary<string, CodeLike>();
         List<CodeLike> codeList = new List<CodeLike>();
+        [Browsable(false)]        
+        public List<Model> modelList = new List<Model>();
         [Browsable(false)]
         List<ZContent> contentList = new List<ZContent>();
         [Browsable(false)]
@@ -175,9 +178,12 @@ namespace ZGE.Components
 
         public ZApplication()
         {
-            App = this; // there can be only one ZApplication at a time                     
-            updateWatch.Start(); // start App.Time at boot
-            renderWatch.Start();
+            App = this; // there can be only one ZApplication at a time                                 
+        }
+
+        ~ZApplication()
+        {            
+            Console.WriteLine("ZApplication finalized: " + Name);
         }
 
         // It can also Unpause the app
@@ -338,16 +344,44 @@ namespace ZGE.Components
                 codeList.Add(item);
         }
 
+        public CodeLike FindCodeLike(string GUID)
+        {
+            CodeLike result = null;
+            result = codeList.Find(it => it.GUID == GUID);
+            return result;
+        }
+
+        public void AddModel(Model item)
+        {
+            if (!modelList.Contains(item))
+                modelList.Add(item);
+        }
+        public void RemoveModel(Model item)
+        {            
+            modelList.Remove(item);
+        }
+
+        public Model FindPrototype(string GUID)
+        {
+            Model result = null;
+            result = modelList.Find(it => it.Prototype && it.GUID == GUID);
+            return result;
+        }
+
+        public List<Model> FindGameObjects(string GUID)
+        {            
+            return modelList.FindAll(it => (it.Prototype == false) && it.GUID == GUID);
+        }
+
+
         public void AddToScene(Model model)
         {
-            //Console.WriteLine("Model added to scene.");
-            model.Active = true;
+            //Console.WriteLine("Model added to scene.");            
             Scene.Add(model);
         }
 
         public void RemoveFromScene(Model model)
-        {
-            model.Active = false;
+        {            
             Scene.Remove(model);
         }
 
@@ -435,6 +469,9 @@ namespace ZGE.Components
             }*/
             
             OnLoad.ExecuteAll(this);
+
+            updateWatch.Start(); // start App.Time counter when the app is fully loaded
+            renderWatch.Start();
         }
 
         public virtual void Resize(int x, int y, int width, int height)

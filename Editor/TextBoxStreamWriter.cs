@@ -18,6 +18,7 @@ namespace ZGE
         public override void Write(char value)
         {
             base.Write(value);
+            if (_output == null) return;
             
             //_output.AppendText(value.ToString()); // When character data is written, append it to the text box.
             if (value != '\r')

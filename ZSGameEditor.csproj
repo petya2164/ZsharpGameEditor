@@ -83,7 +83,6 @@
       <DependentUpon>CodeViewForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Editor\CodeGenerator.cs" />
-    <Compile Include="Editor\FieldPropertyDescriptor.cs" />
     <Compile Include="Editor\FieldsProperties.cs" />
     <Compile Include="Editor\FieldsProxy.cs" />
     <Compile Include="Editor\Project.cs" />

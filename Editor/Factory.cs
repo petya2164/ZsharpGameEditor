@@ -23,8 +23,7 @@ namespace ZGE
     
     static class Factory
     {
-        static ZTreeView _treeView;
-        static ZApplication _app;
+        static ZTreeView _treeView;        
         static List<Type> _types;
         static List<Unresolved> _unresolved;
 
@@ -79,8 +78,7 @@ namespace ZGE
             _treeView = treeView;
             if (treeView != null) treeView.Nodes.Clear();            
 
-            ZApplication app = new ZApplication();
-            _app = app;
+            ZApplication app = new ZApplication();            
             _unresolved = new List<Unresolved>();
 
             XmlNode rootElement = xmlDocument.DocumentElement;
@@ -93,12 +91,13 @@ namespace ZGE
             }
             foreach(var unres in _unresolved)
             {
-                ZComponent target = _app.Find(unres.value);
+                ZComponent target = ZComponent.App.Find(unres.value);
                 if (target != null)                                   
                     unres.prop.SetValue(unres.comp, target);                
                 else
                     Console.WriteLine("Unresolved field: {0} - {1}", unres.prop.FieldType.Name, unres.value);
             }
+            _unresolved.Clear();
             if (treeView != null)
             {
                 treeView.xmlDocument = xmlDocument;
@@ -133,7 +132,7 @@ namespace ZGE
                             code.Owner = comp;
                             //Console.WriteLine("Code Text:\n{0}", code.Text);
                             fi.SetValue(comp, code);
-                            //_app.AddComponent(code);
+                            //ZComponent.App.AddComponent(code);
                         }*/
                         else if (fi.FieldType.IsSubclassOf(typeof(ZComponent)))
                         {
@@ -149,7 +148,7 @@ namespace ZGE
             }
         }
 
-        public static ZComponent CreateComponent(string typeName, XmlNode xmlNode, ZComponent parent)
+        public static ZComponent CreateComponent(string typeName, XmlNode xmlNode, ZComponent parent, IList parent_list)
         {
             var type = _types.Find(it => it.Name == typeName);
             ZComponent comp = null;
@@ -157,15 +156,21 @@ namespace ZGE
             {
                 //Console.WriteLine("Creating instance of: {0}", type.FullName);
                 comp = (ZComponent) Activator.CreateInstance(type);
+                ZComponent.App.AddComponent(comp);
                 if (parent != null)
                 {
                     comp.Owner = parent;
-                    parent.Children.Add(comp);
+                    if (parent_list != null)
+                    {
+                        comp.OwnerList = parent_list;
+                        parent_list.Add(comp);
+                        // components in member lists are not considered children!
+                    }
+                    else
+                        parent.Children.Add(comp);
                 }
                 if (xmlNode != null)
-                    SetFields(comp, xmlNode);
-
-                _app.AddComponent(comp);
+                    SetFields(comp, xmlNode);                
             }
             return comp;
         }
@@ -199,22 +204,17 @@ namespace ZGE
                     code.Owner = parent;
                     Console.WriteLine("Code Text:\n{0}", code.Text);
                     fi.SetValue(comp, code);
-                    //_app.AddComponent(code);
+                    //ZComponent.App.AddComponent(code);
                     return; //no TreeNode should be created for this
                 }
                 else
                 {
-                    comp = CreateComponent(xmlNode.Name, xmlNode, parent);
+                    comp = CreateComponent(xmlNode.Name, xmlNode, parent, parent_list);
                     if (comp == null)
                     {
                         Console.WriteLine("SKIPPING subtree - Cannot find type: {0}", xmlNode.Name);
                         return;
-                    }
-                    if (comp != null && parent_list != null)
-                    {
-                        //Console.WriteLine("Adding to list: {0}", parent_list.GetType().Name);
-                        parent_list.Add(comp);
-                    }
+                    }                    
                 }
             }
 
@@ -247,7 +247,7 @@ namespace ZGE
             }
             // construct ZNodeProperties object for the TreeNode and assign it to Tag property
             object target = (list != null) ? list : (object)comp;
-            ZNodeProperties props = new ZNodeProperties(target, parent, xmlNode);
+            ZNodeProperties props = new ZNodeProperties(target, parent, parent_list, xmlNode, treeNode);
             if (list == null) comp.Tag = props;
 
             if (_treeView != null)

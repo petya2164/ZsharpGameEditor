@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace ZGE
 {
-    class Project
+    internal class Project
     {
         public string filePath = null;
         public string Name = null;
@@ -22,6 +22,7 @@ namespace ZGE
         public ZApplication app = null;
         public XmlDocument xmlDoc = null;
         public ZTreeView treeView = null;
+        public Dictionary<XmlNode, string> nodeMap = new Dictionary<XmlNode, string>();
 
         public Project(string path)
         {
@@ -36,8 +37,7 @@ namespace ZGE
 
         public void SetName()
         {
-            if (app != null)
-                Name = app.Title;
+            if (app != null) Name = app.Title;
         }
 
         public void ClearCode()
@@ -78,10 +78,20 @@ namespace ZGE
             return project;
         }
 
+        public void Rebuild(ZTreeView treeView, CodeGenerator codeGen)
+        {
+            app = null;
+            BuildApplication(codeGen);
+            if (treeView != null)
+                FillTreeView(treeView);
+            SetName();            
+        }
+
         public void BuildApplication(CodeGenerator codeGen)
         {
             if (xmlDoc == null) return;
             app = codeGen.CreateApplication(xmlDoc, false, true);
+            nodeMap = codeGen.nodeMap;
         }
 
         public void FillTreeView(ZTreeView treeView)
@@ -191,7 +201,7 @@ namespace ZGE
             }
             // construct ZNodeProperties object for the TreeNode and assign it to Tag property
             //object target = (list != null) ? list : (object) comp;
-            ZNodeProperties props = new ZNodeProperties((object) list ?? (object) comp, (object) parent_list ?? (object) parent, xmlNode);
+            ZNodeProperties props = new ZNodeProperties((object) list ?? (object) comp, parent, parent_list, xmlNode, treeNode);
             if (list == null) comp.Tag = props;
 
             if (treeView != null)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.ComponentModel;
+using System.Collections;
 
 namespace ZGE.Components
 {
@@ -52,9 +53,11 @@ namespace ZGE.Components
         [Browsable(false)]
         public ZComponent Owner;
         [Browsable(false)]
+        public IList OwnerList;
+        [Browsable(false)]
         public List<ZComponent> Children = new List<ZComponent>();
         [Browsable(false)]
-        public object Tag;
+        public object Tag;        
 
         public ZComponent()
         {           

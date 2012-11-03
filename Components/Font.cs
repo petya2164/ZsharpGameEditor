@@ -56,10 +56,7 @@ namespace ZGE.Components
         public bool Italic;
 
 
-	    //float x, y;
-	    //Vector2 coords[256][4];
-	    //int   widths[256];
-	    //int   height;      	
+	    //float x, y;	          	
 
 	    // Prints text at a specified position	    
         public void Print(float x1, float y1, float size, string txt)
@@ -71,27 +68,20 @@ namespace ZGE.Components
             //txt += App.FpsEstimated.ToString("F0");
             //txt += (App.Find("Camera1") as ProjectiveCamera).Position.ToString();
 
-		    //size = size / (float)height;
+		    //size = size / (float)height;		    
 
-		    /*char buffer[256];
-
-		    // Allow formatted output
-		    va_start(ap, fmt);
-		    vsprintf((char*)buffer, fmt, ap);
-		    va_end(ap);
-
-		    int l = strlen((char*)buffer);
-
-		    float wi = 0;
-		    if (x1==-1)
-		    {
-			    for(int a = 0; a < l; a++)
-			    {
-				    unsigned char c = buffer[a];
-				    wi += widths[c]*size;
-			    }  
-			    x = (800 - wi) / 2;
-		    }*/
+            if (y < 0.0f)
+                y = App.CurrentHeight - charHeight + y;
+            if (x < 0.0f)
+            {
+                float totalWidth = 0.0f;
+                foreach (char c in txt)
+                {
+                    int w = charWidths[c];
+                    totalWidth += (w + 2) * size;
+                }
+                x = App.CurrentWidth - totalWidth + x;
+            }
 
             GL.PushAttrib(AttribMask.CURRENT_BIT | AttribMask.TEXTURE_BIT | AttribMask.ENABLE_BIT | AttribMask.COLOR_BUFFER_BIT | AttribMask.DEPTH_BUFFER_BIT);      
 

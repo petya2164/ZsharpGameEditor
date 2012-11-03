@@ -612,7 +612,7 @@ namespace ZGE
 
             if (parentNodeProperties != null)
             {
-                newNodeProperties = parentNodeProperties.AddNewChild(childName);
+                newNodeProperties = parentNodeProperties.AddNewChild(childName, newTreeNode);
 
                 if (newNodeProperties != null)
                 {

@@ -94,7 +94,10 @@ namespace ZGE
         }
 
         private void Editor_FormClosing(object sender, FormClosingEventArgs e)
-        {
+        {            
+            StreamWriter standardOutput = new StreamWriter(Console.OpenStandardOutput());
+            Console.SetOut(standardOutput);
+            _writer.Dispose();
             ZSGameEditor.Properties.Settings.Default.IDEWidth = this.Width;
             ZSGameEditor.Properties.Settings.Default.IDEHeight = this.Height;
             ZSGameEditor.Properties.Settings.Default.IDELeft = this.Left;
@@ -194,15 +197,27 @@ namespace ZGE
                 AddElementToTree(element, newNode.Nodes);
         }
 
-        private void closeProject()
+        private void RefreshSceneTreeview()
+        {
+            sceneTreeView.Nodes.Clear();
+            foreach (ZComponent comp in app.Scene)
+                AddElementToTree(comp, sceneTreeView.Nodes);
+            sceneTreeView.ExpandAll();
+            sceneTreeView.Invalidate();
+        }
+
+        private void closeProject(bool fullClear)
         {            
             SelectedComponent = null;
-            this.Text = DefaultFormTitle;
+            if (fullClear) this.Text = DefaultFormTitle;
             sceneTreeView.Nodes.Clear();
             sceneTreeView.Invalidate();
             xmlTreeView.Nodes.Clear();
             xmlTreeView.Invalidate();
-            project = null;
+            if (fullClear)
+                project = null;
+            else
+                project.ClearCode();
             app = null;
             ZComponent.App = null;
             codeBox.Text = "";
@@ -219,7 +234,7 @@ namespace ZGE
             try
             {
 #endif
-                closeProject();          
+                closeProject(true);          
                 
                 // Just a good practice - change the cursor to a wait cursor during processing
                 this.Cursor = Cursors.WaitCursor;
@@ -234,12 +249,7 @@ namespace ZGE
                     app.Pause();
                     this.Text = DefaultFormTitle + " - " + project.Name;
 
-                    //  Add the element to the tree.
-                    //sceneTreeView.Nodes.Clear();
-                    foreach(ZComponent comp in app.Scene)
-                        AddElementToTree(comp, sceneTreeView.Nodes);
-                    sceneTreeView.ExpandAll();
-                    sceneTreeView.Invalidate();
+                    RefreshSceneTreeview();
 
                     glControl1_Load(this, null);
                     glControl1_Resize(this, null);
@@ -255,7 +265,7 @@ namespace ZGE
             {
                 statusLabel.Text = "Exception occurred: " + ex.Message;
                 Console.WriteLine(ex.ToString());
-                closeProject();                
+                closeProject(true);                
             }            
             finally
             {                
@@ -283,7 +293,7 @@ namespace ZGE
         {
             SaveFileDialog dlg = new SaveFileDialog();
             dlg.Title = "Create new project file";
-            dlg.FileName = "Project1.xml";
+            dlg.FileName = "Untitled.xml";
             dlg.Filter = "XML Files (*.xml)|*.xml";
             if (dlg.ShowDialog() == DialogResult.OK)
             {
@@ -337,7 +347,8 @@ namespace ZGE
         }
 
         private void Animate()
-        {            
+        {
+            if (ZComponent.App != app) return;
             app.Update();
             
             // Refresh the values shown in the PropertyGrid
@@ -364,8 +375,7 @@ namespace ZGE
             int w = glControl1.Width;
             int h = glControl1.Height;
             if (app != null) app.Resize(0, 0, w, h);
-
-            //scene.Resize(w, h);
+           
             glControl1.Invalidate();
         }
 
@@ -382,7 +392,8 @@ namespace ZGE
                 glControl1.SwapBuffers();
                 return;
             }
-            
+
+            if (ZComponent.App != app) return;
             app.Render();
             label1.Text = app.FpsCounter.ToString();
 
@@ -450,10 +461,9 @@ namespace ZGE
             md.WheelDelta = e.Delta;
             app.MouseWheel(sender, md);            
         }
-
-        
-
         #endregion
+
+
         private void toolboxBtn_Click(object sender, EventArgs e)
         {
             toolboxSplitter.Panel1Collapsed = !toolboxSplitter.Panel1Collapsed;
@@ -490,16 +500,18 @@ namespace ZGE
 
         private void showCodeBtn_Click(object sender, EventArgs e)
         {
-            _codeForm.SetText(codegen.GenerateCodeFromXml(project.xmlDoc, true));
+            if (project == null || project.xmlDoc == null) return;
+            _codeForm.SetText(codegen.GenerateCodeFromXml(project.xmlDoc, false, false, project.nodeMap));
             _codeForm.Show();
         }
 
         private void runStandaloneBtn_Click(object sender, EventArgs e)
         {
             // Standalone compilation
+            if (project == null || project.xmlDoc == null) return;
             outputBox.Text = "";
             statusLabel.Text = "Compiling standalone game...";
-            string code = codegen.GenerateCodeFromXml(project.xmlDoc, true);
+            string code = codegen.GenerateCodeFromXml(project.xmlDoc, true, true, null);
             var res = codegen.BuildAssembly(Path.Combine(Application.StartupPath, project.Name+".exe"), code, false);
 
             if (res.Errors.HasErrors)
@@ -517,20 +529,92 @@ namespace ZGE
             }
         }
 
-        private void startBtn_Click(object sender, EventArgs e)
+        private void resetBtn_Click(object sender, EventArgs e)
         {
-//             outputBox.Text="";
-//             statusLabel.Text = "Starting code compilation...";
-//             if (codegen.GenerateGameAssembly(app))
-//                 statusLabel.Text = "App running";
-//             else
-//                 statusLabel.Text = "Compilation failed";
-            app.Pause();
-        }
+            if (project == null) return;
+            outputBox.Text = ""; 
+            statusLabel.Text = "Resetting project...";
+            Console.WriteLine("Resetting project: "+project.Name);
+#if !DEBUG
+            try
+            {
+#endif
+                closeProject(false);               
+                this.Cursor = Cursors.WaitCursor;                
+
+                //Try to rebuild project from the XML document stored in memory
+                project.Rebuild(xmlEditor, codegen);
+                if (project.app != null)
+                {                                                            
+                    app = project.app;
+                    app.Pause();
+                    this.Text = DefaultFormTitle + " - " + project.Name;
+
+                    RefreshSceneTreeview();
+
+                    glControl1_Load(this, null);
+                    glControl1_Resize(this, null);
+                    SelectedComponent = app;
+                    statusLabel.Text = "Project reset.";                    
+                    this.Cursor = Cursors.Default;
+                }
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                statusLabel.Text = "Exception occurred: " + ex.Message;
+                Console.WriteLine(ex.ToString());
+                closeProject(true);                
+            }            
+            finally
+            {                 
+                this.Cursor = Cursors.Default; //Change the cursor back
+            }
+#endif
+        }                
 
         private void compileCodeBtn_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("On-the-fly code compilation is not working yet :(\nYou can save and reload the project to compile the code.", "Sorry!");
+            
+            if (project == null || project.xmlDoc == null || project.app == null) return;
+            outputBox.Text = "";
+            statusLabel.Text = "Recompiling project...";
+#if !DEBUG
+            try
+            {
+#endif
+                this.Cursor = Cursors.WaitCursor;
+                if (codegen.RecompileProjectCode(project))
+                {
+                    app = project.app;
+                    //app.Pause();                
+
+                    RefreshSceneTreeview();
+                    
+                    SelectedComponent = app;  // the old selected component might be invalid
+                    statusLabel.Text = "Project recompiled.";
+                }
+                this.Cursor = Cursors.Default;
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                statusLabel.Text = "Exception occurred: " + ex.Message;
+                Console.WriteLine(ex.ToString());
+                closeProject(true);                
+            }            
+            finally
+            {                
+                // Also unfreeze the form
+                //this.Enabled = true;
+                this.Cursor = Cursors.Default; //Change the cursor back
+            }
+#endif
+        }
+
+        private void startBtn_Click(object sender, EventArgs e)
+        {
+            app.Pause();
         }
 
         private void propertyGrid1_PropertyValueChanged(object sender, PropertyValueChangedEventArgs e)

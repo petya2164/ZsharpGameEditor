@@ -14,10 +14,11 @@ namespace ZGE.Components
 
     public class Model : ZComponent, ICloneable, IRenderable, IUpdateable, INeedRefresh
     {
-        [Browsable(false)]
-        public Model model;  //Used in GameObject
+        //[Browsable(false)]
+        //public Model model;  //Used in GameObject
         //public GameObject Parent;
-        public bool Active; // Currently added to the scene as a GameObject?
+        [ReadOnly(true)]
+        public bool Prototype = true; // Is this Model a prototype as a GameObject?
         public int Category;
         public Vector3 Position;
         public Vector3 Rotation;
@@ -25,6 +26,9 @@ namespace ZGE.Components
         public Vector3 Scale;
         public Vector3 AngularVelocity;
         public bool BillBoard = false;
+
+        [Browsable(false)]
+        public string GUID;
 
         //public delegate void EmptyHandler();
         //public event EmptyHandler OnRender;
@@ -34,10 +38,16 @@ namespace ZGE.Components
         public List<ZCommand> OnRender = new List<ZCommand>();
 
         public Model()
-        {
-            Active = false;
+        {            
             Scale = new Vector3(1, 1, 1);
-        }        
+            App.AddModel(this);
+        }  
+      
+        ~Model()
+        {
+            if (App != null) App.RemoveModel(this);
+            Console.WriteLine("Model finalized: " + Name);
+        }
 
         public void Refresh()
         {
@@ -47,7 +57,9 @@ namespace ZGE.Components
         public object Clone()
         {
             Model clone = this.MemberwiseClone() as Model;
-            clone.Active = true; //cloned Model automatically becomes a GameObject
+            clone.Prototype = false;    // a cloned Model automatically becomes a GameObject
+            //clone.GUID = this.GUID;   // a GameObject will inherit the GUID from its parent
+            App.AddModel(clone);
             return clone;
         }
 
@@ -171,7 +183,7 @@ namespace ZGE.Components
             spawned.Rotation = Rotation;
             spawned.Scale = Scale;
 
-            if (SpawnStyle == SpawnStyle.Reference && spawned.Active)
+            if (SpawnStyle == SpawnStyle.Reference && spawned.Prototype)
             {
                 //Do nothing: Respawning a already actice reference should not add the
                 //same model instance to the scene

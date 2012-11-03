@@ -53,8 +53,14 @@ model.Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
     </Model>
   </Content>
   <GUI>
-    <RenderText Text="FPS: " Position="5 0 0" Scale="1">
+    <RenderText Text="FPS: " Position="5 0 0" Scale="1" Name="FPS">
       <TextExpression><![CDATA[return "FPS: "+App.FpsEstimated.ToString("F0");]]></TextExpression>
+    </RenderText>
+    <RenderText Text="Time: " Position="5 -1 0" Scale="1" Name="AppTime">
+      <TextExpression><![CDATA[return "Time: "+App.Time.ToString("F2");]]></TextExpression>
+    </RenderText>
+    <RenderText Text="Paused" Position="-5 -1 0" Scale="1" Name="IsPaused">
+      <TextExpression><![CDATA[return (App.Paused) ? "Paused" : "";]]></TextExpression>
     </RenderText>
   </GUI>
   <Scene>

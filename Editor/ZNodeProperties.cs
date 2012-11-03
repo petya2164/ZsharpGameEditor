@@ -15,6 +15,8 @@ using ZSGameEditor.Properties;
 using ZGE.Components;
 using System.Reflection;
 using System.ComponentModel;
+using System.Collections;
+using System.Windows.Forms;
 
 namespace ZGE
 {
@@ -66,12 +68,12 @@ namespace ZGE
         // The underlying ZComponent
         internal object component;
         internal object parent_component;
+        internal IList parent_list;
         // XmlNode represented by a TreeNode
         internal XmlNode xmlNode;
+        internal TreeNode treeNode;
         // Xml operation status string 
         private string statusString;
-        
-
        
         /// <summary>
         /// Occurs when XmlNode have been changed.
@@ -82,7 +84,7 @@ namespace ZGE
         /// <summary>
         /// Initializes a new instance of the TreeNodeProperties with the given XmlNode. 
         /// </summary>
-        public ZNodeProperties(object comp, object parent, XmlNode node)
+        public ZNodeProperties(object comp, object parent, object parentList, XmlNode node, TreeNode treeNode)
         {
             if (node == null)
             {
@@ -92,6 +94,8 @@ namespace ZGE
             xmlNode = node;
             component = comp;
             parent_component = parent;
+            this.parent_list = parentList as IList;
+            this.treeNode = treeNode;
             //ConstructProperties();
         }
 
@@ -219,7 +223,7 @@ namespace ZGE
         /// Appends new child node to the current xmlNode
         /// the appended node has default name and empty inner text.
         /// </summary>
-        public ZNodeProperties AddNewChild(string childName)
+        public ZNodeProperties AddNewChild(string childName, TreeNode newTreeNode)
         {
             bool needCommit = false;
             statusString = String.Empty;
@@ -230,21 +234,12 @@ namespace ZGE
                 //  Create new leaf node
                 XmlNode newXmlNode = xmlNode.OwnerDocument.CreateNode(XmlNodeType.Element, childName, xmlNode.NamespaceURI);
                 xmlNode.AppendChild(newXmlNode);
-//                 if (properties.GetType() == typeof(XmlLeafNodeProperties))
-//                 {
-//                     newXmlNode.InnerText = ((XmlLeafNodeProperties)properties).Value;
-//                     xmlNode.InnerText = String.Empty;
-//                 }
-//                 else
-//                 {
-//                     newXmlNode.InnerText = String.Empty;
-//                 }
-
-                //TODO: Handle parent
+                
                 ZComponent parent = component as ZComponent;
-                if (parent == null) parent = parent_component as ZComponent;
-                ZComponent comp = Factory.CreateComponent(childName, null, parent);
-                props = new ZNodeProperties(comp, parent, newXmlNode);                                
+                if (parent == null) parent = parent_component as ZComponent;  // component is a List
+                ZComponent comp = Factory.CreateComponent(childName, null, parent, component as IList);
+                props = new ZNodeProperties(comp, parent, component as IList, newXmlNode, newTreeNode);
+                comp.Tag = props;
                 needCommit = true;
             }
             catch (XmlException e)

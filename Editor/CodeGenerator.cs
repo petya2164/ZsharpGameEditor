@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.CodeDom;
 using System.Drawing;
 using OpenTK;
+using System.Windows.Forms;
 
 
 
@@ -94,6 +95,7 @@ namespace ZGE
         public Method constructor;
         public Method init;
         public Method createNamed;
+        public Method restore;
         public List<Method> methods = new List<Method>();
         int objID = 0;
         int methodID = 0;
@@ -156,6 +158,12 @@ namespace ZGE
             {
                 sb.IndentedLines("// InitializeComponents");
                 init.WriteCode(sb);
+                sb.AppendLine("");
+            }
+            if (restore != null)
+            {
+                sb.IndentedLines("// RestoreComponents");
+                restore.WriteCode(sb);
                 sb.AppendLine("");
             }
             sb.IndentedLines("// Methods");
@@ -228,19 +236,33 @@ namespace ZGE
         List<Type> types;
         CSharpCodeProvider compiler = new CSharpCodeProvider();
         bool standalone;
+        bool fullBuild;
+        public Dictionary<XmlNode, string> nodeMap = new Dictionary<XmlNode, string>();
+
 
         public CodeGenerator()
         {
         }
 
-        public string GenerateCodeFromXml(XmlDocument xml, bool standalone)
+        public string GenerateCodeFromXml(XmlDocument xml, bool standalone, bool fullBuild, Dictionary<XmlNode, string> nodeMap)
         {
             XmlNode rootElement = xml.DocumentElement;
             StringBuilder sb = new StringBuilder();
+            if (standalone && fullBuild == false) fullBuild = true; // no incremental build for standalone
             this.standalone = standalone;
+            this.fullBuild = fullBuild;
+
+            if (standalone == false) // no need for XmlNode->GUID mapping at standalone builds
+            {
+                if (nodeMap == null)
+                    this.nodeMap = new Dictionary<XmlNode, string>();
+                else
+                    this.nodeMap = nodeMap;
+            }
 
             cu = new CompileUnit();
             cu.AddUsing("using System;");
+            cu.AddUsing("using System.Collections;");
             cu.AddUsing("using System.Collections.Generic;");
             cu.AddUsing("using System.Text;");
             cu.AddUsing("using System.Drawing;");
@@ -256,10 +278,19 @@ namespace ZGE
             Class main = new Class(typeof(ZApplication), "DynamicGame", "ZApplication", "this");
             ns.mainClass = main;
             main.constructor = new Method("public DynamicGame(bool createAll)");
-            main.constructor.AddLine("if (createAll) InitializeComponents();");
-            main.init = new Method("public void InitializeComponents()");
-            main.init.AddLine("CreateNamedComponents();");
-            main.createNamed = new Method("public void CreateNamedComponents()");
+            if (fullBuild)
+            {
+                main.constructor.AddLine("if (createAll) InitializeComponents();");
+                main.init = new Method("public void InitializeComponents()");
+                main.init.AddLine("CreateNamedComponents();");
+                main.createNamed = new Method("public void CreateNamedComponents()");
+            }
+            else
+            {                
+                main.restore = new Method("public void RestoreComponents(ZApplication oldApp)");
+                main.restore.AddLine("CodeGenerator.Restore(this, oldApp);");                
+            }
+            
 
             types = Factory.GetTypesFromNamespace(Assembly.GetAssembly(typeof(ZApplication)), "ZGE.Components");
             Variable dummy = new Variable(typeof(ZApplication), "ZApplication", "this", false);
@@ -275,7 +306,7 @@ namespace ZGE
                 mm.AddLine("{");
                 mm.AddLine("    game.Run(app.UpdateFrequency);");
                 mm.AddLine("}");
-            }
+            }            
 
             cu.WriteCode(sb);
             // Save the file for debugging
@@ -355,7 +386,7 @@ namespace ZGE
 
             if (type != null)
             {
-                targetClass.init.AddLine("");
+                if (fullBuild) targetClass.init.AddLine("");
                 XmlAttribute attribute = xmlNode.Attributes["Name"];
                 if (attribute == null)
                 {
@@ -366,12 +397,15 @@ namespace ZGE
                         Console.WriteLine("Cannot process Model without a name!");
                         return null;
                     }
-                    if (model != null) //GameObject without a name
+                    if (fullBuild)
                     {
-                        targetClass.init.AddLine(String.Format("var {0} = ({1}) {2}.Clone();", objName, typeName, model));
-                    }
-                    else
-                        targetClass.init.AddLine(String.Format("var {0} = new {1}();", objName, typeName));
+                        if (model != null) //GameObject without a name
+                        {
+                            targetClass.init.AddLine(String.Format("var {0} = ({1}) {2}.Clone();", objName, typeName, model));
+                        }
+                        else
+                            targetClass.init.AddLine(String.Format("var {0} = new {1}();", objName, typeName));
+                    }                    
                 }
                 else
                 {
@@ -379,31 +413,64 @@ namespace ZGE
                     if (typeName == "Model") typeName = objName + "Model";
                     obj = new Variable(type, typeName, objName, false);
                     targetClass.memberVars.Add(obj);
-                    if (model != null) //GameObject with a name
+                    if (fullBuild)
                     {
-                        targetClass.createNamed.AddLine(String.Format("{0} = ({1}) {2}.Clone();", objName, typeName, model));
+                        if (model != null) //GameObject with a name
+                        {
+                            targetClass.createNamed.AddLine(String.Format("{0} = ({1}) {2}.Clone();", objName, typeName, model));
+                        }
+                        else
+                            targetClass.createNamed.AddLine(String.Format("{0} = new {1}();", objName, typeName));
                     }
-                    else
-                        targetClass.createNamed.AddLine(String.Format("{0} = new {1}();", objName, typeName));
+                    else if (xmlNode.Name == "Model") 
+                    {
+                        targetClass.restore.AddLine("");
+                        targetClass.restore.AddLine(String.Format("{0} = new {1}();", objName, typeName));
+                        string currentGuid = "";
+                        nodeMap.TryGetValue(xmlNode, out currentGuid);
+                        targetClass.restore.AddLine(String.Format("CodeGenerator.Restore({0}, oldApp.FindPrototype(\"{1}\"));", objName, currentGuid));
+                        // Re-create all GameObjects in the scene by cloning the Model prototypes
+                        targetClass.restore.AddLine(String.Format("foreach (Model gameObj in oldApp.FindGameObjects(\"{0}\"))", currentGuid));
+                        targetClass.restore.AddLine("{");
+                        //targetClass.restore.AddLine("Console.WriteLine(\"GO found: {0} - {1}\", gameObj.GetType().Name, gameObj.Name);");
+                        targetClass.restore.AddLine(String.Format("    var temp = {0}.Clone() as Model;", objName));
+                        targetClass.restore.AddLine(String.Format("    CodeGenerator.Restore(temp, gameObj);"));
+                        targetClass.restore.AddLine(String.Format("    if (oldApp.SelectedObject == gameObj) this.SelectedObject = temp;"));
+                        targetClass.restore.AddLine("}");
+                    }                    
                 }
 
-                ParseAttributes(targetClass, obj, xmlNode);
-                targetClass.init.AddLine(String.Format("AddComponent({0});", obj.name));
-                // We always need an Owner
-                if (parent != null)               
-                    targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
+                if (fullBuild)
+                {
+                    ParseAttributes(targetClass, obj, xmlNode);
+                    targetClass.init.AddLine(String.Format("AddComponent({0});", obj.name));
+                    if (standalone == false) // assign GUIDs to Model components
+                    {
+                        if (xmlNode.Name == "Model")
+                        {
+                            string currentGuid = "";
+                            nodeMap.TryGetValue(xmlNode, out currentGuid);
+                            targetClass.createNamed.AddLine(String.Format("{0}.GUID = \"{1}\";", obj.name, currentGuid));
+                        }
+                    }                    
+                    if (parent != null)
+                    {
+                        // We always need an Owner
+                        targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
 
-                if (targetList != null) // components in member lists are not considered children!
-                {
-                    //Console.WriteLine("Adding to list: {0}", parent_list.GetType().Name);                        
-                    targetClass.init.AddLine(String.Format("{0}.{1}.Add({2});", parent.name, targetList, obj.name));
-                }
-                else if (parent != null)
-                {
-                    //targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
-                    targetClass.init.AddLine(String.Format("{0}.Children.Add({1});", parent.name, obj.name));
-                }
-                
+                        if (targetList != null) // components in member lists are not considered children!
+                        {
+                            //Console.WriteLine("Adding to list: {0}", parent_list.GetType().Name);
+                            targetClass.init.AddLine(String.Format("{0}.OwnerList = (IList) {1}.{2};", obj.name, parent.name, targetList));
+                            targetClass.init.AddLine(String.Format("{0}.{1}.Add({2});", parent.name, targetList, obj.name));
+                        }
+                        else
+                        {
+                            //targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
+                            targetClass.init.AddLine(String.Format("{0}.Children.Add({1});", parent.name, obj.name));
+                        }
+                    }
+                }               
             }
             return obj;
         }
@@ -412,7 +479,7 @@ namespace ZGE
         {
             var typeRef = new CodeTypeReference(type);
             string name = compiler.GetTypeOutput(typeRef);
-            return name.Split('.').Last();  //we don't want a fully qualified name
+            return (type.IsGenericType) ? name : name.Split('.').Last();  //we don't want a fully qualified name
         }
 
         private string GetMethodHeader(string methodName, Type delegateType, bool isStatic)
@@ -435,13 +502,15 @@ namespace ZGE
         private void ProcessNode(Class targetClass, Variable parent, string targetList, XmlNode xmlNode)
         {
             if (xmlNode == null) return;
+            if (standalone == false) // generate GUID for each xmlnode
+                if (nodeMap.ContainsKey(xmlNode) == false) nodeMap[xmlNode] = Guid.NewGuid().ToString();
             //Console.WriteLine("Processing: {0}", xmlNode.Name);
 
             Variable obj = parent;
             string list = null;
             if (xmlNode.Name == "ZApplication")
             {
-                ParseAttributes(ns.mainClass, parent, xmlNode);
+                if (fullBuild) ParseAttributes(ns.mainClass, parent, xmlNode);
             }
             else
             {
@@ -457,6 +526,8 @@ namespace ZGE
                 else if (fi != null && typeof(CodeLike).IsAssignableFrom(fi.FieldType))
                 {
                     Type type = fi.FieldType;
+                    string currentGuid = "";
+                    if (standalone == false) nodeMap.TryGetValue(xmlNode, out currentGuid);
                     if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ZCode<>))
                     {
                         string methodName = targetClass.GetNextMethodName();
@@ -471,9 +542,21 @@ namespace ZGE
                         }
                         met.AddLine(xmlNode.InnerText);
                         // BIND THE CALLBACK
-                        ns.mainClass.init.AddLine(String.Format("{0}.{1}.callback = {2}.{3};", parent.name, fi.Name, targetClass.variable, methodName));
+                        if (fullBuild)
+                            ns.mainClass.init.AddLine(String.Format("{0}.{1}.callback = {2}.{3};", parent.name, fi.Name, targetClass.variable, methodName));
+                        else
+                        {
+                            string exprName = ns.mainClass.GetNextObjectName();
+                            ns.mainClass.restore.AddLine("");
+                            ns.mainClass.restore.AddLine(String.Format("var {0} = oldApp.FindCodeLike(\"{1}\") as {2};", exprName, currentGuid, GetPlainTypeName(type)));
+                            ns.mainClass.restore.AddLine(String.Format("if ({0} != null) {0}.callback = {1}.{2};", exprName, targetClass.variable, methodName));
+                        }
                     }
-                    if (standalone == false) //no need for the code text in a standalone build
+                    if (standalone == false && fullBuild == true) // assign the GUIDs to the CodeLike components
+                    {                        
+                        ns.mainClass.init.AddLine(String.Format("{0}.{1}.GUID = \"{2}\";", parent.name, fi.Name, currentGuid));
+                    }
+                    if (standalone == false && fullBuild == true) // no need for the code text in a standalone build
                     {
                         string escaped = xmlNode.InnerText.Replace("\"", "\"\"");  // escape inner strings " -> ""
                         ns.mainClass.init.AddLine(String.Format("{0}.{1}.Text = @\"{2}\";", parent.name, fi.Name, escaped));
@@ -512,107 +595,181 @@ namespace ZGE
             }            
         }
 
-        public string GenerateGameCode(ZApplication app, Dictionary<CodeLike, string> codeMap)
+        /*private static void FindFields(IList<FieldInfo> fields, Type t)
         {
+            var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly;
 
-            StringBuilder str = new StringBuilder();
+            fields.AddRange(t.GetFields(flags));            
 
-            str.AppendLine(
-@"using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ZGE.Components;
-using OpenTK;
-// User-defined using statements
+            var baseType = t.BaseType;
+            if (baseType != null)
+                FindFields(fields, baseType);
+        }*/
 
-namespace ZGE
-{
-    // Model classes");
 
-            Indenter.tabs = 1;
-            // Enumerate the model classes
-            foreach (var comp in app.GetComponents(typeof(Model)))
+        public static void MemberwiseCopy(ZComponent newObj, Type newType, ZComponent oldObj, Type oldType)
+        {
+            foreach (FieldInfo dest in newType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
-                //if (comp.GetType() == typeof(GameObject)) continue;
-                Model model = comp as Model;
-                if (model == null) continue;
-                str.IndentedLines(String.Format("public class {0}: Model", model.Name + "_Model"));
-                str.IndentedLines("{");
-                //Indenter.tabs = 2;
-                //User-defined definitions
-
-                //Include ZExpressions as methods
-                //Find children of type CodeLike
-
-
-                str.IndentedLines("}");
+                // Check if this node is a List property of the parent
+                FieldInfo src = oldType.GetField(dest.Name, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                
+                if (src != null && src.FieldType == dest.FieldType)
+                {
+                    //Console.WriteLine("Setting Field of {0}: {1} {2}->{3}", dest.DeclaringType.Name, dest.Name, src.FieldType.Name, dest.FieldType.Name);
+                    dest.SetValue(newObj, src.GetValue(oldObj));
+                }
+                //else
+                //    Console.WriteLine("Field not found: {0} {1}->{2}", dest.Name, (src != null) ? src.FieldType.Name : "NONE", dest.FieldType.Name);
             }
-
-
-
-            str.AppendLine(@"    
-    // The main Application class
-    public class DynamicGame: ZApplication
-    {
-        // Named components");
-
-            Indenter.tabs = 2;
-            foreach (var comp in app.GetNamedComponents())
-            {
-                str.IndentedLines(String.Format("public {0} {1};", comp.GetType().Name, comp.Name));
-            }
-
-            str.AppendLine(@"
-        // Constructor
-        public DynamicGame(bool createAll)
-        {
-            if (createAll)
-                InitializeComponents();
-        }
-
-        public void InitializeComponents()
-        {
-            //Create all the components and their children");
-
-            //Use the XML here
-
-            Indenter.tabs = 2;
-            str.IndentedLines("}\n");
-
-            /*int i = 0;
-            // Enumerate code components            
-            for (i = 0; i < app.codeList.Count; i++)
-            {
-                string methodName = String.Format("Method_{0}", i);
-                if (codeMap != null) codeMap[app.codeList[i]] = methodName;
-                Indenter.tabs = 2;
-                str.IndentedLines("public void " + methodName + "(Model model)\n{");
-                Indenter.tabs = 3;
-                str.IndentedLines(app.codeList[i].Text);
-                Indenter.tabs = 2;
-                str.IndentedLines("}");
-            } */
-
-            str.AppendLine(@"
-     }
-}");
-            return str.ToString();
+            // Walk the type hierarchy recursively in order to copy the private fields in the base classes as well
+            if (newType.BaseType != null && oldType.BaseType != null)
+                MemberwiseCopy(newObj, newType.BaseType, oldObj, oldType.BaseType);
         }
 
 
-        public ZApplication CreateApplication(XmlDocument xml, bool standalone, bool firstBuild)
+        public static void Restore(ZComponent newObj, ZComponent oldObj)
         {
-            //Dictionary<CodeLike, string> codeMap = new Dictionary<CodeLike, string>();
-            //string str = GenerateGameCode(app, codeMap);
+            if (newObj == null || oldObj == null) return;
+            //Console.WriteLine("Restore: {0}({1}) -> {2}({3})", oldObj.GetType().Name, oldObj.Name ?? "", newObj.GetType().Name, newObj.Name ?? "");
 
-            // Save the file for debugging
-            //using (StreamWriter writer = new StreamWriter("DynamicGame.cs", false))
-            //{
-            //    writer.Write(str);
-            //}
+            MemberwiseCopy(newObj, newObj.GetType(), oldObj, oldObj.GetType());
 
-            string code = GenerateCodeFromXml(xml, standalone);
+            // A reference to oldObj should be updated to newObj in its Children
+            foreach (ZComponent child in newObj.Children)
+            {
+                if (child.Owner == oldObj) child.Owner = newObj;
+            }
+
+            // If it is NOT a ZApplication
+            if (typeof(ZApplication).IsAssignableFrom(newObj.GetType()) == false)
+            {
+                ZComponent.App.RemoveComponent(oldObj);     // remove the old component
+                ZComponent.App.AddComponent(newObj);        // add the new component
+                
+                // We should always set the Owner <= old Owner has been copied to newObj
+                
+                if (newObj.OwnerList != null)  // replace old object in OwnerList
+                {
+                    //newObj.OwnerList = oldObj.OwnerList;
+                    int idx = newObj.OwnerList.IndexOf(oldObj);
+                    if (idx != -1) newObj.OwnerList[idx] = newObj;
+                }
+                else if (newObj.Owner != null) // replace old object among Owner's Children
+                {
+                    int idx = newObj.Owner.Children.IndexOf(oldObj);
+                    if (idx != -1) newObj.Owner.Children[idx] = newObj;
+                }
+                oldObj.Owner = null;
+                
+
+                if (typeof(Model).IsAssignableFrom(newObj.GetType()))
+                {
+                    ZComponent.App.RemoveModel(oldObj as Model);
+                    Model newMod = newObj as Model;
+                    // Find named reference in App (only necessary for GameObjects)
+                    if (newMod != null && newMod.Prototype == false)
+                    {
+                        FieldInfo fi = ZComponent.App.GetType().GetField(newMod.Name, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        if (fi != null && fi.FieldType == newObj.GetType())
+                        {
+                            //Console.WriteLine("Setting named reference {0} / {1}", fi.Name, fi.FieldType.Name);
+                            fi.SetValue(ZComponent.App, newObj);
+                        }
+                    }
+                }
+            }           
+            
+            // Correct the Treeview tags
+            ZNodeProperties props = newObj.Tag as ZNodeProperties;
+            if (props != null)
+            {
+                props.component = newObj;
+                TreeNode treeNode = props.treeNode;
+                if (treeNode != null)
+                    foreach (TreeNode childNode in treeNode.Nodes)
+                    {
+                        ZNodeProperties props1 = childNode.Tag as ZNodeProperties;
+                        if (props1 != null && props1.parent_component == oldObj)
+                        {
+                            props1.parent_component = newObj;                            
+                        }
+                        foreach (TreeNode grandchildNode in childNode.Nodes)
+                        {
+                            ZNodeProperties props2 = grandchildNode.Tag as ZNodeProperties;
+                            if (props2 != null && props2.parent_component == oldObj)
+                            {
+                                props2.parent_component = newObj;
+                                // A reference to oldObj should be updated to newObj in its grandchildren
+                                ZComponent grandchild = props2.component as ZComponent;
+                                if (grandchild != null && grandchild.Owner == oldObj) grandchild.Owner = newObj;
+                            }
+                        }
+                    }
+            }             
+        }
+
+        // This is used for on-the-fly code compilation (similar to an incremental build)
+        internal bool RecompileProjectCode(Project project)
+        {
+            if (project == null || project.xmlDoc == null || project.app == null) return false;
+            
+            string code = GenerateCodeFromXml(project.xmlDoc, false, false, project.nodeMap);
+
+            var res = BuildAssembly("dummy", code, true);
+            if (res.Errors.HasErrors)
+            {
+                return false;
+            }
+            else
+            {
+//                 foreach (Model gameObj in project.app.modelList)
+//                 {
+//                     Console.WriteLine("GO found: {0} - {1} Proto: {2} {3}", gameObj.GetType().Name, gameObj.Name, gameObj.Prototype.ToString(), gameObj.GUID);                
+//                 }
+
+
+                // If there weren't any errors, create an instance of "DynamicGame"
+                var type = res.CompiledAssembly.GetType("ZGE.DynamicGame");
+                var app = (ZApplication) Activator.CreateInstance(type, new object[] { false });
+                if (app != null)
+                {                    
+                    Console.WriteLine("Recompiled ZApplication created.");
+                    ZComponent.App = app;  // Just to make sure
+                    MethodInfo mi = type.GetMethod("RestoreComponents");
+                    if (mi != null)
+                    {                        
+                        mi.Invoke(app, new object[] { project.app });
+                        Console.WriteLine("Recompiled components updated.");
+                    }                    
+                    project.app = app;
+
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+                    
+
+                    /*foreach (var pair in codeMap)
+                    {                        
+                        MethodInfo mi = type.GetMethod(pair.Value);
+                        if (mi != null)
+                        {
+                            // Bind generated methods to the corresponding code components
+                            Console.WriteLine("Setting callback: " + pair.Value);
+                            pair.Key.callback = (ZCode.ModelMethod) Delegate.CreateDelegate(typeof(ZCode.ModelMethod), behavior, mi);
+                        }
+                    }*/
+                    return true;
+                }
+            }
+            return false;
+
+        }
+
+        public ZApplication CreateApplication(XmlDocument xml, bool standalone, bool fullBuild)
+        {
+            
+            //string str = GenerateGameCode(app, codeMap);           
+
+            string code = GenerateCodeFromXml(xml, standalone, fullBuild, null);
 
             var res = BuildAssembly("dummy", code, true);
             if (res.Errors.HasErrors)
@@ -621,23 +778,12 @@ namespace ZGE
             }
             else
             {
-                // If there weren't any errors get an instance of "DynamicGame"           
-
+                // If there weren't any errors, get an instance of "DynamicGame"
                 var type = res.CompiledAssembly.GetType("ZGE.DynamicGame");
-                var app = (ZApplication) Activator.CreateInstance(type, new object[] { firstBuild });
+                var app = (ZApplication) Activator.CreateInstance(type, new object[] { fullBuild });
                 if (app != null)
-                {
-                    // Bind generated methods to the corresponding code components
-                    Console.WriteLine("New Application created.");
-                    /*foreach (var pair in codeMap)
-                    {                        
-                        MethodInfo mi = type.GetMethod(pair.Value);
-                        if (mi != null)
-                        {
-                            Console.WriteLine("Setting callback: " + pair.Value);
-                            pair.Key.callback = (ZCode.ModelMethod) Delegate.CreateDelegate(typeof(ZCode.ModelMethod), behavior, mi);
-                        }
-                    }*/
+                {                    
+                    Console.WriteLine("New ZApplication created.");                    
                     return app;
                 }
             }
