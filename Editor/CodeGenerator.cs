@@ -238,7 +238,7 @@ namespace ZGE
         bool standalone;
         bool fullBuild;
         public Dictionary<XmlNode, string> nodeMap = new Dictionary<XmlNode, string>();
-
+        public static Editor editor;
 
         public CodeGenerator()
         {
@@ -611,6 +611,7 @@ namespace ZGE
         {
             foreach (FieldInfo dest in newType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
+                //if (dest.Name == "ID") continue;
                 // Check if this node is a List property of the parent
                 FieldInfo src = oldType.GetField(dest.Name, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 
@@ -684,7 +685,8 @@ namespace ZGE
             ZNodeProperties props = newObj.Tag as ZNodeProperties;
             if (props != null)
             {
-                props.component = newObj;
+                props.component = newObj;          
+
                 TreeNode treeNode = props.treeNode;
                 if (treeNode != null)
                     foreach (TreeNode childNode in treeNode.Nodes)
@@ -700,26 +702,33 @@ namespace ZGE
                             if (props2 != null && props2.parent_component == oldObj)
                             {
                                 props2.parent_component = newObj;
-                                // A reference to oldObj should be updated to newObj in its grandchildren
+                                // oldObj can also be the Owner of its grandchildren (in various member lists)
+                                // this reference must be updated to newObj 
                                 ZComponent grandchild = props2.component as ZComponent;
                                 if (grandchild != null && grandchild.Owner == oldObj) grandchild.Owner = newObj;
                             }
                         }
                     }
-            }             
+            }
+            // If the oldObj was selected in the editor, then we have to replace it with newObj 
+            if (editor.SelectedComponent == oldObj)
+            {
+                editor.SelectedComponent = newObj;
+                //Console.WriteLine("SelectedComponent changed to {0}", newObj.GetType().AssemblyQualifiedName);
+            }                       
         }
 
         // This is used for on-the-fly code compilation (similar to an incremental build)
-        internal bool RecompileProjectCode(Project project)
+        internal ZApplication RecompileApplication(XmlDocument xmlDoc, Dictionary<XmlNode, string> nodeMap, ZApplication oldApp)
         {
-            if (project == null || project.xmlDoc == null || project.app == null) return false;
+            if (xmlDoc == null || oldApp == null) return null;
             
-            string code = GenerateCodeFromXml(project.xmlDoc, false, false, project.nodeMap);
+            string code = GenerateCodeFromXml(xmlDoc, false, false, nodeMap);
 
             var res = BuildAssembly("dummy", code, true);
             if (res.Errors.HasErrors)
             {
-                return false;
+                return null;
             }
             else
             {
@@ -733,19 +742,18 @@ namespace ZGE
                 var type = res.CompiledAssembly.GetType("ZGE.DynamicGame");
                 var app = (ZApplication) Activator.CreateInstance(type, new object[] { false });
                 if (app != null)
-                {                    
-                    Console.WriteLine("Recompiled ZApplication created.");
+                {                      
                     ZComponent.App = app;  // Just to make sure
                     MethodInfo mi = type.GetMethod("RestoreComponents");
                     if (mi != null)
                     {                        
-                        mi.Invoke(app, new object[] { project.app });
-                        Console.WriteLine("Recompiled components updated.");
-                    }                    
-                    project.app = app;
+                        mi.Invoke(app, new object[] { oldApp });
+                        Console.WriteLine("ZApplication recompiled, components updated.");
+                    }
+                    else
+                        Console.WriteLine("The \"RestoreComponents\" method is missing, components cannot be updated :(");
 
-                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-                    
+                    return app;                   
 
                     /*foreach (var pair in codeMap)
                     {                        
@@ -756,11 +764,12 @@ namespace ZGE
                             Console.WriteLine("Setting callback: " + pair.Value);
                             pair.Key.callback = (ZCode.ModelMethod) Delegate.CreateDelegate(typeof(ZCode.ModelMethod), behavior, mi);
                         }
-                    }*/
-                    return true;
+                    }*/                    
                 }
+                else
+                    Console.WriteLine("Recompiled ZApplication cannot be instantiated :(");
             }
-            return false;
+            return null;
 
         }
 

@@ -71,8 +71,7 @@ namespace ZGE
             Project project = new Project(filePath);
             project.LoadXml();
             project.BuildApplication(codeGen);
-            if (treeView != null)
-                project.FillTreeView(treeView);
+            if (treeView != null) project.FillTreeView(treeView);
             project.SetName();
 
             return project;
@@ -91,7 +90,21 @@ namespace ZGE
         {
             if (xmlDoc == null) return;
             app = codeGen.CreateApplication(xmlDoc, false, true);
-            nodeMap = codeGen.nodeMap;
+            nodeMap = codeGen.nodeMap;  // we need the GUIDs in the nodeMap for recompilation
+        }
+
+        public bool RecompileApplication(CodeGenerator codeGen, ZTreeView treeView)
+        {            
+            if (xmlDoc == null || app == null) return false;
+            ZApplication newApp = codeGen.RecompileApplication(xmlDoc, nodeMap, app);
+            if (newApp != null)
+            {
+                app = newApp;
+                //if (treeView != null) FillTreeView(treeView);
+                
+                return true;
+            }
+            return false;
         }
 
         public void FillTreeView(ZTreeView treeView)
@@ -154,7 +167,7 @@ namespace ZGE
                     // Find the component in the list or among the children
                     comp = null;
                     IList findList = (IList) parent.Children;
-                    if (parent_list != null) findList = parent_list;
+                    if (parent_list != null) findList = parent_list; // parent_list has the priority
                     
                     for (int index = next_index; index < findList.Count; index++)
                     {

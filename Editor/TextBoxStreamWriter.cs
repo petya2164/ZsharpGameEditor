@@ -8,11 +8,13 @@ namespace ZGE
     public class TextBoxStreamWriter : TextWriter
     {
         RichTextBox _output = null;
+        StringBuilder sb;
         //char prev;
 
         public TextBoxStreamWriter(RichTextBox output)
         {
             _output = output;
+            sb = new StringBuilder();
         }
 
         public override void Write(char value)
@@ -22,11 +24,14 @@ namespace ZGE
             
             //_output.AppendText(value.ToString()); // When character data is written, append it to the text box.
             if (value != '\r')
-                _output.Text += value;
+                sb.Append(value);
+                //_output.Text += value;
             if (value == '\n')
             {
+                _output.AppendText(sb.ToString());
                 _output.SelectionStart = _output.Text.Length;
                 _output.ScrollToCaret();
+                sb = new StringBuilder();
             }            
             //prev = value;
         }        

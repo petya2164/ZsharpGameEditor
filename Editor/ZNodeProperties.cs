@@ -93,7 +93,8 @@ namespace ZGE
 
             xmlNode = node;
             component = comp;
-            parent_component = parent;
+            if (parent != comp) // a component cannot be its own parent
+                parent_component = parent;
             this.parent_list = parentList as IList;
             this.treeNode = treeNode;
             //ConstructProperties();

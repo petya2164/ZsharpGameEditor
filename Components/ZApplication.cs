@@ -175,15 +175,19 @@ namespace ZGE.Components
 
         public event KeyboardHandler OnKeyDown;
         public event KeyboardHandler OnKeyUp;*/
+        //static int serial = 0;
+        //int ID = 0;
 
         public ZApplication()
         {
-            App = this; // there can be only one ZApplication at a time                                 
+            App = this; // there can be only one ZApplication at a time
+            //ID = serial++;
+            //Console.WriteLine(String.Format("ZApplication created: {0}", ID));
         }
 
         ~ZApplication()
-        {            
-            Console.WriteLine("ZApplication finalized: " + Name);
+        {
+            //Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
         }
 
         // It can also Unpause the app
@@ -235,6 +239,8 @@ namespace ZGE.Components
             if (typeMap.ContainsKey(type))
             {
                 typeMap[type].Remove(comp);
+                if (typeMap[type].Count == 0)
+                    typeMap.Remove(type);
             }            
         }
 

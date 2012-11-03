@@ -48,6 +48,7 @@ namespace ZGE
         public Editor()
         {
             InitializeComponent();
+            CodeGenerator.editor = this;
 
             // Use C# highlighting strategy
             codeBox.Document.HighlightingStrategy =
@@ -532,7 +533,7 @@ namespace ZGE
         private void resetBtn_Click(object sender, EventArgs e)
         {
             if (project == null) return;
-            outputBox.Text = ""; 
+            //outputBox.Text = ""; 
             statusLabel.Text = "Resetting project...";
             Console.WriteLine("Resetting project: "+project.Name);
 #if !DEBUG
@@ -574,26 +575,31 @@ namespace ZGE
         }                
 
         private void compileCodeBtn_Click(object sender, EventArgs e)
-        {
-            
+        {            
             if (project == null || project.xmlDoc == null || project.app == null) return;
-            outputBox.Text = "";
+            //outputBox.Text = "";
             statusLabel.Text = "Recompiling project...";
 #if !DEBUG
             try
             {
 #endif
                 this.Cursor = Cursors.WaitCursor;
-                if (codegen.RecompileProjectCode(project))
+                //Console.WriteLine("SelectedComponent is {0}", SelectedComponent.GetType().AssemblyQualifiedName);
+                if (project.RecompileApplication(codegen, xmlEditor))
                 {
                     app = project.app;
                     //app.Pause();                
 
                     RefreshSceneTreeview();
+                    // The old ZApplication should be finalized at this point 
+                    // All references should be eliminated
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
                     
-                    SelectedComponent = app;  // the old selected component might be invalid
+                    //SelectedComponent = app;  // the old selected component might be invalid
                     statusLabel.Text = "Project recompiled.";
                 }
+                else
+                    statusLabel.Text = "Project recompilation failed.";
                 this.Cursor = Cursors.Default;
 #if !DEBUG
             }
