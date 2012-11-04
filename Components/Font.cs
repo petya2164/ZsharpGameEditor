@@ -6,6 +6,7 @@ using OpenTK.Graphics.OpenGL;
 using System.Drawing;
 using OpenTK;
 using System.ComponentModel;
+using OpenTK.Graphics;
 
 
 namespace ZGE.Components
@@ -131,6 +132,19 @@ namespace ZGE.Components
         {
         }
 
+        ~Font()
+        {
+            ReleaseTexture();
+        }
+
+        private void ReleaseTexture()
+        {
+            if (GraphicsContext.CurrentContext == null) return;
+            //  If the texture currently exists in OpenGL, destroy it.
+            if (TextureID != 0) GL.DeleteTexture(TextureID);
+            //Console.WriteLine("Texture finalized");
+        }
+
         public void Refresh()
         {
             initialized = false;
@@ -197,8 +211,7 @@ namespace ZGE.Components
             //g.DrawString("This is my text", fnt, Brushes.White, new Point(0, 0));
             //TextRenderer.DrawText(g, "This is my text", myFont, new Point(0, 0), Color.Red);            
 
-            //  If the texture currently exists in OpenGL, destroy it.
-            if (TextureID != 0) GL.DeleteTexture(TextureID);
+            ReleaseTexture();
 
             //  Generate && store a texture identifier.
             TextureID = GL.GenTexture();
@@ -316,7 +329,7 @@ namespace ZGE.Components
     {
         public Font Font;
         public delegate string TextMethod(ZComponent caller, string original);
-        public ZCode<TextMethod> TextExpression;
+        public ZCode<TextMethod> TextExpression = new ZCode<TextMethod>();
         public string Text = "";
         public Vector3 Position;
         public Vector3 Rotation;
@@ -324,8 +337,7 @@ namespace ZGE.Components
 
         public RenderText()
         {
-            //TextExpression.Header = "public string #METHOD#(RenderText rt)";
-            TextExpression = new ZCode<TextMethod>(this);
+            //TextExpression.Header = "public string #METHOD#(RenderText rt)";           
         }
 
         public override void Execute(ZComponent caller)

@@ -194,8 +194,8 @@ namespace ZGE.Components
         public ZApplication()
         {
             App = this; // there can be only one ZApplication at a time
-            MouseDownExpr = new ZCode<MouseMethod>(this);
-            MouseUpExpr = new ZCode<MouseMethod>(this);
+            MouseDownExpr = new ZCode<MouseMethod>();
+            MouseUpExpr = new ZCode<MouseMethod>();
             //ID = serial++;
             //Console.WriteLine(String.Format("ZApplication created: {0}", ID));
         }

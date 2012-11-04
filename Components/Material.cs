@@ -7,6 +7,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.ComponentModel;
 using System.Drawing.Imaging;
+using OpenTK.Graphics;
 
 namespace ZGE.Components
 {
@@ -217,6 +218,19 @@ namespace ZGE.Components
         {
         }
 
+        ~Texture()
+        {
+            ReleaseTexture();
+        }
+
+        private void ReleaseTexture()
+        {
+            if (GraphicsContext.CurrentContext == null) return;
+            //  If the texture currently exists in OpenGL, destroy it.
+            if (TextureID != 0) GL.DeleteTexture(TextureID);            
+            //Console.WriteLine("Texture finalized");
+        }
+
         public void Refresh()
         {
             initialized = false;
@@ -239,8 +253,7 @@ namespace ZGE.Components
             if (image == null) return;
             Console.WriteLine("Texture loaded: {0}", App.AssetsPath + FileName);
 
-            //  If the texture currently exists in OpenGL, destroy it.
-            if (TextureID != 0) GL.DeleteTexture(TextureID);
+            ReleaseTexture();          
 
             //  Generate && store a texture identifier.
             TextureID = GL.GenTexture();

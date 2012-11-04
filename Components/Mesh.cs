@@ -23,18 +23,29 @@ namespace ZGE.Components
     {
         Vbo vbo = new Vbo();
 
+        ~Mesh()
+        {
+            ReleaseBuffers();
+        }
+
+        private void ReleaseBuffers()
+        {
+            if (GraphicsContext.CurrentContext == null) return;
+            // GL.DeleteBuffers for all non-zero buffers
+            if (vbo.VertexBufferID != 0) GL.DeleteBuffers(1, ref vbo.VertexBufferID);
+            if (vbo.ElementBufferID != 0) GL.DeleteBuffers(1, ref vbo.ElementBufferID);
+            if (vbo.TexCoordBufferID != 0) GL.DeleteBuffers(1, ref vbo.TexCoordBufferID);
+            if (vbo.NormalBufferID != 0) GL.DeleteBuffers(1, ref vbo.NormalBufferID);
+            if (vbo.ColorBufferID != 0) GL.DeleteBuffers(1, ref vbo.ColorBufferID);
+            //Console.WriteLine("Mesh finalized");
+        }
 
         /// <summary>
         /// Generate a VertexBuffer for each of Color, Normal, TextureCoordinate, Vertex, and Indices
         /// </summary>
         public void CreateVBO(Shape shape)
         {
-            // GL.DeleteBuffers for all non-zero buffers
-            if (vbo.VertexBufferID != 0) GL.DeleteBuffers(1, ref vbo.VertexBufferID); 
-            if (vbo.ElementBufferID != 0) GL.DeleteBuffers(1, ref vbo.ElementBufferID); 
-            if (vbo.TexCoordBufferID != 0) GL.DeleteBuffers(1, ref vbo.TexCoordBufferID);
-            if (vbo.NormalBufferID != 0) GL.DeleteBuffers(1, ref vbo.NormalBufferID);
-            if (vbo.ColorBufferID != 0) GL.DeleteBuffers(1, ref vbo.ColorBufferID);
+            ReleaseBuffers();
             vbo = new Vbo();
 
             if (shape.Vertices == null) return;

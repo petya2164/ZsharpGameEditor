@@ -201,7 +201,7 @@ namespace ZGE
                 {
                     CodeLike code = (CodeLike) fi.GetValue(parent); // Activator.CreateInstance(fi.FieldType);
                     code.Text = xmlNode.InnerText;
-                    code.Owner = parent;
+                    //code.Owner = parent;
                     Console.WriteLine("Code Text:\n{0}", code.Text);
                     fi.SetValue(comp, code);
                     //ZComponent.App.AddComponent(code);

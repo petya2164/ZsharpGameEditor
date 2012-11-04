@@ -48,12 +48,28 @@ namespace ZGE
             this.create = create;
         }
 
-        public void WriteCode(StringBuilder sb)
+        public virtual void WriteCode(StringBuilder sb)
         {
             if (create)
                 sb.IndentedLines("internal " + typeName + " " + name + " = new " + typeName + "();");
             else
                 sb.IndentedLines("internal " + typeName + " " + name + ";");
+        }
+    }
+
+    class StaticVariable: Variable
+    {
+        public StaticVariable(Type type, string typeName, string name, bool create):
+            base(type, typeName, name, create)
+        {            
+        }
+
+        public override void WriteCode(StringBuilder sb)
+        {
+            if (create)
+                sb.IndentedLines("internal static " + typeName + " " + name + " = new " + typeName + "();");
+            else
+                sb.IndentedLines("internal static " + typeName + " " + name + ";");
         }
     }
 
@@ -602,7 +618,7 @@ namespace ZGE
                             ns.mainClass.restore.AddLine(String.Format("if ({0} != null) {0}.callback = {1}.{2};", exprName, targetClass.variable, methodName));
                         }
                     }
-                    if (type == typeof(CustomCodeDefinition))
+                    if (type == typeof(CustomCodeDefinition)) // handle custom code definitions
                     {
                         targetClass.definitions.Add(xmlNode.InnerText);
                     }
@@ -631,7 +647,11 @@ namespace ZGE
                     {
                         string modelName = obj.name + "Model";
                         Class model = new Class(typeof(Model), modelName, "Model", modelName);
+
                         model.constructor = new Method("public " + modelName + "()");
+                        var staticApp = new StaticVariable(typeof(ZApplication), "DynamicGame", "App", false);
+                        model.memberVars.Add(staticApp);
+                        ns.mainClass.constructor.AddLine(String.Format("{0}.App = this;", modelName));
                         //model.constructor.AddLine("InitializeComponents();");
                         //model.init = new Method("public void InitializeComponents()");
                         //model.init.AddLine("CreateNamedComponents();");

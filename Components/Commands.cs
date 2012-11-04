@@ -27,7 +27,7 @@ namespace ZGE.Components
     {
         public int Count;  //Set for a fixed nr of iterations
         public delegate bool BoolMethod(ZComponent caller);
-        public ZCode<BoolMethod> WhileExp;
+        public ZCode<BoolMethod> WhileExp = new ZCode<BoolMethod>();
 
         [Browsable(false)]
         public List<ZCommand> OnIteration = new List<ZCommand>();
@@ -35,8 +35,7 @@ namespace ZGE.Components
 
         public Repeat()
         {
-            //WhileExp.Header = "public bool #METHOD#()";
-            WhileExp = new ZCode<BoolMethod>(this);
+            //WhileExp.Header = "public bool #METHOD#()";            
         }
 
         public override void Execute(ZComponent caller)
@@ -64,7 +63,7 @@ namespace ZGE.Components
     public class Condition : ZCommand
     {
         public delegate bool BoolMethod(ZComponent caller);
-        public ZCode<BoolMethod> Expression;
+        public ZCode<BoolMethod> Expression = new ZCode<BoolMethod>();
 
         [Browsable(false)]
         public List<ZCommand> OnTrue = new List<ZCommand>();
@@ -73,8 +72,7 @@ namespace ZGE.Components
 
         public Condition()
         {
-            //Expression.Header = "public bool #METHOD#()";
-            Expression = new ZCode<BoolMethod>(this);
+            //Expression.Header = "public bool #METHOD#()";            
         }
 
         public override void Execute(ZComponent caller)

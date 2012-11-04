@@ -9,11 +9,10 @@ namespace ZGE.Components
     public class ZExpression : ZCommand
     {
         public delegate void ModelMethod(ZComponent caller);
-        public ZCode<ModelMethod> Expression;
+        public ZCode<ModelMethod> Expression = new ZCode<ModelMethod>();
 
         public ZExpression()
-        {
-            Expression = new ZCode<ModelMethod>(this);
+        {            
             //Expression.Header = "public void #METHOD#()";
         }
 
@@ -31,27 +30,26 @@ namespace ZGE.Components
     }
 
     public class CustomCode : Definition
-    {        
-        public CustomCodeDefinition Code;
+    {
+        public CustomCodeDefinition Code = new CustomCodeDefinition();
 
         public CustomCode()
-        {
-            Code = new CustomCodeDefinition(this);            
+        {                        
         }       
     }
 
     [ToolboxItem(false)]
     public class CodeLike
     {
-        [Browsable(false)]
-        public ZComponent Owner;
+        //[Browsable(false)]
+        //public ZComponent Owner;
         public string Text;
         [Browsable(false)]
         public string GUID; //= Guid.NewGuid().ToString();        
 
-        public CodeLike(ZComponent owner)
+        public CodeLike()
         {
-            Owner = owner;
+            //Owner = owner;
             ZComponent.App.AddCodeLike(this);
         }
 
@@ -64,7 +62,7 @@ namespace ZGE.Components
     [ToolboxItem(false)]
     public class CustomCodeDefinition : CodeLike
     {
-        public CustomCodeDefinition(ZComponent owner): base(owner)
+        public CustomCodeDefinition()
         {
         }
     }
@@ -76,7 +74,7 @@ namespace ZGE.Components
         //public string Header;
         public T callback;
 
-        public ZCode(ZComponent owner): base(owner)
+        public ZCode()
         {            
         }
         
