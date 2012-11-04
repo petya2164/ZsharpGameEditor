@@ -12,7 +12,7 @@
     <AssemblyName>ZSGameEditor</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <ApplicationIcon>Resources\SharpGL.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\ZGE.ico</ApplicationIcon>
     <StartupObject>ZGE.Program</StartupObject>
     <SourceAnalysisOverrideSettingsFile>C:\Users\Peter\AppData\Roaming\ICSharpCode/SharpDevelop3.0\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
     <PublishUrl>publish\</PublishUrl>
@@ -161,15 +161,13 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Resources\i0.png" />
-    <Content Include="Resources\File.ico" />
     <Content Include="Resources\Images_32bit.bmp" />
-    <Content Include="Resources\Package.ico" />
-    <Content Include="Resources\SharpGL.ico" />
     <Content Include="Resources\xmlatt.gif" />
     <Content Include="Resources\xmlerr.gif" />
     <Content Include="Resources\xmlgrp.gif" />
     <Content Include="Resources\xmlnode.gif" />
     <Content Include="Resources\xmlval.gif" />
+    <Content Include="Resources\ZGE.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Components\Components.csproj">
