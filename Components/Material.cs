@@ -92,13 +92,13 @@ namespace ZGE.Components
                 }
             }
 
-            /*if (oldNull || DrawBackFace != oldMat.DrawBackFace)
+            if (oldNull || DrawBackFace != oldMat.DrawBackFace)
             {
                 if (DrawBackFace)
                     GL.Disable(All.CULL_FACE);
                 else
                     GL.Enable(All.CULL_FACE);
-            }*/
+            }
 
             /*if (oldNull || (Blend!=oldMat.Blend)
             {

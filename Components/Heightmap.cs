@@ -55,6 +55,21 @@ namespace ZGE.Components
                     }                
             }
         }
+
+        // x and y should be in [-1, 1]
+        public float GetHeight(float x, float y)
+        {
+            if (data == null) return 0.0f;
+            int i = (int)(Width * (x + 1.0f) / 2.0f);
+            if (i > Width-1) i = Width-1;
+            if (i < 0) i = 0;
+
+            int j = (int)(Height * (y + 1.0f) / 2.0f);
+            if (j > Height) j = Height;
+            if (j < 0) j = 0;
+
+            return data[i, j];            
+        }
     }
 
     public class MeshHeightmap : MeshProducer

@@ -246,14 +246,14 @@ namespace ZGE
                 project = Project.CreateProject(filePath, xmlEditor, codegen);
                 if (project != null && project.app != null)
                 {                                                            
-                    app = project.app;
-                    app.Pause();
+                    app = project.app;                    
                     this.Text = DefaultFormTitle + " - " + project.Name;
 
                     RefreshSceneTreeview();
 
                     glControl1_Load(this, null);
                     glControl1_Resize(this, null);
+                    app.Pause();
                     SelectedComponent = app;
                     statusLabel.Text = "Project loaded.";
                     ZSGameEditor.Properties.Settings.Default.LastProjectPath = filePath;
@@ -542,14 +542,14 @@ namespace ZGE
                 project.Rebuild(xmlEditor, codegen);
                 if (project.app != null)
                 {                                                            
-                    app = project.app;
-                    app.Pause();
+                    app = project.app;                    
                     this.Text = DefaultFormTitle + " - " + project.Name;
 
                     RefreshSceneTreeview();
 
                     glControl1_Load(this, null);
                     glControl1_Resize(this, null);
+                    app.Pause();
                     SelectedComponent = app;
                     statusLabel.Text = "Project reset.";                    
                     this.Cursor = Cursors.Default;
@@ -620,7 +620,7 @@ namespace ZGE
 
         private void propertyGrid1_PropertyValueChanged(object sender, PropertyValueChangedEventArgs e)
         {
-            Console.WriteLine("Property Value Changed.");
+            //Console.WriteLine("Property Value Changed.");
             GridItem g = e.ChangedItem;
             //if (g.Parent != null)
                 //Console.WriteLine("Parent: {0}",g.Parent.ToString());
@@ -655,7 +655,7 @@ namespace ZGE
             GridItem g = e.NewSelection;
             if (typeof(CodeLike).IsAssignableFrom(g.PropertyDescriptor.PropertyType))
             {
-                Console.WriteLine("CodeLike selected.");
+                //Console.WriteLine("CodeLike selected.");
                 CodeLike code = g.Value as CodeLike;
                 if (code != null && project != null)
                 {

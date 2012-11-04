@@ -262,6 +262,15 @@ namespace OpenTK
             Z *= scale;
         }
 
+        /// <summary>
+        /// Returns the normal of Vector3, but does not change the vector.
+        /// </summary>
+        public Vector3 Normal()
+        {            
+            float scale = 1.0f / this.Length;            
+            return new Vector3(X*scale, Y*scale, Z*scale);
+        }
+
         #endregion
 
         #region public void NormalizeFast()

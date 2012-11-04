@@ -1,29 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ZApplication Name="App" Title="RTS" Camera="Camera1" Width="1000" Height="700" Resources="2000">
+<ZApplication Name="App" Title="RTS" Camera="Camera1" Width="1000" Height="700" Resources="2000" SelectionEnabled="False">
   <Definitions>
     <CustomCode>
       <Code><![CDATA[public int Resources = 1000;]]></Code>
     </CustomCode>
   </Definitions>
   <OnLoad></OnLoad>
-  <OnRender>
-    <RenderSetColor Color="0.1176471 0.5647059 1 1" />
-    <RenderMesh Mesh="Box" Enabled="True" />
-  </OnRender>
+  <OnRender></OnRender>
   <Content>
-    <Material Name="IslandMaterial">
+    <Material Name="IslandMaterial" Wireframe="False">
       <Textures>
         <Texture FileName="island.jpg" />
       </Textures>
     </Material>
-    <Mesh Name="Mesh1">
+    <Mesh Name="UnitMesh">
       <Producers>
-        <MeshSphere ZSamples="3" RadialSamples="6" />
+        <MeshSphere ZSamples="10" RadialSamples="10" Scale="0.2 0.2 0.2" />
       </Producers>
     </Mesh>
     <Mesh Name="Box">
       <Producers>
-        <MeshBox XCount="20" YCount="20" Grid2DOnly="False" Scale="2 2 0.1" />
+        <MeshBox XCount="20" YCount="20" Grid2DOnly="True" Scale="10 10 0.5" />
       </Producers>
     </Mesh>
     <Heightmap Name="IslandHm" FileName="islandHeight.png" />
@@ -32,7 +29,7 @@
         <MeshHeightmap Heightmap="IslandHm" Scale="10 10 1" />
       </Producers>
     </Mesh>
-    <Model Name="Player">
+    <Model Name="Unit">
       <Definitions>
         <CustomCode>
           <Code><![CDATA[public Color Color = Color.Red;]]></Code>
@@ -42,12 +39,15 @@
         <ZExpression>
           <Expression><![CDATA[GL.Color3(model.Color);]]></Expression>
         </ZExpression>
-        <RenderMesh Mesh="Mesh1" />
+        <RenderMesh Mesh="UnitMesh" />
       </OnRender>
       <OnUpdate>
         <ZExpression>
-          <Expression><![CDATA[model.Rotation.Z += 80.0f * (float) App.DeltaTime;
-model.Position.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
+          <Expression><![CDATA[model.Position.Z -= 1.0f*(float) App.DeltaTime;
+DynamicGame game = App as DynamicGame;
+float height = game.IslandHm.GetHeight(model.Position.X / 10.0f, model.Position.Y / 10.0f);
+if (model.Position.Z < height + 0.15f)
+    model.Position.Z = height + 0.15f;]]></Expression>
         </ZExpression>
       </OnUpdate>
     </Model>
@@ -57,16 +57,26 @@ model.Position.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
         <RenderMesh Mesh="IslandMesh" />
       </OnRender>
       <OnUpdate>
-        <ZExpression>
+        <ZExpression Enabled="False">
           <Expression><![CDATA[//model.Rotation.Y += 80.0f * (float) App.DeltaTime;
 model.Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
         </ZExpression>
       </OnUpdate>
     </Model>
+    <Model Name="Water">
+      <OnRender>
+        <RenderSetColor Color="0.1176471 0.5647059 1 1" />
+        <RenderMesh Mesh="Box" Enabled="True" />
+      </OnRender>
+      <OnUpdate></OnUpdate>
+    </Model>
   </Content>
   <GUI>
     <RenderText Text="FPS: " Position="5 0 0" Scale="1" Name="FPS">
       <TextExpression><![CDATA[return "FPS: "+App.FpsEstimated.ToString("F0");]]></TextExpression>
+    </RenderText>
+    <RenderText Text="Selected: " Position="5 -35 0" Scale="1" Name="Selected">
+      <TextExpression><![CDATA[return String.Format("Selected: {0}", (App.SelectedObject != null) ? App.SelectedObject.Name : "NONE");]]></TextExpression>
     </RenderText>
     <RenderText Text="Time: " Position="5 -1 0" Scale="1" Name="AppTime">
       <TextExpression><![CDATA[return String.Format("Time: {0:F2} / Resources: {1}", App.Time, Resources);]]></TextExpression>
@@ -78,13 +88,33 @@ model.Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
   <Scene>
     <Group Name="DesignPrimitives" />
     <Group Name="Cameras">
-      <InteractiveCamera Name="Camera1" Position="0 -10 5" UpVector="0 0 1" />
+      <InteractiveCamera Name="Camera1" Position="0 -10 18" UpVector="0 0 1" />
     </Group>
     <Group Name="Lights" />
-    <GameObject Model="Player" Name="Player1" Position="-4 5 0" Color="0.5803922 0 0.827451 1" />
-    <GameObject Model="Player" Name="Player2" Position="4 5 0" />
-    <GameObject Model="Player" Name="Player3" Position="-3 0 0" />
-    <GameObject Model="Player" Name="Player4" Position="3 0 0" Scale="1 1 1" Color="0.7529412 0.7529412 0.7529412 1" />
-    <GameObject Model="Island" Name="Island1" Position="0 3 -1" Scale="1 1 2" />
+    <GameObject Model="Unit" Name="Unit1" Position="-4 5 2" Color="0.5803922 0 0.827451 1" />
+    <GameObject Model="Unit" Name="Unit2" Position="4 3 1" />
+    <GameObject Model="Unit" Name="Unit3" Position="-3 -1 1.4" />
+    <GameObject Model="Unit" Name="Unit4" Position="3 -1 1.3" Color="0.7529412 0.7529412 0.7529412 1" />
+    <GameObject Model="Island" Name="Island1" Position="0 0 0" Scale="1 1 1" />
+    <GameObject Model="Water" Name="Water1" Position="0 0 0.06" Enabled="True" />
   </Scene>
+  <MouseUpExpr><![CDATA[if (e.Button == SelectButton)
+{  
+    UnitModel selUnit = SelectedObject as UnitModel;
+    
+    //  Do a hit test.
+    ZComponent comp = MousePick(e.X, e.Y);
+    if (comp != null)
+    {
+        //Console.WriteLine("MousePick result: {0}", comp.Name);
+        UnitModel newUnit = comp as UnitModel;
+        if (newUnit != null)
+            SelectedObject = newUnit;
+        else
+        {
+            selUnit.Destination = PickCoordinates;
+            selUnit.GoToDestination = true;
+        }
+    }
+} ]]></MouseUpExpr>
 </ZApplication>

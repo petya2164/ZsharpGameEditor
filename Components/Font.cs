@@ -83,9 +83,10 @@ namespace ZGE.Components
                 x = App.CurrentWidth - totalWidth + x;
             }
 
-            GL.PushAttrib(AttribMask.CURRENT_BIT | AttribMask.TEXTURE_BIT | AttribMask.ENABLE_BIT | AttribMask.COLOR_BUFFER_BIT | AttribMask.DEPTH_BUFFER_BIT);      
+            GL.PushAttrib(AttribMask.CURRENT_BIT | AttribMask.TEXTURE_BIT | AttribMask.ENABLE_BIT | AttribMask.COLOR_BUFFER_BIT | AttribMask.DEPTH_BUFFER_BIT);
 
-		    GL.Enable(All.ALPHA_TEST);
+            GL.Color3(Color.White);
+            GL.Enable(All.ALPHA_TEST);
 		    GL.AlphaFunc(All.GEQUAL,0.5f);
 
  		    GL.Enable(All.BLEND);

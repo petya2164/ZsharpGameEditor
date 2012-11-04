@@ -94,6 +94,7 @@ namespace ZGE.Components
         public MouseButton SelectButton = MouseButton.Left;
         public bool SelectionEnabled = true;
         public Model SelectedObject = null;
+        public Vector3 PickCoordinates = new Vector3(0, 0, 0);
 
         public int RenderPasses = 1;
         [ReadOnly(true)]
@@ -120,7 +121,7 @@ namespace ZGE.Components
 
         [Browsable(false)]
         public Standalone frame = null;
-        //public static ZApplication inst = null;
+        //public static ZApplication inst = null;        
 
         // XML Member lists
         [Browsable(false)]
@@ -135,10 +136,15 @@ namespace ZGE.Components
         public List<ZCommand> OnUpdate = new List<ZCommand>();
         [Browsable(false)]
         public List<ZCommand> OnRender = new List<ZCommand>();
-        [Browsable(false)]
+        /*[Browsable(false)]
         public List<ZCommand> OnKeyDown = new List<ZCommand>();
         [Browsable(false)]
         public List<ZCommand> OnKeyUp = new List<ZCommand>();
+        [Browsable(false)]
+        public List<ZCommand> OnMouseDown = new List<ZCommand>();
+        [Browsable(false)]
+        public List<ZCommand> OnMouseUp = new List<ZCommand>();*/
+
         [Browsable(false)]
         public List<ZCommand> OnBeginRenderPass = new List<ZCommand>();
 
@@ -180,9 +186,16 @@ namespace ZGE.Components
         //static int serial = 0;
         //int ID = 0;
 
+        // --  CODE COMPONENTS --
+        public delegate void MouseMethod(MouseDescriptor e);
+        public ZCode<MouseMethod> MouseDownExpr;
+        public ZCode<MouseMethod> MouseUpExpr;
+
         public ZApplication()
         {
             App = this; // there can be only one ZApplication at a time
+            MouseDownExpr = new ZCode<MouseMethod>(this);
+            MouseUpExpr = new ZCode<MouseMethod>(this);
             //ID = serial++;
             //Console.WriteLine(String.Format("ZApplication created: {0}", ID));
         }
@@ -402,14 +415,14 @@ namespace ZGE.Components
         {
             IsKeyDown[e.Key] = true;
             //if (OnKeyDown != null) OnKeyDown(sender, e);
-            OnKeyDown.ExecuteAll(this);
+            //OnKeyDown.ExecuteAll(this);
         }
 
         public virtual void KeyUp(object sender, KeyboardKeyEventArgs e)
         {
             IsKeyDown[e.Key] = false;
             //if (OnKeyDown != null) OnKeyDown(sender, e);
-            OnKeyUp.ExecuteAll(this);
+            //OnKeyUp.ExecuteAll(this);
         }
 
         public virtual void MouseDown(object sender, MouseDescriptor e)
@@ -419,6 +432,9 @@ namespace ZGE.Components
             // Then the camera
             if (Camera == null || Camera.MouseDown(e) == false)
             {
+                if (MouseDownExpr != null && MouseDownExpr.callback != null)
+                    MouseDownExpr.callback(e);
+
                 // Selection & Dragbox Selection 
             }            
         }
@@ -429,7 +445,10 @@ namespace ZGE.Components
             
             // Then the camera
             if (Camera == null || Camera.MouseUp(e) == false)
-            {            
+            {
+                if (MouseUpExpr != null && MouseUpExpr.callback != null)
+                    MouseUpExpr.callback(e);
+
                 // Selection & Dragbox Selection                
                 if (SelectionEnabled && e.Button == SelectButton)
                 {
@@ -675,6 +694,7 @@ namespace ZGE.Components
             uint currentName = 1;
 
             // TODO: Set the render mode
+            Renderer.Begin();
 
             //  Render the scene for hit testing.            
             foreach (ZComponent comp in Scene)
@@ -682,6 +702,7 @@ namespace ZGE.Components
                 if (comp is IRenderable)
                     RenderComponentForHitTest(comp, hitMap, ref currentName);
             }
+            Renderer.End();
             GL.Flush();
 
             //	End selection.
@@ -707,8 +728,8 @@ namespace ZGE.Components
                 {
                     Vector3 screen = new Vector3(x, y, 1.0f);                    
                     GL.ReadPixels<float>(x, y, 1, 1, All.DEPTH_COMPONENT, All.FLOAT, ref screen.Z);
-                    Vector3 pos = MathHelper.UnProject(screen, ref Camera.ProjectionMatrix, ref Camera.ViewMatrix, viewport);
-                    Console.WriteLine("Coordinates: {0}", pos.ToString());
+                    PickCoordinates  = MathHelper.UnProject(screen, ref Camera.ProjectionMatrix, ref Camera.ViewMatrix, viewport);
+                    //Console.WriteLine("Coordinates: {0}", pos.ToString());
                     return hitMap[selectedId];
                 }
             }

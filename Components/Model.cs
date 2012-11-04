@@ -22,10 +22,14 @@ namespace ZGE.Components
         public int Category;
         public Vector3 Position;
         public Vector3 Rotation;
-        public Vector3 Velocity;
+        public Vector3 Velocity;        
         public Vector3 Scale;
         public Vector3 AngularVelocity;
         public bool BillBoard = false;
+
+        public bool GoToDestination = false;
+        public Vector3 Destination;
+        public float Speed = 1.0f;
 
         [Browsable(false)]
         public string GUID;
@@ -79,6 +83,20 @@ namespace ZGE.Components
         public void Update()
         {
             if (!Enabled) return;
+
+            if (GoToDestination)
+            {
+                if (Position != Destination)
+                {
+                    Vector3 dir = Destination - Position;
+                    float maxDisp = Speed * (float) App.DeltaTime;
+                    if (maxDisp >= dir.Length)
+                        Destination = Position;
+                    else
+                        Position += maxDisp * dir.Normal();
+                }
+            }
+
             OnUpdate.ExecuteAll(this);
         }
 
