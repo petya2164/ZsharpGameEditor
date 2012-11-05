@@ -247,53 +247,57 @@ namespace ZGE
             // provide appropriate feedback
             if (e.Data.GetDataPresent("System.Windows.Forms.TreeNode", false))
             {
+                // Deny drag and drop
+                e.Effect = DragDropEffects.None;
+                return;
+
                 // Determine source and destination nodes
-                Point pt = senderTreeView.PointToClient(new Point(e.X, e.Y));
-                TreeNode sourceTreeNode = e.Data.GetData("System.Windows.Forms.TreeNode") as TreeNode;
-                TreeNode destinationTreeNode = senderTreeView.GetNodeAt(pt);
-
-                // Deny drag and drop when
-                //  destinationNode is the same as source 
-                //  destination node is a parent of a source node
-                //  destination and source node belong to the different TreeViews
-                if (sourceTreeNode == null || destinationTreeNode == null
-                    || sourceTreeNode == destinationTreeNode
-                    || (sourceTreeNode.Parent != null && sourceTreeNode.Parent == destinationTreeNode)
-                    || sourceTreeNode.TreeView != destinationTreeNode.TreeView)
-                {
-                    e.Effect = DragDropEffects.None;
-                    return;
-                }
-
-                // if destination node lies in a subtree of source node - restrict drop action to avoid circles
-                TreeNode checkParentNode = destinationTreeNode.Parent;
-                while (checkParentNode != null)
-                {
-                    if (checkParentNode == sourceTreeNode)
-                    {
-                        e.Effect = DragDropEffects.None;
-                        return;
-                    }
-                    checkParentNode = checkParentNode.Parent;
-                }
-
-                // Drop is available - highlight destination node
-                this.SelectedNode = destinationTreeNode;
-                if (this.SelectedNode != null)
-                {
-                    this.SelectedNode.Expand();
-                }
-
-                // determine a type of drug and drop action (move or copy)
-                if ((e.KeyState & 8) == 8)
-                {
-                    // CTL Keystate for copy
-                    e.Effect = DragDropEffects.Copy;
-                }
-                else
-                {
-                    e.Effect = DragDropEffects.Move;
-                }
+//                 Point pt = senderTreeView.PointToClient(new Point(e.X, e.Y));
+//                 TreeNode sourceTreeNode = e.Data.GetData("System.Windows.Forms.TreeNode") as TreeNode;
+//                 TreeNode destinationTreeNode = senderTreeView.GetNodeAt(pt);
+// 
+//                 // Deny drag and drop when
+//                 //  destinationNode is the same as source 
+//                 //  destination node is a parent of a source node
+//                 //  destination and source node belong to the different TreeViews
+//                 if (sourceTreeNode == null || destinationTreeNode == null
+//                     || sourceTreeNode == destinationTreeNode
+//                     || (sourceTreeNode.Parent != null && sourceTreeNode.Parent == destinationTreeNode)
+//                     || sourceTreeNode.TreeView != destinationTreeNode.TreeView)
+//                 {
+//                     e.Effect = DragDropEffects.None;
+//                     return;
+//                 }
+// 
+//                 // if destination node lies in a subtree of source node - restrict drop action to avoid circles
+//                 TreeNode checkParentNode = destinationTreeNode.Parent;
+//                 while (checkParentNode != null)
+//                 {
+//                     if (checkParentNode == sourceTreeNode)
+//                     {
+//                         e.Effect = DragDropEffects.None;
+//                         return;
+//                     }
+//                     checkParentNode = checkParentNode.Parent;
+//                 }
+// 
+//                 // Drop is available - highlight destination node
+//                 this.SelectedNode = destinationTreeNode;
+//                 if (this.SelectedNode != null)
+//                 {
+//                     this.SelectedNode.Expand();
+//                 }
+// 
+//                 // determine a type of drug and drop action (move or copy)
+//                 if ((e.KeyState & 8) == 8)
+//                 {
+//                     // CTRL Keystate for copy
+//                     e.Effect = DragDropEffects.Copy;
+//                 }
+//                 else
+//                 {
+//                     e.Effect = DragDropEffects.Move;
+//                 }
             }
         }
 
@@ -326,7 +330,9 @@ namespace ZGE
                         StatusString = "Missing source or dest";
                         return;
                     }
-                    AddChildNode(destinationTreeNode, source.DisplayName);
+                    if (project != null)
+                        project.AddChildElement(destinationTreeNode, source.TypeName);
+                    //AddChildNode(destinationTreeNode, source.DisplayName);
                 }
                 return;
             }
@@ -346,7 +352,7 @@ namespace ZGE
             }
 
             // perform XML operation: prepare properties objects
-            ZNodeProperties sourceNodeProperties = sourceTreeNode.Tag as ZNodeProperties;
+            /*ZNodeProperties sourceNodeProperties = sourceTreeNode.Tag as ZNodeProperties;
             ZNodeProperties destinationNodePropeties = destinationTreeNode.Tag as ZNodeProperties;
 
             if (sourceNodeProperties != null && destinationNodePropeties != null)
@@ -377,7 +383,7 @@ namespace ZGE
                     OnPropertiesChanged();
                     OnContentChanged();
                 }
-            }
+            }*/
         }
 
 

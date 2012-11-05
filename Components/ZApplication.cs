@@ -10,17 +10,19 @@ using OpenTK.Input;
 using System.Drawing;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
 
 namespace ZGE.Components
 {
+    #region MouseDescriptor
     public class MouseDescriptor
     {
-        public MouseDescriptor() {}
+        public MouseDescriptor() { }
 
         readonly bool[] button_state = new bool[Enum.GetValues(typeof(MouseButton)).Length];
         //public int Clicks { get; }
-        public MouseButton Button { get; set; } 
-        public int WheelDelta { get; set; }       
+        public MouseButton Button { get; set; }
+        public int WheelDelta { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
 
@@ -33,15 +35,17 @@ namespace ZGE.Components
         {
             get
             {
-                return button_state[(int)button];
+                return button_state[(int) button];
             }
             set
-            {                
-                button_state[(int)button] = value;               
+            {
+                button_state[(int) button] = value;
             }
         }
     }
+    #endregion
 
+    #region MovingAverage
     public class MovingAverage
     {
         double[] values = new double[60];  // all 0's initially
@@ -63,11 +67,13 @@ namespace ZGE.Components
             return sum / values.Length;
         }
     }
+    #endregion
 
 
     [HideComponent]
     public class ZApplication : ZComponent
     {
+        #region Fields
         public string Title = "Untitled";
         public string AssetsPath = "Assets/";
 
@@ -117,13 +123,14 @@ namespace ZGE.Components
         double lastUpdate = 0.0;
         double lastRender = 0.0;
         MovingAverage fpsMA = new MovingAverage();
-        
+
 
         [Browsable(false)]
         public Standalone frame = null;
-        //public static ZApplication inst = null;        
+        //public static ZApplication inst = null; 
+        #endregion
 
-        // XML Member lists
+        #region XML Member lists
         [Browsable(false)]
         public List<Definition> Definitions = new List<Definition>();
         [Browsable(false)]
@@ -132,6 +139,8 @@ namespace ZGE.Components
         public List<ZCommand> OnUnload = new List<ZCommand>();
         [Browsable(false)]
         public List<ZCommand> OnResize = new List<ZCommand>();
+        [Browsable(false)]
+        public List<ZCommand> OnBeginRenderPass = new List<ZCommand>();
         [Browsable(false)]
         public List<ZCommand> OnUpdate = new List<ZCommand>();
         [Browsable(false)]
@@ -146,21 +155,18 @@ namespace ZGE.Components
         public List<ZCommand> OnMouseUp = new List<ZCommand>();*/
 
         [Browsable(false)]
-        public List<ZCommand> OnBeginRenderPass = new List<ZCommand>();
-
-        [Browsable(false)]
-        public List<ZComponent> Content = new List<ZComponent>();
+        public List<ContentLike> Content = new List<ContentLike>();
         [Browsable(false)]
         public List<ZComponent> GUI = new List<ZComponent>();
         [Browsable(false)]
-        public List<ZComponent> Scene = new List<ZComponent>();
-        
-        
-        // --  INTERNAL LISTS --
+        public ObservableCollection<ZComponent> Scene = new ObservableCollection<ZComponent>();
+        #endregion
+
+        #region Internal lists
         [Browsable(false)]
         //Dictionary<string, CodeLike> codeMap = new Dictionary<string, CodeLike>();
         List<CodeLike> codeList = new List<CodeLike>();
-        [Browsable(false)]        
+        [Browsable(false)]
         public List<Model> modelList = new List<Model>();
         [Browsable(false)]
         List<ZContent> contentList = new List<ZContent>();  // actual list for content components with producers
@@ -168,7 +174,7 @@ namespace ZGE.Components
         Dictionary<string, ZComponent> nameMap = new Dictionary<string, ZComponent>();
         [Browsable(false)]
         Dictionary<Type, List<ZComponent>> typeMap = new Dictionary<Type, List<ZComponent>>();
-        // --  INTERNAL LISTS --
+        #endregion
 
         /*public delegate void EmptyHandler();
         public delegate void FrameHandler(FrameEventArgs e);
@@ -186,14 +192,18 @@ namespace ZGE.Components
         //static int serial = 0;
         //int ID = 0;
 
-        // --  CODE COMPONENTS --
+        #region Code expressions
         public delegate void MouseMethod(MouseDescriptor e);
+        [CategoryAttribute("Expressions")]
         public ZCode<MouseMethod> MouseDownExpr;
+        [CategoryAttribute("Expressions")]
         public ZCode<MouseMethod> MouseUpExpr;
+        #endregion        
 
         public ZApplication()
         {
             App = this; // there can be only one ZApplication at a time
+            // Create the expression after the App reference has been set
             MouseDownExpr = new ZCode<MouseMethod>();
             MouseUpExpr = new ZCode<MouseMethod>();
             //ID = serial++;
@@ -220,6 +230,7 @@ namespace ZGE.Components
             }
         }
 
+        #region Component manager
         public void AddComponent(ZComponent comp)
         {
             Type type = comp.GetType();
@@ -228,7 +239,7 @@ namespace ZGE.Components
             if (comp.HasName())
                 nameMap[comp.Name] = comp;
 
-             // TODO: consider all ancestor types
+            // TODO: consider all ancestor types
             if (!typeMap.ContainsKey(type))
                 typeMap[type] = new List<ZComponent>();
 
@@ -248,7 +259,7 @@ namespace ZGE.Components
                 {
                     nameMap.Remove(item.Key);
                 }
-            }                
+            }
 
             // TODO: consider all ancestor types
             if (typeMap.ContainsKey(type))
@@ -256,7 +267,7 @@ namespace ZGE.Components
                 typeMap[type].Remove(comp);
                 if (typeMap[type].Count == 0)
                     typeMap.Remove(type);
-            }            
+            }
         }
 
         public ZComponent Find(string name)
@@ -276,7 +287,7 @@ namespace ZGE.Components
 
         public List<ZComponent> GetNamedComponents()
         {
-            return nameMap.Values.ToList();            
+            return nameMap.Values.ToList();
         }
 
         public void RefreshName(ZComponent comp, string name)
@@ -308,7 +319,7 @@ namespace ZGE.Components
             if (typeMap.ContainsKey(type))
             {
                 List<ZComponent> cc = typeMap[type];
-                
+
                 for (int i = 0; i < cc.Count; i++)
                 {
                     ZComponent comp = cc[i];
@@ -337,7 +348,7 @@ namespace ZGE.Components
                         }
                     }
                 }
-            }            
+            }
 
             if (count == 0)
                 return type.Name + "1";
@@ -352,7 +363,9 @@ namespace ZGE.Components
                 return type.Name + j.ToString();
             }
         }
+        #endregion
 
+        #region CodeLike manager
         public void AddContent(ZContent item)
         {
             if (!contentList.Contains(item))
@@ -365,7 +378,7 @@ namespace ZGE.Components
                 codeList.Add(item);
         }
         public void RemoveCodeLike(CodeLike item)
-        {            
+        {
             codeList.Remove(item);
         }
 
@@ -375,6 +388,9 @@ namespace ZGE.Components
             result = codeList.Find(it => it.GUID == GUID);
             return result;
         }
+        #endregion
+
+        #region Model manager
 
         public void AddModel(Model item)
         {
@@ -382,7 +398,7 @@ namespace ZGE.Components
                 modelList.Add(item);
         }
         public void RemoveModel(Model item)
-        {            
+        {
             modelList.Remove(item);
         }
 
@@ -393,8 +409,20 @@ namespace ZGE.Components
             return result;
         }
 
+        public Model FindPrototypeByType(Type type)
+        {
+            Model result = null;
+            result = modelList.Find(it => it.Prototype && it.GetType() == type);
+            return result;
+        }
+
+        public List<Model> FindPrototypes()
+        {
+            return modelList.FindAll(it => (it.Prototype == true));
+        }
+
         public List<Model> FindGameObjects(string GUID)
-        {            
+        {
             return modelList.FindAll(it => (it.Prototype == false) && it.GUID == GUID);
         }
 
@@ -406,7 +434,7 @@ namespace ZGE.Components
         }
 
         public void RemoveFromScene(Model model)
-        {            
+        {
             Scene.Remove(model);
         }
 
@@ -414,6 +442,8 @@ namespace ZGE.Components
         {
             Scene.Clear();
         }
+
+        #endregion
 
         public virtual void KeyDown(object sender, KeyboardKeyEventArgs e)
         {
@@ -430,7 +460,7 @@ namespace ZGE.Components
         }
 
         public virtual void MouseDown(object sender, MouseDescriptor e)
-        {            
+        {
             // GUI has priority in handling mouse events
 
             // Then the camera
@@ -440,13 +470,13 @@ namespace ZGE.Components
                     MouseDownExpr.callback(e);
 
                 // Selection & Dragbox Selection 
-            }            
+            }
         }
 
         public virtual Model MouseUp(object sender, MouseDescriptor e)
         {
             // GUI has priority in handling mouse events
-            
+
             // Then the camera
             if (Camera == null || Camera.MouseUp(e) == false)
             {
@@ -464,7 +494,7 @@ namespace ZGE.Components
                         SelectedObject = comp as Model;
                         return SelectedObject;
                     }
-                }                
+                }
             }
             return null;
         }
@@ -477,7 +507,7 @@ namespace ZGE.Components
         public virtual void MouseWheel(object sender, MouseDescriptor e)
         {
             if (Camera != null) Camera.MouseWheel(e);
-        }        
+        }
 
         public virtual void Load()
         {
@@ -488,7 +518,7 @@ namespace ZGE.Components
 
             // Initialize all content
             foreach (ZContent comp in contentList)
-            {               
+            {
                 if (comp != null) comp.RefreshFromProducers();
             }
 
@@ -498,7 +528,7 @@ namespace ZGE.Components
                 Model mo = comp as Model;
                 if (mo != null && mo.model != null) mo.CloneBehavior();
             }*/
-            
+
             OnLoad.ExecuteAll(this);
 
             updateWatch.Start(); // start App.Time counter when the app is fully loaded
@@ -508,20 +538,20 @@ namespace ZGE.Components
         public virtual void Resize(int x, int y, int width, int height)
         {
             this.CurrentWidth = width;
-            this.CurrentHeight = height;           
+            this.CurrentHeight = height;
             GL.Viewport(x, y, width, height);
 
-            this.AspectRatio = width / (float) height;           
+            this.AspectRatio = width / (float) height;
             OnResize.ExecuteAll(this);
         }
 
         public virtual void SetupGUI()
         {
-            GL.MatrixMode(All.PROJECTION);            
+            GL.MatrixMode(All.PROJECTION);
             GL.LoadIdentity();
             GL.Ortho(0, CurrentWidth, 0, CurrentHeight, 1, -1);
-            GL.MatrixMode(All.MODELVIEW);            
-            GL.LoadIdentity(); 
+            GL.MatrixMode(All.MODELVIEW);
+            GL.LoadIdentity();
         }
 
         public virtual void Update()
@@ -532,7 +562,7 @@ namespace ZGE.Components
             lastUpdate = now;
             DeltaTime = delta / 1000.0;
             Time = updateWatch.Elapsed.TotalSeconds;
-            
+
             OnUpdate.ExecuteAll(this);
             foreach (ZComponent comp in Scene)
             {
@@ -570,7 +600,7 @@ namespace ZGE.Components
                 //UpdateViewport();   
 
                 //Use custom camera                 
-                Camera.Apply();                
+                Camera.Apply();
 
                 //if (ClearScreenMode == 0 && CurrentRenderTarget = null)
                 {
@@ -583,27 +613,33 @@ namespace ZGE.Components
                     GL.Enable(All.LIGHTING);
                     //glLightModelfv(GL_LIGHT_MODEL_AMBIENT, AmbientLightColor);
                     //if (Scene.Lights.Count == 0)
-                           //GL.Light(All.LIGHT0, All.POSITION, LightPosition);
-//                     else
-//                     {
-//                         for (int j = 0; j < Scene.Lights.Count; j++)
-//                             Scene.Lights[j].ApplyLight(j);
-//                     }
+                    //GL.Light(All.LIGHT0, All.POSITION, LightPosition);
+                    //                     else
+                    //                     {
+                    //                         for (int j = 0; j < Scene.Lights.Count; j++)
+                    //                             Scene.Lights[j].ApplyLight(j);
+                    //                     }
                 }
                 else
                     GL.Disable(All.LIGHTING);
 
                 Renderer.Begin();
+                if (OnRender.Count > 0)
+                {
+                    GL.PushMatrix();
+                    OnRender.ExecuteAll(this); // this should be first: rendering background or skybox
+                    GL.PopMatrix();
+                    Renderer.ApplyDefaultMaterial(true); // clear the material for the scene
+                }
                 RenderScene();
-                
-                GL.PushMatrix();
-                Renderer.ApplyDefaultMaterial();
-                OnRender.ExecuteAll(this); // this should be first: rendering background or skybox
+
+                /*GL.PushMatrix();               
                 Renderer.ApplyDefaultMaterial();
                 //CurrentState.OnRender.ExecuteCommands;
-                GL.PopMatrix();
+                GL.PopMatrix();*/
 
                 SetupGUI();
+                Renderer.ApplyDefaultMaterial(true);
                 foreach (ZComponent comp in GUI)
                 {
                     IRenderable obj = comp as IRenderable;
@@ -613,8 +649,8 @@ namespace ZGE.Components
 
                 if (Lighting)
                 {
-//                     for (int j = 0; j < Scene.Lights.Count; j++)
-//                         Scene.Lights[j].RemoveLight(j);
+                    //                     for (int j = 0; j < Scene.Lights.Count; j++)
+                    //                         Scene.Lights[j].RemoveLight(j);
                 }
             }
             GL.Flush();
@@ -666,12 +702,12 @@ namespace ZGE.Components
         public virtual ZComponent MousePick(int x, int y)
         {
             if (Camera == null) return null;
-            
+
             //  Create a result set.
             List<ZComponent> resultSet = new List<ZComponent>();
 
             //  Create a hitmap.
-            Dictionary<uint, ZComponent> hitMap = new Dictionary<uint, ZComponent>();            
+            Dictionary<uint, ZComponent> hitMap = new Dictionary<uint, ZComponent>();
 
             //	Create an array that will be the viewport.
             int[] viewport = new int[4];
@@ -692,7 +728,7 @@ namespace ZGE.Components
             GL.PushName(0);
 
             Matrix4 pickMatrix = Matrix4.CreatePickMatrix(x, y, 4, 4, viewport);
-            Camera.Apply(ref pickMatrix);            
+            Camera.Apply(ref pickMatrix);
 
             //  Create the name.
             uint currentName = 1;
@@ -702,7 +738,7 @@ namespace ZGE.Components
 
             //  Render the scene for hit testing.            
             foreach (ZComponent comp in Scene)
-            {               
+            {
                 if (comp is IRenderable)
                     RenderComponentForHitTest(comp, hitMap, ref currentName);
             }
@@ -710,7 +746,7 @@ namespace ZGE.Components
             GL.Flush();
 
             //	End selection.
-            int hits = GL.RenderMode(All.RENDER);            
+            int hits = GL.RenderMode(All.RENDER);
 
             if (hits > 0)
             {
@@ -730,14 +766,14 @@ namespace ZGE.Components
 
                 if (selectedId != 0)
                 {
-                    Vector3 screen = new Vector3(x, y, 1.0f);                    
+                    Vector3 screen = new Vector3(x, y, 1.0f);
                     GL.ReadPixels<float>(x, y, 1, 1, All.DEPTH_COMPONENT, All.FLOAT, ref screen.Z);
-                    PickCoordinates  = MathHelper.UnProject(screen, ref Camera.ProjectionMatrix, ref Camera.ViewMatrix, viewport);
+                    PickCoordinates = MathHelper.UnProject(screen, ref Camera.ProjectionMatrix, ref Camera.ViewMatrix, viewport);
                     //Console.WriteLine("Coordinates: {0}", pos.ToString());
                     return hitMap[selectedId];
                 }
             }
-            
+
             return null;
         }
 
@@ -753,7 +789,7 @@ namespace ZGE.Components
             {
                 //  Recurse through the children.
                 foreach (var childElement in comp.Children)
-                    RenderComponentForHitTest(childElement, hitMap, ref currentName); 
+                    RenderComponentForHitTest(childElement, hitMap, ref currentName);
             }
             else if (comp is IRenderable)
             {
@@ -769,9 +805,9 @@ namespace ZGE.Components
                 if (obj != null) obj.Render();
 
                 //  Increment the name.
-                currentName++;                
+                currentName++;
             }
-                      
+
         }
     }
 }

@@ -53,9 +53,12 @@ namespace ZGE.Components
             defaultMaterial.Apply(null);            
         }
 
-        public static void ApplyDefaultMaterial()
+        public static void ApplyDefaultMaterial(bool forced)
         {
-            defaultMaterial.Apply(currentMaterial);
+            if (forced)
+                defaultMaterial.Apply(null);
+            else
+                defaultMaterial.Apply(currentMaterial);
         }
 
         public static void ApplyMaterial(Material newMat)

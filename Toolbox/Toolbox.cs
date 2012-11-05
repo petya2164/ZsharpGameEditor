@@ -87,13 +87,13 @@ namespace ToolboxLibrary
 
 		public void InitializeToolbox()
 		{
-			ToolboxXmlManager toolboxXmlManager = new ToolboxXmlManager(this);
-			Tabs = toolboxXmlManager.PopulateToolboxInfo();
-
-			ToolboxUIManagerVS toolboxUIManagerVS = new ToolboxUIManagerVS(this);
-			toolboxUIManagerVS.FillToolbox();
-
-			AddEventHandlers();
+// 			ToolboxXmlManager toolboxXmlManager = new ToolboxXmlManager(this);
+// 			Tabs = toolboxXmlManager.PopulateToolboxInfo();
+// 
+// 			ToolboxUIManagerVS toolboxUIManagerVS = new ToolboxUIManagerVS(this);
+// 			toolboxUIManagerVS.FillToolbox();
+// 
+// 			AddEventHandlers();
 			//PrintToolbox();
 		}
 

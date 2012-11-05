@@ -17,7 +17,7 @@ namespace ZGE.Components
     { NoBlend, A_1MSA, A_1, C_1MSC, AlphaSat_1 } //'None','Alpha/OneMinusSourceAlpha','Alpha/One','Color/OneMinusSourceColor','AlphaSaturate/One'
 
 
-    public class Material : ZComponent
+    public class Material : ContentLike
     {
         [Browsable(false)]
         public List<Texture> Textures = new List<Texture>();

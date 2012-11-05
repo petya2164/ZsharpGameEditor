@@ -154,14 +154,17 @@ namespace ZGE
                     // root node
                     return ZTreeView.TreeViewImagesList.ImageIndexGroup;
                 }
-                else if (IsLeafNode(this.xmlNode))
+                else if (component is IList || component is Group)
                 {
-                    return ZTreeView.TreeViewImagesList.ImageIndexValue;
-                }
-                else
-                {
+                    // component is a List or a Group
                     return ZTreeView.TreeViewImagesList.ImageIndexNode;
                 }
+                else //if (IsLeafNode(this.xmlNode))
+                {
+                    // any other component
+                    return ZTreeView.TreeViewImagesList.ImageIndexValue;
+                }
+                
             }
         }
 
@@ -177,14 +180,15 @@ namespace ZGE
                     // root node
                     return System.Drawing.Color.Green;
                 }
-                else if (IsLeafNode(this.xmlNode))
+                else if (component is IList || component is Group)
                 {
-                    return System.Drawing.Color.Black;
-                }
-                else
-                {
+                    // component is a List or a Group                
                     return System.Drawing.Color.Blue;
                 }
+                else //if (IsLeafNode(this.xmlNode))
+                {
+                    return System.Drawing.Color.Black;
+                }                
             }
         }
         

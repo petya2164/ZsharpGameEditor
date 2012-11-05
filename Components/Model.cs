@@ -12,7 +12,7 @@ namespace ZGE.Components
 {
 
 
-    public class Model : ZComponent, ICloneable, IRenderable, IUpdateable, INeedRefresh
+    public class Model : ContentLike, ICloneable, IRenderable, IUpdateable, INeedRefresh
     {
         //[Browsable(false)]
         //public Model model;  //Used in GameObject
@@ -65,9 +65,30 @@ namespace ZGE.Components
         {
             Model clone = this.MemberwiseClone() as Model;
             clone.Prototype = false;    // a cloned Model automatically becomes a GameObject
+            clone.Name = null;          // clones have no names per default
             //clone.GUID = this.GUID;   // a GameObject will inherit the GUID from its parent
             App.AddModel(clone);
             return clone;
+        }
+
+        public Model CreateClone(ZComponent parent)
+        {
+            if (this.Prototype == false) return null; // you cannot clone a GameObject
+            Model comp = (Model) this.Clone();
+            App.AddComponent(comp);
+            // Use the application as a parent
+            if (parent == null) parent = App;            
+            comp.Owner = parent;
+            if (parent == App)
+            {
+                comp.OwnerList = App.Scene;
+                App.Scene.Add(comp);
+                // components in member lists are not considered children!
+            }
+            else
+                parent.Children.Add(comp);
+            
+            return comp;
         }
 
         /*public virtual void CloneBehavior()
@@ -121,7 +142,7 @@ namespace ZGE.Components
 
             GL.Scale(Scale);
 
-            Renderer.ApplyDefaultMaterial();
+            Renderer.ApplyDefaultMaterial(false);
             OnRender.ExecuteAll(this);
 
             GL.PopMatrix();
@@ -155,10 +176,10 @@ namespace ZGE.Components
 
 
 
-    public enum SpawnStyle
+    /*public enum SpawnStyle
     {
         Clone, Reference
-    }
+    }*/
 
     public class SpawnModel : ZCommand
     {
@@ -166,13 +187,13 @@ namespace ZGE.Components
         public Vector3 Position;
         public Vector3 Rotation;
         public Vector3 Scale;
-        public SpawnStyle SpawnStyle;
+        //public SpawnStyle SpawnStyle;
         public bool UseSpawnerPosition;
         public bool SpawnerIsParent;  //Spawned model becomes child to currentmodel
 
         public SpawnModel()
         {
-            SpawnStyle = SpawnStyle.Clone;
+            //SpawnStyle = SpawnStyle.Clone;
             Scale = new Vector3(1, 1, 1);
             UseSpawnerPosition = false;
             SpawnerIsParent = false;
@@ -180,21 +201,14 @@ namespace ZGE.Components
 
         public override void Execute(ZComponent caller)
         {
-            if (Model == null) return;
+            if (Model == null || Model.Prototype == false) return;
             Model spawned = null;
             Model currentModel = caller as Model;
 
-            if (SpawnStyle == SpawnStyle.Clone)
-            {
-                //Clone copy owned by app
-                spawned = (Model) Model.Clone();
-            }
+            if (SpawnerIsParent)                
+                spawned = Model.CreateClone(currentModel);
             else
-            {
-                //Reference to original, keep ownership
-                spawned = Model;
-                //spawned.IsSpawnedAsReference == True;
-            }
+                spawned = Model.CreateClone(null);            
 
             if (UseSpawnerPosition && currentModel != null)
                 spawned.Position = currentModel.Position + Position;
@@ -204,21 +218,14 @@ namespace ZGE.Components
             spawned.Rotation = Rotation;
             spawned.Scale = Scale;
 
-            if (SpawnStyle == SpawnStyle.Reference && spawned.Prototype)
-            {
-                //Do nothing: Respawning a already actice reference should not add the
-                //same model instance to the scene
-            }
-            else
-            {
-                App.AddToScene(spawned);
+            // No need for this: A cloned Model is automatically added to the scene 
+            // App.AddToScene(spawned);
 
-                //if (SpawnerIsParent) 
-                //{
-                //    currentModel.ChildModelRefs.Add(spawned);
-                //    spawned.ParentModel == currentModel;
-                //}
-            }
+            //if (SpawnerIsParent) 
+            //{
+            //    currentModel.ChildModelRefs.Add(spawned);
+            //    spawned.ParentModel == currentModel;
+            //}            
         }
     }
 

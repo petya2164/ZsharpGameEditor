@@ -13,6 +13,7 @@ using System.CodeDom;
 using System.Drawing;
 using OpenTK;
 using System.Windows.Forms;
+using System.Collections;
 
 
 
@@ -465,7 +466,7 @@ namespace ZGE
                     }
                     if (fullBuild)
                     {
-                        if (model != null) //GameObject without a name
+                        if (model != null) //GameObject without a name, it has to be CLONED
                         {
                             targetClass.init.AddLine(String.Format("var {0} = ({1}) {2}.Clone();", objName, typeName, model));
                         }
@@ -481,7 +482,7 @@ namespace ZGE
                     targetClass.memberVars.Add(obj);
                     if (fullBuild)
                     {
-                        if (model != null) //GameObject with a name
+                        if (model != null) //GameObject with a name, it has to be CLONED
                         {
                             targetClass.createNamed.AddLine(String.Format("{0} = ({1}) {2}.Clone();", objName, typeName, model));
                         }
@@ -583,7 +584,7 @@ namespace ZGE
                 // Check if this node is a List property of the parent
                 FieldInfo fi = parent.type.GetField(xmlNode.Name, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
                 //if (pi != null) Console.WriteLine(" Parent property found: {0}", pi.PropertyType.Name);
-                if (fi != null && fi.FieldType.Name.StartsWith("List"))
+                if (fi != null && typeof(IList).IsAssignableFrom(fi.FieldType))
                 {
                     //Console.WriteLine("List found: {0}", xmlNode.Name);
                     list = fi.Name;
@@ -699,8 +700,15 @@ namespace ZGE
                 //    Console.WriteLine("Field not found: {0} {1}->{2}", dest.Name, (src != null) ? src.FieldType.Name : "NONE", dest.FieldType.Name);
             }
             // Walk the type hierarchy recursively in order to copy the private fields in the base classes as well
-            if (newType.BaseType != null && oldType.BaseType != null)
-                MemberwiseCopy(newObj, newType.BaseType, oldObj, oldType.BaseType);
+            if (newType.BaseType != typeof(Object) && oldType.BaseType != typeof(Object))
+            {
+                // The type of newObj might be higher in the hierarchy (e.g. SomeModel vs. Model)
+                // We need to level the playing field
+                if (newType.BaseType.Name == oldType.Name)
+                    MemberwiseCopy(newObj, newType.BaseType, oldObj, oldType);
+                else
+                    MemberwiseCopy(newObj, newType.BaseType, oldObj, oldType.BaseType);
+            }
         }
 
 
@@ -744,7 +752,7 @@ namespace ZGE
                     ZComponent.App.RemoveModel(oldObj as Model);
                     Model newMod = newObj as Model;
                     // Find named reference in App (only necessary for GameObjects)
-                    if (newMod != null && newMod.Prototype == false)
+                    if (newMod != null && newMod.Prototype == false && newMod.HasName())
                     {
                         FieldInfo fi = ZComponent.App.GetType().GetField(newMod.Name, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                         if (fi != null && fi.FieldType == newObj.GetType())

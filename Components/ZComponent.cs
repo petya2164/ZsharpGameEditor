@@ -91,7 +91,7 @@ namespace ZGE.Components
         }
     }
 
-    public class Group : ZComponent, IRenderable, IUpdateable
+    public class Group : ContentLike, IRenderable, IUpdateable
     {
         public Group() { }        
 
@@ -116,11 +116,17 @@ namespace ZGE.Components
         }        
     }
 
+    // This is a dummy parent class for all classes that can be added to app contents
+    public abstract class ContentLike : ZComponent
+    {
+        public ContentLike() { }
+    }
+
     
 
     //Content that can be produced from ContentProducers (used for bitmaps and meshes)
     [HideComponent]
-    public abstract class ZContent : ZComponent, INeedRefresh
+    public abstract class ZContent : ContentLike, INeedRefresh
     {
         [Browsable(false)]
         public List<ZContentProducer> Producers = new List<ZContentProducer>();

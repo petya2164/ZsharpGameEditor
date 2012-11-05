@@ -42,7 +42,7 @@ namespace ZGE.Components
     }*/
   
  
-    public class Font: ZComponent
+    public class Font: ContentLike
     {  
         private bool initialized = false;
         private int charHeight;
@@ -329,6 +329,7 @@ namespace ZGE.Components
     {
         public Font Font;
         public delegate string TextMethod(ZComponent caller, string original);
+        [CategoryAttribute("Expressions")]
         public ZCode<TextMethod> TextExpression = new ZCode<TextMethod>();
         public string Text = "";
         public Vector3 Position;

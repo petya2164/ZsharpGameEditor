@@ -15,7 +15,7 @@ namespace ZGE
     internal class Project
     {
         public string filePath = null;
-        public string Name = null;
+        //public string Name = null;
         // Code Editor status
         public CodeLike currentCode = null;
         public ZNodeProperties codeProperties = null;
@@ -43,9 +43,13 @@ namespace ZGE
             xmlDoc.Load(filePath);
         }
 
-        public void SetName()
+        public string Name 
         {
-            if (app != null) Name = app.Title;
+            get
+            {                
+                if (app != null && app.Title != null) return app.Title;
+                return "Untitled";
+            }            
         }
 
         public void ClearCode()
@@ -81,8 +85,7 @@ namespace ZGE
             Project project = new Project(filePath);
             project.LoadXml();
             project.BuildApplication(codeGen);
-            if (treeView != null) project.FillTreeView(treeView);
-            project.SetName();
+            if (treeView != null) project.FillTreeView(treeView);            
 
             return project;
         }
@@ -92,8 +95,7 @@ namespace ZGE
             app = null;
             BuildApplication(codeGen);
             if (treeView != null)
-                FillTreeView(treeView);
-            SetName();            
+                FillTreeView(treeView);                       
         }
 
         public void BuildApplication(CodeGenerator codeGen)
@@ -163,7 +165,7 @@ namespace ZGE
                 // Check if this node is a List property of the parent
                 FieldInfo fi = parent.GetType().GetField(xmlNode.Name, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
                 //if (pi != null) Console.WriteLine(" Parent property found: {0}", pi.PropertyType.Name);
-                if (parent is ZComponent && fi != null && fi.FieldType.Name.StartsWith("List"))
+                if (parent is ZComponent && fi != null && typeof(IList).IsAssignableFrom(fi.FieldType))
                 {
                     //Console.WriteLine("List found: {0}", xmlNode.Name);
                     list = (IList) fi.GetValue(parent);
@@ -355,11 +357,11 @@ namespace ZGE
             }
             if (typeof(Model).IsAssignableFrom(comp.GetType()))
             {
-                ZComponent.App.RemoveModel(comp as Model);
                 Model newMod = comp as Model;
+                ZComponent.App.RemoveModel(newMod);                
                 // Refresh scene treeview in the editor (only necessary for GameObjects)
-                if (newMod != null && newMod.Prototype == false)
-                    editor.RefreshSceneTreeview();                
+                //if (newMod != null && newMod.Prototype == false)
+                    //editor.RefreshSceneTreeview();                
             }
             props.component = null;
         }
@@ -389,7 +391,6 @@ namespace ZGE
             return comp;
         }
 
-
         private void AddChildElement_Click(object sender, EventArgs e)
         {
             if (treeView == null) return;
@@ -397,8 +398,24 @@ namespace ZGE
             if (item == null) return;
             Type childType = item.Tag as Type;
             if (childType == null) return;
-            Console.WriteLine("Add child called {0}", childType.Name);
+            //Console.WriteLine("Add child called {0}", childType.Name);
             TreeNode parentNode = treeView.SelectedNode;
+            if (parentNode != null)
+                AddChildElement(parentNode, childType);
+        }
+
+        public void AddChildElement(TreeNode parentNode, string childTypeName)
+        {
+            Type type = typeof(ZComponent).Assembly.GetType(childTypeName);
+            if (type != null)
+                AddChildElement(parentNode, type);
+        }
+
+
+        public void AddChildElement(TreeNode parentNode, Type childType)
+        {
+            if (treeView == null || parentNode == null || childType == null) return;            
+            Console.WriteLine("Add child called {0}", childType.Name);            
             ZNodeProperties parentProps = parentNode.Tag as ZNodeProperties;
             if (parentProps == null) return;
             string childNodeName = childType.Name;
@@ -407,6 +424,17 @@ namespace ZGE
 
             try
             {
+                string modelName = null;
+                if (childNodeName == "Model")
+                {
+                    DialogResult res = DialogHelper.InputBox("Model name", "Enter Model name:", ref modelName);
+                    if (res == DialogResult.Cancel || modelName.Length == 0 || app.Find(modelName) != null)
+                    {
+                        Console.WriteLine("Invalid model name: \"{0}\"", modelName);
+                        return;
+                    }
+                }
+                
                 XmlNode xmlNode = parentProps.xmlNode;
                 //  Create new leaf node
                 XmlNode newXmlNode = xmlNode.OwnerDocument.CreateNode(XmlNodeType.Element, childNodeName, xmlNode.NamespaceURI);
@@ -424,8 +452,20 @@ namespace ZGE
                 if (childType.BaseType == typeof(Model)) // this is a GameObject
                 {
                     // clone the corresponding Model
+                    Model prototype = app.FindPrototypeByType(childType);
+                    if (prototype == null)
+                    {
+                        Console.WriteLine("Cannot find prototype for {0}", childType.Name);
+                        return;
+                    }
+                    comp = prototype.CreateClone(parent);
 
-                    // assign Model attribute
+                    // assign Model attribute to the XmlNode
+                    XmlAttribute newAttribute = newXmlNode.OwnerDocument.CreateAttribute("Model");
+                    newAttribute.Value = prototype.Name;
+                    newXmlNode.Attributes.Append(newAttribute);
+
+                    //editor.RefreshSceneTreeview();
                 }
                 else
                 {                    
@@ -435,20 +475,38 @@ namespace ZGE
                     {
                         Model model = comp as Model;
                         if (model != null) model.GUID = currentGuid;
+
+                        XmlAttribute nameAttribute = newXmlNode.OwnerDocument.CreateAttribute("Name");
+                        nameAttribute.Value = modelName;
+                        newXmlNode.Attributes.Append(nameAttribute);
+                        model.Name = modelName;
+                        newTreeNode.Name = String.Format("{0} - {1}", childNodeName, modelName); 
                     }
 
-                    // create child XML nodes for generic member lists
+                    // create child XML nodes for generic member lists                    
+                    foreach (FieldInfo fi in comp.GetType().GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance))
+                    {
+                        // Check if this field is a List
+                        //if (fi.FieldType.IsGenericType && fi.FieldType.GetGenericTypeDefinition() == typeof(List<>))
+                        if (fi != null && typeof(IList).IsAssignableFrom(fi.FieldType) && fi.Name != "Children" && fi.Name != "OwnerList")
+                        {
+                            Console.WriteLine("List node created: {0}", fi.Name);                            
+                            XmlNode childXmlNode = newXmlNode.OwnerDocument.CreateNode(XmlNodeType.Element, fi.Name, newXmlNode.NamespaceURI);
+                            newXmlNode.AppendChild(childXmlNode);
+                            nodeMap[childXmlNode] = Guid.NewGuid().ToString();
+                        }
+                    }                    
                 }                                
           
-                // recursively build subtree for member lists
-//                 int i = 0;
-//                 foreach (XmlNode childNode in newXmlNode.ChildNodes)
-//                 {
-//                     if (childNode.NodeType == XmlNodeType.Element)
-//                     {
-//                         i = ProcessNode(comp, null, i, newTreeNode.Nodes, childNode);                    
-//                     }
-//                 }
+                // build subtree for member lists
+                int i = 0;
+                foreach (XmlNode childNode in newXmlNode.ChildNodes)
+                {
+                    if (childNode.NodeType == XmlNodeType.Element)
+                    {
+                        i = ProcessNode(comp, null, i, newTreeNode.Nodes, childNode);                    
+                    }
+                }
                 
                 // construct ZNodeProperties object for the TreeNode and assign it to Tag property
                 ZNodeProperties props = new ZNodeProperties(comp, parent, parentProps.component as IList, newXmlNode, newTreeNode);
@@ -466,9 +524,13 @@ namespace ZGE
                 // Force parent to reload them to the PropertyBrowser
                 treeView.OnPropertiesChanged();
                 treeView.Invalidate();
-                treeView.StatusString = "Child node added";                
+                Console.WriteLine("Component added: {0}", childType.Name);                
+                treeView.StatusString = "Child node added";
+                // Recompilation is necessary if a new Model was added
+                if (childNodeName == "Model")
+                    if (editor != null) editor.compileCodeBtn_Click(this, null);
             }
-            catch (XmlException ex)
+            catch (Exception ex)
             {
                 treeView.StatusString = "Exception occurred: " + ex.Message;
                 Console.WriteLine(ex.ToString());

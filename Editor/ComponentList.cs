@@ -48,7 +48,12 @@ namespace ZGE
         
         public override TypeConverter.StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
-            List<string> options = ZComponent.App.ListComponentNames(context.PropertyDescriptor.PropertyType);
+            Type type = context.PropertyDescriptor.PropertyType;
+            List<string> options = null;
+            if (type == typeof(Model))
+                options = ZComponent.App.FindPrototypes().Select(it => it.Name).ToList();
+            else
+                options = ZComponent.App.ListComponentNames(type);
             /*FieldsProxy proxy = context.Instance as FieldsProxy;
             if (proxy != null)
             {

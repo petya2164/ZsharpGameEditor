@@ -8,7 +8,7 @@ using OpenTK;
 
 namespace ZGE.Components
 {
-    public class Heightmap : ZComponent, INeedRefresh
+    public class Heightmap : ContentLike, INeedRefresh
     {
         private bool initialized = false;
         public string FileName;

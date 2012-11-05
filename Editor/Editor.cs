@@ -22,6 +22,7 @@ using System.Reflection;
 using ZGE.Components;
 //using System.CodeDom.Compiler;
 using ICSharpCode.TextEditor.Document;
+using System.Collections.Specialized;
 
 
 namespace ZGE
@@ -190,7 +191,7 @@ namespace ZGE
             if (component.HasName())
                 newNode.Text = newNode.Text + ": " + component.Name;
             else
-                newNode.Text += " (Unnamed)";
+                newNode.Text += " (No name)";
             nodes.Add(newNode);
 
             //  Add each child.
@@ -206,6 +207,27 @@ namespace ZGE
                 AddElementToTree(comp, sceneTreeView.Nodes);
             sceneTreeView.ExpandAll();
             sceneTreeView.Invalidate();
+        }
+
+        public void SetFormTitle()
+        {
+            this.Text = DefaultFormTitle + " - " + project.Name;
+        }
+
+        internal void SetApplication()
+        {
+            app = project.app;
+            if (app != null)
+            {
+                SetFormTitle();
+                app.Scene.CollectionChanged -= Scene_CollectionChanged;
+                app.Scene.CollectionChanged += Scene_CollectionChanged;
+            }            
+        }
+
+        internal void Scene_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            RefreshSceneTreeview();
         }
 
         private void closeProject(bool fullClear)
@@ -246,10 +268,8 @@ namespace ZGE
                 //Try to load the Xml document
                 project = Project.CreateProject(filePath, xmlEditor, codegen);
                 if (project != null && project.app != null)
-                {                                                            
-                    app = project.app;                    
-                    this.Text = DefaultFormTitle + " - " + project.Name;
-
+                {
+                    SetApplication();
                     RefreshSceneTreeview();
 
                     glControl1_Load(this, null);
@@ -537,10 +557,8 @@ namespace ZGE
                 //Try to rebuild project from the XML document stored in memory
                 project.Rebuild(xmlEditor, codegen);
                 if (project.app != null)
-                {                                                            
-                    app = project.app;                    
-                    this.Text = DefaultFormTitle + " - " + project.Name;
-
+                {
+                    SetApplication();
                     RefreshSceneTreeview();
 
                     glControl1_Load(this, null);
@@ -565,7 +583,7 @@ namespace ZGE
 #endif
         }                
 
-        private void compileCodeBtn_Click(object sender, EventArgs e)
+        public void compileCodeBtn_Click(object sender, EventArgs e)
         {            
             if (project == null || project.xmlDoc == null || project.app == null) return;
             //outputBox.Text = "";
@@ -578,7 +596,7 @@ namespace ZGE
                 //Console.WriteLine("SelectedComponent is {0}", SelectedComponent.GetType().AssemblyQualifiedName);
                 if (project.RecompileApplication(codegen, xmlEditor))
                 {
-                    app = project.app;
+                    SetApplication();
                     //app.Pause();                
 
                     RefreshSceneTreeview();
@@ -639,9 +657,14 @@ namespace ZGE
                 INeedRefresh obj = comp as INeedRefresh;
                 if (obj != null) obj.Refresh();
                 if (g.PropertyDescriptor.Name == "Name")
+                {
                     ZComponent.App.RefreshName(comp, g.Value as string);
+                    // TODO: Also update named references in XML attributes
+                }
                 if (comp == app && g.PropertyDescriptor.Name == "VSync")
                     glControl1.VSync = (app.VSync == VSyncMode.On);
+                if (comp == app && g.PropertyDescriptor.Name == "Title")
+                    SetFormTitle();
             }
         }
 

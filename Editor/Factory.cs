@@ -66,8 +66,7 @@ namespace ZGE
         {
             Project project = new Project(filePath);
             project.LoadXml();
-            project.app = Load(project.xmlDoc, treeView);
-            project.SetName(); 
+            project.app = Load(project.xmlDoc, treeView);             
 
             return project;
         }
@@ -191,7 +190,7 @@ namespace ZGE
                 // Check if this node is a List property of the parent
                 FieldInfo fi = parent.GetType().GetField(xmlNode.Name, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
                 //if (pi != null) Console.WriteLine(" Parent property found: {0}", pi.PropertyType.Name);
-                if (parent is ZComponent && fi != null && fi.FieldType.Name.StartsWith("List"))
+                if (parent is ZComponent && fi != null && typeof(IList).IsAssignableFrom(fi.FieldType))
                 {
                     //Console.WriteLine("List found: {0}", xmlNode.Name);
                     list = (IList) fi.GetValue(parent);

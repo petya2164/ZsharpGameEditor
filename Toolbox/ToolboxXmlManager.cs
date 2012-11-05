@@ -10,7 +10,7 @@ namespace ToolboxLibrary
 	public class ToolboxXmlManager
 	{
 		Toolbox m_toolbox = null;
-		private Type[] windowsFormsToolTypes = new Type[] {
+		/*private Type[] windowsFormsToolTypes = new Type[] {
 			typeof(System.Windows.Forms.PropertyGrid), typeof(System.Windows.Forms.Label), typeof(System.Windows.Forms.LinkLabel), typeof(System.Windows.Forms.Button), typeof(System.Windows.Forms.TextBox), typeof(System.Windows.Forms.CheckBox), typeof(System.Windows.Forms.RadioButton), typeof(System.Windows.Forms.GroupBox), typeof(System.Windows.Forms.PictureBox), typeof(System.Windows.Forms.Panel), typeof(System.Windows.Forms.DataGrid), typeof(System.Windows.Forms.ListBox), typeof(System.Windows.Forms.CheckedListBox), typeof(System.Windows.Forms.ComboBox), typeof(System.Windows.Forms.ListView), typeof(System.Windows.Forms.TreeView), typeof(System.Windows.Forms.TabControl), typeof(System.Windows.Forms.DateTimePicker), typeof(System.Windows.Forms.MonthCalendar), typeof(System.Windows.Forms.HScrollBar), typeof(System.Windows.Forms.VScrollBar), typeof(System.Windows.Forms.Timer), typeof(System.Windows.Forms.Splitter), typeof(System.Windows.Forms.DomainUpDown), typeof(System.Windows.Forms.NumericUpDown), typeof(System.Windows.Forms.TrackBar), typeof(System.Windows.Forms.ProgressBar), typeof(System.Windows.Forms.RichTextBox), typeof(System.Windows.Forms.ImageList), typeof(System.Windows.Forms.HelpProvider), typeof(System.Windows.Forms.ToolTip), typeof(System.Windows.Forms.ToolBar), typeof(System.Windows.Forms.StatusBar), typeof(System.Windows.Forms.UserControl), typeof(System.Windows.Forms.NotifyIcon), typeof(System.Windows.Forms.OpenFileDialog), typeof(System.Windows.Forms.SaveFileDialog), typeof(System.Windows.Forms.FontDialog), typeof(System.Windows.Forms.ColorDialog), typeof(System.Windows.Forms.PrintDialog), typeof(System.Windows.Forms.PrintPreviewDialog), typeof(System.Windows.Forms.PrintPreviewControl), typeof(System.Windows.Forms.ErrorProvider), typeof(System.Drawing.Printing.PrintDocument), typeof(System.Windows.Forms.PageSetupDialog)
 		};
 		private Type[] componentsToolTypes = new Type[] {
@@ -21,7 +21,7 @@ namespace ToolboxLibrary
 		};
 		private Type[] userControlsToolTypes = new Type[] {
 			typeof(System.Windows.Forms.UserControl)
-		};
+		};*/
 
 		public ToolboxXmlManager(Toolbox toolbox)
 		{
@@ -57,57 +57,58 @@ namespace ToolboxLibrary
 		private ToolboxTabCollection PopulateToolboxTabs()
 		{
 			ToolboxTabCollection toolboxTabs = new ToolboxTabCollection();
-			string[] tabNames = { Strings.WindowsForms, Strings.UserControls };
-
-			for (int i = 0; i < tabNames.Length; i++)
-			{
-				ToolboxTab toolboxTab = new ToolboxTab();
-
-				toolboxTab.Name = tabNames[i];
-				PopulateToolboxItems(toolboxTab);
-				toolboxTabs.Add(toolboxTab);
-			}
+// 			string[] tabNames = { Strings.WindowsForms, Strings.UserControls };
+// 
+// 			for (int i = 0; i < tabNames.Length; i++)
+// 			{
+// 				ToolboxTab toolboxTab = new ToolboxTab();
+// 
+// 				toolboxTab.Name = tabNames[i];
+// 				PopulateToolboxItems(toolboxTab);
+// 				toolboxTabs.Add(toolboxTab);
+// 			}
 
 			return toolboxTabs;
 		}
-		private void PopulateToolboxItems(ToolboxTab toolboxTab)
-		{
-			if (toolboxTab == null)
-				return;
 
-			Type[] typeArray = null;
-
-			switch (toolboxTab.Name)
-			{
-				case Strings.WindowsForms:
-					typeArray = windowsFormsToolTypes;
-					break;
-				case Strings.Components:
-					typeArray = componentsToolTypes;
-					break;
-				case Strings.Data:
-					typeArray = dataToolTypes;
-					break;
-				case Strings.UserControls:
-					typeArray = userControlsToolTypes;
-					break;
-				default:
-					break;
-			}
-
-			ToolboxItemCollection toolboxItems = new ToolboxItemCollection();
-
-			for (int i = 0; i < typeArray.Length; i++)
-			{
-				ToolboxItem toolboxItem = new ToolboxItem();
-
-				toolboxItem.Type = typeArray[i];
-				toolboxItem.Name = typeArray[i].Name;
-				toolboxItems.Add(toolboxItem);
-			}
-
-			toolboxTab.ToolboxItems = toolboxItems;
-		}
+// 		private void PopulateToolboxItems(ToolboxTab toolboxTab)
+// 		{
+// 			if (toolboxTab == null)
+// 				return;
+// 
+// 			Type[] typeArray = null;
+// 
+// 			switch (toolboxTab.Name)
+// 			{
+// 				case Strings.WindowsForms:
+// 					typeArray = windowsFormsToolTypes;
+// 					break;
+// 				case Strings.Components:
+// 					typeArray = componentsToolTypes;
+// 					break;
+// 				case Strings.Data:
+// 					typeArray = dataToolTypes;
+// 					break;
+// 				case Strings.UserControls:
+// 					typeArray = userControlsToolTypes;
+// 					break;
+// 				default:
+// 					break;
+// 			}
+// 
+// 			ToolboxItemCollection toolboxItems = new ToolboxItemCollection();
+// 
+// 			for (int i = 0; i < typeArray.Length; i++)
+// 			{
+// 				ToolboxItem toolboxItem = new ToolboxItem();
+// 
+// 				toolboxItem.Type = typeArray[i];
+// 				toolboxItem.Name = typeArray[i].Name;
+// 				toolboxItems.Add(toolboxItem);
+// 			}
+// 
+// 			toolboxTab.ToolboxItems = toolboxItems;
+// 		}
 
 		private ToolboxTabCollection PopulateToolboxTabs(XmlDocument xmlDocument)
 		{

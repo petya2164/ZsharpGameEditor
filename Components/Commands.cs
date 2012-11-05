@@ -27,6 +27,7 @@ namespace ZGE.Components
     {
         public int Count;  //Set for a fixed nr of iterations
         public delegate bool BoolMethod(ZComponent caller);
+        [CategoryAttribute("Expressions")]
         public ZCode<BoolMethod> WhileExp = new ZCode<BoolMethod>();
 
         [Browsable(false)]
@@ -63,6 +64,7 @@ namespace ZGE.Components
     public class Condition : ZCommand
     {
         public delegate bool BoolMethod(ZComponent caller);
+        [CategoryAttribute("Expressions")]
         public ZCode<BoolMethod> Expression = new ZCode<BoolMethod>();
 
         [Browsable(false)]

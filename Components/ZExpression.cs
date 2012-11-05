@@ -9,6 +9,7 @@ namespace ZGE.Components
     public class ZExpression : ZCommand
     {
         public delegate void ModelMethod(ZComponent caller);
+        [CategoryAttribute("Expressions")]
         public ZCode<ModelMethod> Expression = new ZCode<ModelMethod>();
 
         public ZExpression()
