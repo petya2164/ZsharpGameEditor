@@ -52,6 +52,10 @@ namespace ZGE.Components
             //Owner = owner;
             ZComponent.App.AddCodeLike(this);
         }
+        ~CodeLike()
+        {
+            if (ZComponent.App != null) ZComponent.App.RemoveCodeLike(this);
+        }
 
         public override string ToString()
         {

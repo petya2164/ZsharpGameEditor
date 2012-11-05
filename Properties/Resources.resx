@@ -117,39 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ArgumentExceptionMessageParameter" xml:space="preserve">
-    <value>Parameter is expected to be an instance of the type 'Type' or 'Guid'.</value>
-  </data>
-  <data name="ContextMenuAddChildText" xml:space="preserve">
-    <value>Add child element</value>
-  </data>
-  <data name="ContextMenuDeleteText" xml:space="preserve">
-    <value>Delete element</value>
-  </data>
-  <data name="ContextMenuName" xml:space="preserve">
-    <value>XmlEditorContextMenu</value>
-  </data>
-  <data name="DefaultAttributeName" xml:space="preserve">
-    <value>NewAttribute</value>
-  </data>
-  <data name="DefaultChildName" xml:space="preserve">
-    <value>NewChildNode</value>
-  </data>
-  <data name="EditorCaption" xml:space="preserve">
-    <value> [Design]</value>
-  </data>
-  <data name="EditorPaneName" xml:space="preserve">
-    <value>TreeViewEditorPane</value>
-  </data>
-  <data name="ErrorParsingSourceXML" xml:space="preserve">
-    <value>Error parsing source XML</value>
-  </data>
-  <data name="ExceptionMessageNullFactoryType" xml:space="preserve">
-    <value>Factory type can not be null.</value>
-  </data>
-  <data name="ExceptionMessageWrongAction" xml:space="preserve">
-    <value>Is not a valid PropertyChangeAction</value>
-  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="i0" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\i0.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -157,35 +124,8 @@
   <data name="Images_32bit" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Images_32bit.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="InvalidNodeName" xml:space="preserve">
-    <value>Invalid tree node label</value>
-  </data>
-  <data name="InvalidNodeNameEmpty" xml:space="preserve">
-    <value>Node Name cannot be blank</value>
-  </data>
-  <data name="MessageBoxCaptionLabelEditError" xml:space="preserve">
-    <value>Label edit error</value>
-  </data>
-  <data name="ParameterNameFactoryType" xml:space="preserve">
-    <value>factoryType</value>
-  </data>
-  <data name="ShowPropertiesText" xml:space="preserve">
-    <value>Properties</value>
-  </data>
-  <data name="ShowPropertiesToolStripMenuItem" xml:space="preserve">
-    <value>showPropertiesToolStripMenuItem</value>
-  </data>
-  <data name="StatusMessageLabelName" xml:space="preserve">
-    <value>StatusMessageLabel</value>
-  </data>
-  <data name="TreeViewEditorControlName" xml:space="preserve">
-    <value>XmlTreeViewEditor</value>
-  </data>
   <data name="xmlatt" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\xmlatt.gif;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="XmlAttributesTypeString" xml:space="preserve">
-    <value>[Attributes Collection]</value>
   </data>
   <data name="xmlerr" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\xmlerr.gif;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

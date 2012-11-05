@@ -11,7 +11,6 @@ namespace ZGE.Components
     {
         void Render();
     }
-
     public interface IUpdateable
     {
         void Update();
@@ -39,7 +38,7 @@ namespace ZGE.Components
     }
 
     [HideComponent]
-    public class ZComponent
+    public abstract class ZComponent
     {
         [Browsable(false)]
         public static ZApplication App = null; // there can be only one ZApplication at a time
@@ -61,6 +60,7 @@ namespace ZGE.Components
 
         public ZComponent()
         {           
+            // It is not good to add components before they have a Name
             //if (App != null) App.AddComponent(this);           
         }
 
@@ -120,7 +120,7 @@ namespace ZGE.Components
 
     //Content that can be produced from ContentProducers (used for bitmaps and meshes)
     [HideComponent]
-    public class ZContent : ZComponent, INeedRefresh
+    public abstract class ZContent : ZComponent, INeedRefresh
     {
         [Browsable(false)]
         public List<ZContentProducer> Producers = new List<ZContentProducer>();

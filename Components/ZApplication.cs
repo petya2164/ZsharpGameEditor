@@ -364,6 +364,10 @@ namespace ZGE.Components
             if (!codeList.Contains(item))
                 codeList.Add(item);
         }
+        public void RemoveCodeLike(CodeLike item)
+        {            
+            codeList.Remove(item);
+        }
 
         public CodeLike FindCodeLike(string GUID)
         {

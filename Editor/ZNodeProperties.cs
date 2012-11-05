@@ -17,9 +17,31 @@ using System.Reflection;
 using System.ComponentModel;
 using System.Collections;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace ZGE
 {
+    #region XmlNodePropertyChangedEventArgs
+    /// <summary>
+    /// Provides a data for TreeNodeProperties.XmlNodePropertyChanged event.  
+    /// </summary>
+    internal class XmlNodePropertyChangedEventArgs : EventArgs
+    {
+        public XmlNodePropertyChangedEventArgs(bool needCommit, string statusString, string propName)
+            : base()
+        {
+            StatusString = statusString;
+            NeedCommit = needCommit;
+            PropName = propName;
+        }
+
+        public bool NeedCommit { get; private set; }
+        public string PropName { get; private set; }
+        public string StatusString { get; private set; }
+    }
+    #endregion
+    internal delegate void XmlNodePropertyChangedEventHandler(Object sender, XmlNodePropertyChangedEventArgs e);
+
     #region PropertyChangedEvent
     public enum PropertyChangeAction
     {
@@ -86,18 +108,15 @@ namespace ZGE
         /// </summary>
         public ZNodeProperties(object comp, object parent, object parentList, XmlNode node, TreeNode treeNode)
         {
-            if (node == null)
-            {
-                return;
-            }
+            if (node == null) return;
+            
 
             xmlNode = node;
             component = comp;
             if (parent != comp) // a component cannot be its own parent
                 parent_component = parent;
             this.parent_list = parentList as IList;
-            this.treeNode = treeNode;
-            //ConstructProperties();
+            this.treeNode = treeNode;            
         }
 
         internal String DisplayName
@@ -108,17 +127,9 @@ namespace ZGE
                 XmlAttribute attribute = xmlNode.Attributes["Name"];
                 if (attribute != null)
                     displayName = displayName + " - " + attribute.Value;
-                return displayName;
-
-                /*string type = properties.GetValue("Type") as String;
-                string name = properties.GetValue("Name") as String;
-                if (name != null && name.Length > 0)
-                    return type + " - " + name;
-                else
-                    return type;*/
+                return displayName;                
             }
         }
-
         
         /// <summary>
         /// Gets the XmlProperties object that represents current XmlNode.
@@ -176,9 +187,6 @@ namespace ZGE
                 }
             }
         }
-
-        
-
         
         /// <summary>
         /// Moves the source node to new location as child node.
@@ -207,17 +215,14 @@ namespace ZGE
         /// it has child nodes of type Element.
         ///</returns>
         private static bool IsLeafNode(XmlNode node)
-        {
-            bool hasChildElements = false;
-            // Determines whether node has element childs 
+        {            
+            // Determines whether node has child elements 
             foreach (XmlNode childNode in node.ChildNodes)
             {
                 if (childNode.NodeType == XmlNodeType.Element)
-                {
-                    hasChildElements = true;
-                }
+                    return false;                
             }
-            return (!hasChildElements);
+            return true;
         }
 
         /// <summary>
@@ -271,8 +276,8 @@ namespace ZGE
                 {
                     nodeToDeleteFrom.RemoveChild(xmlNode);
                 }
-
                 needCommit = true;
+                statusString = "XML node removed.";
             }
             catch (XmlException e)
             {
@@ -284,15 +289,10 @@ namespace ZGE
                 XmlNodePropertyChanged(this, new XmlNodePropertyChangedEventArgs(needCommit, statusString, ""));
             }
         }
-       
-        /// <summary>
-        /// If the node is a leaf node sets inner text to the NewValue.
-        /// </summary>
-        /// <param name="newValue">The new inner text for the node.</param>
-        /// <returns>True if the value has been changed, false otherwise.</returns>
-        private bool ChangeElementNodeText(string propName, string newValue)
+
+        public string SaveCodeText(string propName, string newValue, Dictionary<XmlNode, string> nodeMap)
         {
-            //Console.WriteLine("ChangeElementNodeText");
+            string result = null;
             bool found = false;
             XmlNode child = null;
 
@@ -309,13 +309,15 @@ namespace ZGE
                 }
             }
 
-            // Need to create the childNode and the CDATA section
             if (found == false)
             {
                 if (child == null)
                 {
-                    //  Create new child node
+                    // Create new child node
                     child = xmlNode.OwnerDocument.CreateNode(XmlNodeType.Element, propName, xmlNode.NamespaceURI);
+                    result = Guid.NewGuid().ToString();
+                    // Update the project nodemap
+                    nodeMap[child] = result;
                     xmlNode.AppendChild(child);
                 }
                 XmlNode cdata = xmlNode.OwnerDocument.CreateNode(XmlNodeType.CDATA, newValue, xmlNode.NamespaceURI);
@@ -323,15 +325,50 @@ namespace ZGE
                 found = true;
             }
 
-            /*if (xmlNode.InnerText.CompareTo(newValue) != 0 && IsLeafNode(xmlNode))
-                //properties.GetType() == typeof (XmlLeafNodeProperties))
-            {
-                 xmlNode.InnerText = newValue;
-                 needCommit = true;
-            }*/
-
-            return found;
+            return result;
         }
+
+        /// <summary>
+        /// If the node is a leaf node sets inner text to the NewValue.
+        /// </summary>
+        /// <param name="newValue">The new inner text for the node.</param>
+        /// <returns>True if the value has been changed, false otherwise.</returns>
+//         private bool ChangeElementNodeText(string propName, string newValue)
+//         {
+//             //Console.WriteLine("ChangeElementNodeText");
+//             bool found = false;
+//             XmlNode child = null;
+// 
+//             foreach (XmlNode childNode in xmlNode.ChildNodes)
+//             {
+//                 if (childNode.Name == propName)
+//                 {
+//                     child = childNode;
+//                     foreach (XmlCDataSection cData in childNode.ChildNodes)
+//                     {
+//                         cData.InnerText = newValue;
+//                         found = true;
+//                     }
+//                 }
+//             }
+// 
+//             // Need to create the childNode and the CDATA section
+//             if (found == false)
+//             {
+//                 //Console.WriteLine("Child node missing: Code text cannot be saved to XML.");
+//                 if (child == null)
+//                 {
+//                     //  Create new child node
+//                     child = xmlNode.OwnerDocument.CreateNode(XmlNodeType.Element, propName, xmlNode.NamespaceURI);
+//                     xmlNode.AppendChild(child);
+//                 }
+//                 XmlNode cdata = xmlNode.OwnerDocument.CreateNode(XmlNodeType.CDATA, newValue, xmlNode.NamespaceURI);
+//                 child.AppendChild(cdata);
+//                 found = true;
+//             }        
+// 
+//             return found;
+//         }
 
         /// <summary>
         /// Updates the collection of attributes for current XmlNode 
@@ -492,7 +529,7 @@ namespace ZGE
                 //    RenameNode(e.NewValue);
                 //    break;
                 case PropertyChangeAction.CodeChanged:
-                    needCommit = ChangeElementNodeText(e.PropName, e.NewValue.ToString());
+                    //needCommit = ChangeElementNodeText(e.PropName, e.NewValue.ToString());
                     break;
                 case PropertyChangeAction.AttributeChanged:
                     UpdateAttribute(e.PropName, e.NewValue);
@@ -507,6 +544,5 @@ namespace ZGE
                 XmlNodePropertyChanged(this, new XmlNodePropertyChangedEventArgs(needCommit, statusString, e.PropName));
             }
         }
-        
     }
 }

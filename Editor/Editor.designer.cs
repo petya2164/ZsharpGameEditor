@@ -611,8 +611,7 @@ namespace ZGE
             this.xmlEditor.TabIndex = 0;
             this.xmlEditor.PropertiesSetChanged += new System.EventHandler(this.xmlEditor_PropertiesSetChanged);
             this.xmlEditor.ContentChanged += new System.EventHandler(this.xmlEditor_ContentChanged);
-            this.xmlEditor.StatusStringChanged += new System.EventHandler(this.xmlEditor_StatusStringChanged);
-            this.xmlEditor.PropertiesWindowActivated += new System.EventHandler(this.xmlEditor_PropertiesWindowActivated);
+            this.xmlEditor.StatusStringChanged += new System.EventHandler(this.xmlEditor_StatusStringChanged);            
             // 
             // Editor
             // 

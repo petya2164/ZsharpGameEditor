@@ -23,11 +23,18 @@ namespace ZGE
         public ZApplication app = null;
         public XmlDocument xmlDoc = null;
         public ZTreeView treeView = null;
+        public static Editor editor;
         public Dictionary<XmlNode, string> nodeMap = new Dictionary<XmlNode, string>();
 
         public Project(string path)
         {
             filePath = path;
+        }
+
+        ~Project()
+        {
+            if (treeView != null)
+                treeView.SetProject(null);
         }
 
         public void LoadXml()
@@ -63,7 +70,9 @@ namespace ZGE
                 currentCode.Text = codeBoxText;
                 PropertyChangedEventArgs ev = new PropertyChangedEventArgs(codePropertyName, codeBoxText);
                 ev.Action = PropertyChangeAction.CodeChanged;
-                codeProperties.PropertyHolderChanged(this, ev);
+                string newGuid = codeProperties.SaveCodeText(codePropertyName, codeBoxText, nodeMap);
+                if (newGuid != null) currentCode.GUID = newGuid;
+                //codeProperties.PropertyHolderChanged(this, ev);
             }
         }
 
@@ -110,7 +119,8 @@ namespace ZGE
 
         public void FillTreeView(ZTreeView treeView)
         {
-            this.treeView = treeView;        
+            this.treeView = treeView;
+            treeView.SetProject(this);
             
             treeView.Nodes.Clear();            
 
@@ -225,6 +235,244 @@ namespace ZGE
                 props.XmlNodePropertyChanged += new XmlNodePropertyChangedEventHandler(treeView.XmlPropertiesUpdatedHandler);
             }
             return next_index;
+        }
+
+        public bool CanBeDeleted(TreeNode clickedNode)
+        {
+            if (treeView == null) return false;
+            ZNodeProperties props = clickedNode.Tag as ZNodeProperties;
+            if (props == null) return false;
+            Type type = props.component.GetType();           
+
+            // The application and member lists cannot be deleted
+            if (clickedNode.Level > 0 && !typeof(IList).IsAssignableFrom(type))
+                return true;
+
+            return false;
+        }
+
+        public static List<Type> GetDerivedTypes(Assembly assembly, Type ancestor)
+        {
+            //var assembly = Assembly.GetAssembly(typeof(ZComponent)); 
+            //string ns = "ZGE.Components";            
+            return assembly.GetTypes().Where(type => ancestor.IsAssignableFrom(type)).ToList();            
+        }
+
+        public void FillContextMenu(TreeNode clickedNode, ContextMenuStrip xmlContextMenu)
+        {
+            if (treeView == null) return;
+            xmlContextMenu.Items.Clear();
+            ZNodeProperties props = clickedNode.Tag as ZNodeProperties;
+            if (props == null) return;
+
+            Type type = props.component.GetType();
+
+            List<Type> list = new List<Type>();
+            ToolStripMenuItem mainItem = null;
+            if (props.component == app.Scene)
+            {
+                // Add gameobjects
+                list = GetDerivedTypes(app.GetType().Assembly, typeof(Model));
+                mainItem = new ToolStripMenuItem("Add GameObject", null);
+                xmlContextMenu.Items.Add(mainItem);
+                // Add group                
+                ToolStripMenuItem groupItem = new ToolStripMenuItem("Add Group", null, this.AddChildElement_Click);
+                groupItem.Tag = typeof(Group);
+                xmlContextMenu.Items.Add(groupItem);
+                
+            }
+            else if (typeof(IList).IsAssignableFrom(type))
+            {
+                // Determine what type of components can be added to the generic list
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    Type baseType = type.GetGenericArguments()[0];
+                    list = GetDerivedTypes(typeof(ZComponent).Assembly, baseType);
+                    mainItem = new ToolStripMenuItem("Add "+baseType.Name, null);
+                    xmlContextMenu.Items.Add(mainItem);
+                }
+            }
+            else if (type == typeof(Group))
+            {
+                // Any ZComponent can be added to a group
+                list = GetDerivedTypes(typeof(ZComponent).Assembly, typeof(ZComponent));
+                //list = GetDerivedTypes(app.GetType().Assembly, typeof(ZComponent));
+                mainItem = new ToolStripMenuItem("Add Component", null);
+                xmlContextMenu.Items.Add(mainItem);                
+            }
+
+            if (mainItem != null && list.Count > 0)
+            {
+                list.Sort((a, b) => a.Name.CompareTo(b.Name));
+                foreach (Type child in list)
+                {
+                    if (child.IsAbstract) continue;
+                    ToolStripMenuItem item = new ToolStripMenuItem(child.Name, null, this.AddChildElement_Click);
+                    item.Tag = child;                    
+                    mainItem.DropDownItems.Add(item);
+                }
+            }            
+
+            // The application and member lists cannot be deleted
+            if (CanBeDeleted(clickedNode))
+            {
+                if (xmlContextMenu.Items.Count > 0) xmlContextMenu.Items.Add(new ToolStripSeparator());
+                xmlContextMenu.Items.Add("Delete component", null, treeView.DeleteElement_Click);
+            }          
+        }
+
+        public void DeleteComponent(ZNodeProperties props)
+        {
+            ZComponent comp = props.component as ZComponent;
+            if (comp == null) return;
+
+            nodeMap.Remove(props.xmlNode);
+           
+            ZComponent.App.RemoveComponent(comp);     // remove the old component
+            // We should always set the Owner <= old Owner has been copied to newObj
+
+            if (comp.OwnerList != null)  // delete reference from OwnerList            
+                comp.OwnerList.Remove(comp);
+            else if (comp.Owner != null) // delete reference from Owner's Children            
+                comp.Owner.Children.Remove(comp);                
+            comp.Owner = null;
+            
+            // If the comp was selected in the editor, then clear that reference
+            if (editor.SelectedComponent == comp)            
+                editor.SelectedComponent = null;
+            if (app.SelectedObject == comp)
+                app.SelectedObject = null;
+
+            // Delete named references from the app
+            if (comp.HasName())
+            {                
+                FieldInfo fi = app.GetType().GetField(comp.Name, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                if (fi != null && fi.FieldType == comp.GetType())
+                {
+                    Console.WriteLine("Nulling named reference {0} / {1}", fi.Name, fi.FieldType.Name);
+                    fi.SetValue(app, null);
+                }                
+            }
+            if (typeof(Model).IsAssignableFrom(comp.GetType()))
+            {
+                ZComponent.App.RemoveModel(comp as Model);
+                Model newMod = comp as Model;
+                // Refresh scene treeview in the editor (only necessary for GameObjects)
+                if (newMod != null && newMod.Prototype == false)
+                    editor.RefreshSceneTreeview();                
+            }
+            props.component = null;
+        }
+
+        public ZComponent CreateComponent(Type type, ZComponent parent, IList parent_list)
+        {
+            if (app == null) return null;
+            ZComponent comp = null;
+            if (type != null)
+            {
+                //Console.WriteLine("Creating instance of: {0}", type.FullName);
+                comp = (ZComponent) Activator.CreateInstance(type);
+                app.AddComponent(comp);
+                if (parent != null)
+                {
+                    comp.Owner = parent;
+                    if (parent_list != null)
+                    {
+                        comp.OwnerList = parent_list;
+                        parent_list.Add(comp);
+                        // components in member lists are not considered children!
+                    }
+                    else
+                        parent.Children.Add(comp);
+                }                
+            }
+            return comp;
+        }
+
+
+        private void AddChildElement_Click(object sender, EventArgs e)
+        {
+            if (treeView == null) return;
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            if (item == null) return;
+            Type childType = item.Tag as Type;
+            if (childType == null) return;
+            Console.WriteLine("Add child called {0}", childType.Name);
+            TreeNode parentNode = treeView.SelectedNode;
+            ZNodeProperties parentProps = parentNode.Tag as ZNodeProperties;
+            if (parentProps == null) return;
+            string childNodeName = childType.Name;
+            if (childType.BaseType == typeof(Model)) // this is a GameObject
+                childNodeName = "GameObject";
+
+            try
+            {
+                XmlNode xmlNode = parentProps.xmlNode;
+                //  Create new leaf node
+                XmlNode newXmlNode = xmlNode.OwnerDocument.CreateNode(XmlNodeType.Element, childNodeName, xmlNode.NamespaceURI);
+                string currentGuid = Guid.NewGuid().ToString();
+                nodeMap[newXmlNode] = currentGuid;
+                xmlNode.AppendChild(newXmlNode);
+
+                TreeNode newTreeNode = new TreeNode(childNodeName);
+                parentNode.Nodes.Add(newTreeNode);
+
+                ZComponent parent = parentProps.component as ZComponent;
+                if (parent == null) parent = parentProps.parent_component as ZComponent;  // component is a List
+                ZComponent comp = null;
+
+                if (childType.BaseType == typeof(Model)) // this is a GameObject
+                {
+                    // clone the corresponding Model
+
+                    // assign Model attribute
+                }
+                else
+                {                    
+                    comp = CreateComponent(childType, parent, parentProps.component as IList);          
+
+                    if (childNodeName == "Model")
+                    {
+                        Model model = comp as Model;
+                        if (model != null) model.GUID = currentGuid;
+                    }
+
+                    // create child XML nodes for generic member lists
+                }                                
+          
+                // recursively build subtree for member lists
+//                 int i = 0;
+//                 foreach (XmlNode childNode in newXmlNode.ChildNodes)
+//                 {
+//                     if (childNode.NodeType == XmlNodeType.Element)
+//                     {
+//                         i = ProcessNode(comp, null, i, newTreeNode.Nodes, childNode);                    
+//                     }
+//                 }
+                
+                // construct ZNodeProperties object for the TreeNode and assign it to Tag property
+                ZNodeProperties props = new ZNodeProperties(comp, parent, parentProps.component as IList, newXmlNode, newTreeNode);
+                comp.Tag = props;            
+                newTreeNode.Tag = props;                
+                props.XmlNodePropertyChanged += new XmlNodePropertyChangedEventHandler(treeView.XmlPropertiesUpdatedHandler);
+
+                ZTreeView.HighlightTreeNode(newTreeNode, props);
+                ZTreeView.HighlightTreeNode(parentNode, parentProps);
+                parentNode.Expand();
+                newTreeNode.Expand();
+                treeView.SelectedNode = newTreeNode;
+
+                // Tree node properties have been updated
+                // Force parent to reload them to the PropertyBrowser
+                treeView.OnPropertiesChanged();
+                treeView.Invalidate();
+                treeView.StatusString = "Child node added";                
+            }
+            catch (XmlException ex)
+            {
+                treeView.StatusString = "Exception occurred: " + ex.Message;
+                Console.WriteLine(ex.ToString());
+            }            
         }
     }
 }

@@ -49,6 +49,7 @@ namespace ZGE
         {
             InitializeComponent();
             CodeGenerator.editor = this;
+            Project.editor = this;
 
             // Use C# highlighting strategy
             codeBox.Document.HighlightingStrategy =
@@ -198,7 +199,7 @@ namespace ZGE
                 AddElementToTree(element, newNode.Nodes);
         }
 
-        private void RefreshSceneTreeview()
+        public void RefreshSceneTreeview()
         {
             sceneTreeView.Nodes.Clear();
             foreach (ZComponent comp in app.Scene)
@@ -481,12 +482,7 @@ namespace ZGE
             if (xmlEditor.SelectedComponent == null) return;
             ZComponent comp = xmlEditor.SelectedComponent as ZComponent;
             if (comp != null) SelectedComponent = comp;        
-        }
-
-        private void xmlEditor_PropertiesWindowActivated(object sender, EventArgs e)
-        {
-
-        }
+        }        
 
         private void xmlEditor_StatusStringChanged(object sender, EventArgs e)
         {
