@@ -36,7 +36,7 @@ namespace ZGE
             // xmlContextMenu
             // 
             this.xmlContextMenu.Name = "XmlContextMenu";
-            this.xmlContextMenu.Size = new System.Drawing.Size(181, 26);
+            this.xmlContextMenu.Size = new System.Drawing.Size(61, 4);
             // 
             // ZTreeView
             // 
@@ -45,7 +45,6 @@ namespace ZGE
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.HideSelection = false;
-            this.LabelEdit = true;
             this.Location = new System.Drawing.Point(4, 30);
             this.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeViewEditor_AfterLabelEdit);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.TreeViewEditor_DragDrop);

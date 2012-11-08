@@ -253,7 +253,7 @@ namespace ZGE
             {
                 treeNode.Tag = props;
                 ZTreeView.HighlightTreeNode(treeNode, props);
-                props.XmlNodePropertyChanged += new XmlNodePropertyChangedEventHandler(_treeView.XmlPropertiesUpdatedHandler);
+                //props.XmlNodePropertyChanged += new XmlNodePropertyChangedEventHandler(_treeView.UpdateNodeText);
             }
         }
 

@@ -235,11 +235,14 @@ namespace ZGE
             SelectedComponent = null;
             if (fullClear) this.Text = DefaultFormTitle;
             sceneTreeView.Nodes.Clear();
-            sceneTreeView.Invalidate();
-            xmlTreeView.Nodes.Clear();
-            xmlTreeView.Invalidate();
+            //sceneTreeView.Invalidate();
+            xmlTree.Nodes.Clear();
+            xmlTree.Invalidate();
             if (fullClear)
+            {
                 project = null;
+                xmlTree.SetProject(null);
+            }
             else
                 project.ClearCode();
             app = null;
@@ -266,10 +269,11 @@ namespace ZGE
                 //this.Enabled = false;
 
                 //Try to load the Xml document
-                project = Project.CreateProject(filePath, xmlEditor, codegen);
+                project = Project.CreateProject(filePath, xmlTree, codegen);
                 if (project != null && project.app != null)
                 {
                     SetApplication();
+                    project.XMLChanged += project_XMLChanged;
                     RefreshSceneTreeview();
 
                     glControl1_Load(this, null);
@@ -331,7 +335,7 @@ namespace ZGE
                 statusLabel.Text = "Saving project...";
                 using (StreamWriter writer = new StreamWriter(project.filePath, false))
                 {
-                    writer.Write(xmlEditor.Content);                
+                    writer.Write(project.XMLText);                
                 }
                 statusLabel.Text = "Project saved.";
             }
@@ -489,29 +493,11 @@ namespace ZGE
         private void toolboxBtn_Click(object sender, EventArgs e)
         {
             toolboxSplitter.Panel1Collapsed = !toolboxSplitter.Panel1Collapsed;
-        }
-
-        private void xmlEditor_ContentChanged(object sender, EventArgs e)
-        {
-            if (_xmlForm.Visible)
-                _xmlForm.SetText(xmlEditor.Content);
-        }
-
-        private void xmlEditor_PropertiesSetChanged(object sender, EventArgs e)
-        {
-            if (xmlEditor.SelectedComponent == null) return;
-            ZComponent comp = xmlEditor.SelectedComponent as ZComponent;
-            if (comp != null) SelectedComponent = comp;        
-        }        
-
-        private void xmlEditor_StatusStringChanged(object sender, EventArgs e)
-        {
-            statusLabel.Text = xmlEditor.StatusString;
-        }
+        }       
 
         private void showXmlBtn_Click(object sender, EventArgs e)
         {
-            _xmlForm.SetText(xmlEditor.Content);
+            _xmlForm.SetText(project.XMLText);
             _xmlForm.Show();
         }
 
@@ -555,7 +541,7 @@ namespace ZGE
                 this.Cursor = Cursors.WaitCursor;                
 
                 //Try to rebuild project from the XML document stored in memory
-                project.Rebuild(xmlEditor, codegen);
+                project.Rebuild(xmlTree, codegen);
                 if (project.app != null)
                 {
                     SetApplication();
@@ -594,7 +580,7 @@ namespace ZGE
 #endif
                 this.Cursor = Cursors.WaitCursor;
                 //Console.WriteLine("SelectedComponent is {0}", SelectedComponent.GetType().AssemblyQualifiedName);
-                if (project.RecompileApplication(codegen, xmlEditor))
+                if (project.RecompileApplication(codegen, xmlTree))
                 {
                     SetApplication();
                     //app.Pause();                
@@ -632,6 +618,24 @@ namespace ZGE
             app.Pause();
         }
 
+        private void xmlTree_SelectedNodeChanged(object sender, EventArgs e)
+        {
+            if (xmlTree.SelectedComponent == null) return;
+            ZComponent comp = xmlTree.SelectedComponent as ZComponent;
+            if (comp != null) SelectedComponent = comp;
+        }        
+
+        private void xmlTree_StatusStringChanged(object sender, EventArgs e)
+        {
+            statusLabel.Text = xmlTree.StatusString;
+        }
+
+        private void project_XMLChanged(object sender, EventArgs e)
+        {
+            if (_xmlForm.Visible && project != null)
+                _xmlForm.SetText(project.XMLText);
+        }
+
         private void propertyGrid1_PropertyValueChanged(object sender, PropertyValueChangedEventArgs e)
         {
             //Console.WriteLine("Property Value Changed.");
@@ -639,7 +643,7 @@ namespace ZGE
             //if (g.Parent != null)
                 //Console.WriteLine("Parent: {0}",g.Parent.ToString());
             ZComponent comp = selectedComponent as ZComponent;
-            if (comp != null)
+            if (comp != null && project != null)
             {
                 ZNodeProperties nodeProps = comp.Tag as ZNodeProperties;                
                 if (nodeProps != null)
@@ -647,11 +651,9 @@ namespace ZGE
                     GridItem parent = g.Parent;
                     PropertyChangedEventArgs ev = null;
                     if (parent != null && parent.GridItemType == GridItemType.Property)
-                        ev = new PropertyChangedEventArgs(parent.PropertyDescriptor.Name, parent.Value);
+                        project.UpdateAttribute(nodeProps, parent.PropertyDescriptor.Name, parent.Value);
                     else
-                        ev = new PropertyChangedEventArgs(g.PropertyDescriptor.Name, g.Value);
-                    ev.Action = PropertyChangeAction.AttributeChanged;
-                    nodeProps.PropertyHolderChanged(sender, ev);
+                        project.UpdateAttribute(nodeProps, g.PropertyDescriptor.Name, g.Value);                    
                 }
                 // This component might need a full refresh (e.g. MeshProducers)
                 INeedRefresh obj = comp as INeedRefresh;
@@ -659,6 +661,7 @@ namespace ZGE
                 if (g.PropertyDescriptor.Name == "Name")
                 {
                     ZComponent.App.RefreshName(comp, g.Value as string);
+                    if (nodeProps != null) xmlTree.UpdateNodeText(nodeProps);
                     // TODO: Also update named references in XML attributes
                 }
                 if (comp == app && g.PropertyDescriptor.Name == "VSync")

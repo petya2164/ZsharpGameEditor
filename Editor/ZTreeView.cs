@@ -37,12 +37,12 @@ namespace ZGE
             ImageIndexError
         };
 
-        
+
         // Source document
         internal XmlDocument xmlDocument = new XmlDocument();
         // Status string
         private string statusString;
-        
+
         // Set to false if user clicked on the item in order to select it, 
         // is used to skip the editing of the tree node label, 
         // set to true if user clicked on the currently selected item in order to initiate
@@ -51,14 +51,17 @@ namespace ZGE
 
         // Store the last selected tree node item
         //private TreeNode mouseDownNode;
+        private TreeNode prevDropNode = null;
+        public enum DropSide { Top, Inside, Bottom };
+        private DropSide prevDropSide = DropSide.Top;
 
         internal Project project;
         internal void SetProject(Project project)
         {
             this.project = project;
         }
-       
-        
+
+
         /// <summary>
         /// Initializes a new instance of the TreeViewEditor class.
         /// </summary>
@@ -68,7 +71,7 @@ namespace ZGE
             //this.xmlDocument.PreserveWhitespace = true;
             this.ImageList = CreateImageList();
         }
-        
+
         /// <summary>
         /// Status string of the control.
         /// </summary>
@@ -91,23 +94,6 @@ namespace ZGE
             }
         }
 
-        /// <summary>
-        /// Returns current XML string representation of the tree.
-        /// </summary>
-        public string Content
-        {
-            get
-            {
-                if (xmlDocument.DocumentElement != null)
-                {
-                    return xmlDocument.ToIndentedString();
-                }
-                else
-                {
-                    return "XML missing";
-                }
-            }
-        }
 
         /*internal ZNodeProperties ZNodePropertiesForSelectedNode
         {
@@ -134,13 +120,13 @@ namespace ZGE
                 TreeNode node = SelectedNode;
                 if (node == null || node.Tag == null) return null;
                 ZNodeProperties nodeProperties = node.Tag as ZNodeProperties;
-                if (nodeProperties != null)                
+                if (nodeProperties != null)
                     return nodeProperties.Component;
-                
+
                 return null;
             }
         }
-        
+
 
         #region Events
         /// <summary>
@@ -148,13 +134,9 @@ namespace ZGE
         /// </summary>
         public event EventHandler StatusStringChanged;
         /// <summary>
-        /// Fires when the content is updated by control.
-        /// </summary>
-        public event EventHandler ContentChanged;
-        /// <summary>
         /// Fires when properties set for selected node is changed.
         /// </summary>
-        public event EventHandler PropertiesSetChanged;
+        public event EventHandler SelectedNodeChanged;
         /// <summary>
         /// Fires when properties window is called from context menu.
         /// </summary>
@@ -186,26 +168,38 @@ namespace ZGE
             if (project == null) return;
             if (e.KeyCode == Keys.Delete && e.Shift)
             {
-                if (SelectedNode != null && project.CanBeDeleted(SelectedNode))                
-                    DeleteElement_Click(this, new EventArgs());                
+                if (SelectedNode != null && project.CanBeDeleted(SelectedNode))
+                    project.DeleteElement_Click(this, new EventArgs());
             }
 
-//             if (e.KeyCode == Keys.F2)
-//             {
-//                 if (this.SelectedNode != null && !this.SelectedNode.IsEditing && this.SelectedNode.Tag is ZNodeProperties)
-//                 {
-//                     suppressLabelEdit = false;
-//                     this.SelectedNode.BeginEdit();
-//                 }
-//             }
+            //             if (e.KeyCode == Keys.F2)
+            //             {
+            //                 if (this.SelectedNode != null && !this.SelectedNode.IsEditing && this.SelectedNode.Tag is ZNodeProperties)
+            //                 {
+            //                     suppressLabelEdit = false;
+            //                     this.SelectedNode.BeginEdit();
+            //                 }
+            //             }
         }
 
         private void TreeViewEditor_ItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
         {
+            if (project == null) return;
             // Move the dragged node when the left mouse button is used.
             if (e.Button == MouseButtons.Left)
             {
-                DoDragDrop(e.Item, DragDropEffects.Move | DragDropEffects.Copy);
+                TreeNode node = e.Item as TreeNode;
+                if (node != null)
+                {
+                    // If a node can be deleted, then it can be dragged as well
+                    if (project != null && project.CanBeDeleted(node))
+                    {
+                        prevDropNode = null;
+                        //this.SelectedNode = node;
+                        //OnSelectedNodeChanged();
+                        DoDragDrop(e.Item, DragDropEffects.Move);
+                    }
+                }
             }
         }
 
@@ -215,89 +209,221 @@ namespace ZGE
             e.Effect = e.AllowedEffect;
         }
 
+        private bool IsDragAllowed(TreeNode dragNode, TreeNode dropNode, DropSide dropSide)
+        {
+            // Deny drag and drop when
+            //  destinationNode is the same as source 
+            //  destination node is a parent of a source node
+            //  destination and source node belong to the different TreeViews
+            if (dragNode == null || dropNode == null || dragNode == dropNode
+                || (dragNode.Parent != null && dragNode.Parent == dropNode)
+                || dragNode.TreeView != dropNode.TreeView)
+            {
+                return false;
+            }
+            if (project != null && project.IsDragAllowed(dragNode, dropNode, dropSide == DropSide.Inside))
+                return true;
+            return false;
+        }
+
         /// <summary>
         /// Process the DragOver node in order to determine whether drop action as appropriate
         /// </summary>
         private void TreeViewEditor_DragOver(object sender, System.Windows.Forms.DragEventArgs e)
         {
+            e.Effect = DragDropEffects.None; // By default, drag and drop is denied
+            if (project == null) return;
+
             TreeView senderTreeView = sender as TreeView;
-            if (senderTreeView == null)
-            {
-                return;
-            }
+            if (senderTreeView != this) return;
+
+            // Determine source and destination nodes
+            Point pt = PointToClient(new Point(e.X, e.Y));
+            TreeNode dropNode = GetNodeAt(pt);
+            if (dropNode == null) return;
 
             if (e.Data.GetDataPresent("System.Drawing.Design.ToolboxItem", false))
             {
-                // Determine source and destination nodes
-                Point pt = senderTreeView.PointToClient(new Point(e.X, e.Y));
-                //TreeNode sourceTreeNode = e.Data.GetData("System.Windows.Forms.TreeNode") as TreeNode;
-                TreeNode destinationTreeNode = senderTreeView.GetNodeAt(pt);
+                ToolboxItem source = e.Data.GetData("System.Drawing.Design.ToolboxItem") as ToolboxItem;
 
-                // Drop is available - highlight destination node
-                this.SelectedNode = destinationTreeNode;
-                if (this.SelectedNode != null)
+                if (source != null && dropNode != null)
                 {
-                    this.SelectedNode.Expand();
+                    // Drop is available - highlight destination node
+                    this.SelectedNode = dropNode;
+                    if (project.IsChildElementAllowed(dropNode, source.TypeName))
+                    {
+                        if (this.SelectedNode != null)
+                            this.SelectedNode.Expand();
+                        e.Effect = DragDropEffects.Copy;
+                    }
                 }
-                e.Effect = DragDropEffects.Copy;
-                return;
-            }
+                //e.Effect = DragDropEffects.None;
 
+            }
             // Fired continuously while a tree node is dragged. We need to override this to 
             // provide appropriate feedback
-            if (e.Data.GetDataPresent("System.Windows.Forms.TreeNode", false))
+            else if (e.Data.GetDataPresent("System.Windows.Forms.TreeNode", false))
             {
-                // Deny drag and drop
-                e.Effect = DragDropEffects.None;
-                return;
+                TreeNode dragNode = e.Data.GetData("System.Windows.Forms.TreeNode") as TreeNode;
+                if (dragNode == null) return;
+                int OffsetY = pt.Y - dropNode.Bounds.Top;
+                bool isList = project.IsList(dropNode);
+                bool isGroup = project.IsGroup(dropNode);                
+
+                if (isList) // Adding a child is the only option for a list
+                {
+                    if (IsDragAllowed(dragNode, dropNode, DropSide.Inside))
+                    {
+                        e.Effect = DragDropEffects.Move;
+                        if (dropNode != prevDropNode || prevDropSide != DropSide.Inside)
+                        {
+                            prevDropNode = dropNode;
+                            prevDropSide = DropSide.Inside;
+                            DrawAddToFolderPlaceholder(dropNode);
+                        }
+                    }
+                }
+                else if (isGroup) // There are 3 options for a Group
+                {
+                    if (OffsetY < (dropNode.Bounds.Height / 3)) // top third
+                    {
+                        if (IsDragAllowed(dragNode, dropNode, DropSide.Top))
+                        {
+                            e.Effect = DragDropEffects.Move;
+                            if (prevDropNode != dropNode || prevDropSide != DropSide.Top)
+                            {
+                                prevDropNode = dropNode;
+                                prevDropSide = DropSide.Top;
+                                DrawLeafTopPlaceholders(dropNode);
+                            }
+                        }
+                    }
+                    // It is not allowed to drag a node just below an expanded Group node
+                    else if (OffsetY > (2 * dropNode.Bounds.Height / 3) && dropNode.IsExpanded == false) // bottom third
+                    {
+                        if (IsDragAllowed(dragNode, dropNode, DropSide.Bottom))
+                        {
+                            e.Effect = DragDropEffects.Move;
+                            if (prevDropNode != dropNode || prevDropSide != DropSide.Bottom)
+                            {
+                                prevDropNode = dropNode;
+                                prevDropSide = DropSide.Bottom;
+                                DrawLeafBottomPlaceholders(dropNode);
+                            }
+                        }
+                    }
+                    else // middle => Add dragComp as a child
+                    {
+                        if (IsDragAllowed(dragNode, dropNode, DropSide.Inside))
+                        {
+                            e.Effect = DragDropEffects.Move;
+                            if (dropNode != prevDropNode || prevDropSide != DropSide.Inside)
+                            {
+                                prevDropNode = dropNode;
+                                prevDropSide = DropSide.Inside;
+                                DrawAddToFolderPlaceholder(dropNode);
+                            }
+                        }
+                    }
+                }
+                else // 2 options for an ordinary component: Top or Bottom
+                {
+                    if (IsDragAllowed(dragNode, dropNode, DropSide.Top))
+                    {
+                        e.Effect = DragDropEffects.Move;
+                        if (OffsetY < (dropNode.Bounds.Height / 2)) // top half
+                        {
+                            if (prevDropNode != dropNode || prevDropSide != DropSide.Top)
+                            {
+                                prevDropNode = dropNode;
+                                prevDropSide = DropSide.Top;
+                                DrawLeafTopPlaceholders(dropNode);
+                            }
+                        }
+                        else  // bottom half
+                        {
+                            if (prevDropNode != dropNode || prevDropSide != DropSide.Bottom)
+                            {
+                                prevDropNode = dropNode;
+                                prevDropSide = DropSide.Bottom;
+                                DrawLeafBottomPlaceholders(dropNode);
+                            }
+                        }
+                    }
+                }
+
+                if (e.Effect == DragDropEffects.None)
+                {
+                    // Need to clear the drop markers, but only once to avoid flickering!
+                    if (prevDropNode != null)
+                    {
+                        prevDropNode = null;
+                        Refresh();
+                    }
+                }
+
 
                 // Determine source and destination nodes
-//                 Point pt = senderTreeView.PointToClient(new Point(e.X, e.Y));
-//                 TreeNode sourceTreeNode = e.Data.GetData("System.Windows.Forms.TreeNode") as TreeNode;
-//                 TreeNode destinationTreeNode = senderTreeView.GetNodeAt(pt);
-// 
-//                 // Deny drag and drop when
-//                 //  destinationNode is the same as source 
-//                 //  destination node is a parent of a source node
-//                 //  destination and source node belong to the different TreeViews
-//                 if (sourceTreeNode == null || destinationTreeNode == null
-//                     || sourceTreeNode == destinationTreeNode
-//                     || (sourceTreeNode.Parent != null && sourceTreeNode.Parent == destinationTreeNode)
-//                     || sourceTreeNode.TreeView != destinationTreeNode.TreeView)
-//                 {
-//                     e.Effect = DragDropEffects.None;
-//                     return;
-//                 }
-// 
-//                 // if destination node lies in a subtree of source node - restrict drop action to avoid circles
-//                 TreeNode checkParentNode = destinationTreeNode.Parent;
-//                 while (checkParentNode != null)
-//                 {
-//                     if (checkParentNode == sourceTreeNode)
-//                     {
-//                         e.Effect = DragDropEffects.None;
-//                         return;
-//                     }
-//                     checkParentNode = checkParentNode.Parent;
-//                 }
-// 
-//                 // Drop is available - highlight destination node
-//                 this.SelectedNode = destinationTreeNode;
-//                 if (this.SelectedNode != null)
-//                 {
-//                     this.SelectedNode.Expand();
-//                 }
-// 
-//                 // determine a type of drug and drop action (move or copy)
-//                 if ((e.KeyState & 8) == 8)
-//                 {
-//                     // CTRL Keystate for copy
-//                     e.Effect = DragDropEffects.Copy;
-//                 }
-//                 else
-//                 {
-//                     e.Effect = DragDropEffects.Move;
-//                 }
+                //                 Point pt = senderTreeView.PointToClient(new Point(e.X, e.Y));
+                //                 TreeNode sourceTreeNode = e.Data.GetData("System.Windows.Forms.TreeNode") as TreeNode;
+                //                 TreeNode destinationTreeNode = senderTreeView.GetNodeAt(pt);
+                // 
+                //                 // Deny drag and drop when
+                //                 //  destinationNode is the same as source 
+                //                 //  destination node is a parent of a source node
+                //                 //  destination and source node belong to the different TreeViews
+                //                 if (sourceTreeNode == null || destinationTreeNode == null
+                //                     || sourceTreeNode == destinationTreeNode
+                //                     || (sourceTreeNode.Parent != null && sourceTreeNode.Parent == destinationTreeNode)
+                //                     || sourceTreeNode.TreeView != destinationTreeNode.TreeView)
+                //                 {
+                //                     e.Effect = DragDropEffects.None;
+                //                     return;
+                //                 }
+                // 
+                //                 // if destination node lies in a subtree of source node - restrict drop action to avoid circles
+                //                 TreeNode checkParentNode = destinationTreeNode.Parent;
+                //                 while (checkParentNode != null)
+                //                 {
+                //                     if (checkParentNode == sourceTreeNode)
+                //                     {
+                //                         e.Effect = DragDropEffects.None;
+                //                         return;
+                //                     }
+                //                     checkParentNode = checkParentNode.Parent;
+                //                 }
+                // 
+                //                 // Drop is available - highlight destination node
+                //                 this.SelectedNode = destinationTreeNode;
+                //                 if (this.SelectedNode != null)
+                //                 {
+                //                     this.SelectedNode.Expand();
+                //                 }
+                // 
+                //                 // determine a type of drug and drop action (move or copy)
+                //                 if ((e.KeyState & 8) == 8)
+                //                 {
+                //                     // CTRL Keystate for copy
+                //                     e.Effect = DragDropEffects.Copy;
+                //                 }
+                //                 else
+                //                 {
+                //                     e.Effect = DragDropEffects.Move;
+                //                 }
+            }
+            //scrolling code
+            int delta = Height - pt.Y;
+            if ((delta < Height / 2) && (delta > 0))
+            {
+                TreeNode tn = GetNodeAt(pt);
+                if (tn.NextVisibleNode != null)
+                    tn.NextVisibleNode.EnsureVisible();
+            }
+            if ((delta > Height / 2) && (delta < Height))
+            {
+                TreeNode tn = GetNodeAt(pt);
+                if (tn.PrevVisibleNode != null)
+                    tn.PrevVisibleNode.EnsureVisible();
             }
         }
 
@@ -306,18 +432,16 @@ namespace ZGE
         /// </summary>
         private void TreeViewEditor_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
         {
+            if (project == null) return;
             StatusString = "DragDrop started";
             TreeView senderTreeView = sender as TreeView;
-            if (senderTreeView == null)
-            {
-                StatusString = "sender is not treeview";
-                return;
-            }
+            if (senderTreeView != this) return;
 
-            Point pt = senderTreeView.PointToClient(new Point(e.X, e.Y));
-            TreeNode destinationTreeNode = senderTreeView.GetNodeAt(pt);
+            Point pt = PointToClient(new Point(e.X, e.Y));
+            TreeNode dropNode = GetNodeAt(pt);
+            if (dropNode == null) return;
 
-            if (!e.Data.GetDataPresent("System.Windows.Forms.TreeNode", false))
+            if (e.Data.GetDataPresent("System.Drawing.Design.ToolboxItem", false))
             {
                 StatusString = "Data is not TreeNode";
                 if (e.Data.GetDataPresent("System.Drawing.Design.ToolboxItem"))
@@ -325,31 +449,32 @@ namespace ZGE
                     StatusString = "Data is ToolboxItem";
                     ToolboxItem source = e.Data.GetData("System.Drawing.Design.ToolboxItem") as ToolboxItem;
 
-                    if (source == null || destinationTreeNode == null)
+                    if (source == null || dropNode == null)
                     {
                         StatusString = "Missing source or dest";
                         return;
-                    }
-                    if (project != null)
-                        project.AddChildElement(destinationTreeNode, source.TypeName);
-                    //AddChildNode(destinationTreeNode, source.DisplayName);
+                    }                   
+                    project.AddChildElement(dropNode, source.TypeName);
                 }
-                return;
             }
-
-            TreeNode sourceTreeNode = e.Data.GetData("System.Windows.Forms.TreeNode") as TreeNode;
-
-            // Deny drag and drop when
-            //  destinationNode is the same as source 
-            //  destination node is a parent of a source node
-            //  destination and source node belong to the different TreeViews
-            if (sourceTreeNode == null || destinationTreeNode == null
-                || sourceTreeNode == destinationTreeNode
-                || (sourceTreeNode.Parent != null && sourceTreeNode.Parent == destinationTreeNode)
-                || sourceTreeNode.TreeView != destinationTreeNode.TreeView)
+            else if (e.Data.GetDataPresent("System.Windows.Forms.TreeNode", false))
             {
-                return;
+                TreeNode dragNode = e.Data.GetData("System.Windows.Forms.TreeNode") as TreeNode;
+                if (dragNode == null) return;
+                if (prevDropNode == dropNode && e.Effect == DragDropEffects.Move)
+                {
+                    project.MoveComponent(dragNode, dropNode, prevDropSide);
+                }
+                if (prevDropNode != null)
+                {
+                    prevDropNode = null;
+                    Refresh();
+                }
             }
+
+
+
+
 
             // perform XML operation: prepare properties objects
             /*ZNodeProperties sourceNodeProperties = sourceTreeNode.Tag as ZNodeProperties;
@@ -386,11 +511,89 @@ namespace ZGE
             }*/
         }
 
+        #region Helper Methods
+        private void DrawLeafTopPlaceholders(TreeNode NodeOver)
+        {
+            Graphics g = CreateGraphics();
+
+            int NodeOverImageWidth = ImageList.Images[NodeOver.ImageIndex].Size.Width + 8;
+            int LeftPos = NodeOver.Bounds.Left - NodeOverImageWidth;
+            int RightPos = Width - 4;
+
+            Point[] LeftTriangle = new Point[5]{
+												   new Point(LeftPos, NodeOver.Bounds.Top - 4),
+												   new Point(LeftPos, NodeOver.Bounds.Top + 4),
+												   new Point(LeftPos + 4, NodeOver.Bounds.Y),
+												   new Point(LeftPos + 4, NodeOver.Bounds.Top - 1),
+												   new Point(LeftPos, NodeOver.Bounds.Top - 5)};
+
+            Point[] RightTriangle = new Point[5]{
+													new Point(RightPos, NodeOver.Bounds.Top - 4),
+													new Point(RightPos, NodeOver.Bounds.Top + 4),
+													new Point(RightPos - 4, NodeOver.Bounds.Y),
+													new Point(RightPos - 4, NodeOver.Bounds.Top - 1),
+													new Point(RightPos, NodeOver.Bounds.Top - 5)};
+
+            Refresh();
+            g.FillPolygon(Brushes.Black, LeftTriangle);
+            g.FillPolygon(Brushes.Black, RightTriangle);
+            g.DrawLine(new Pen(Color.Black, 2), new Point(LeftPos, NodeOver.Bounds.Top), new Point(RightPos, NodeOver.Bounds.Top));
+
+        }
+
+        private void DrawLeafBottomPlaceholders(TreeNode NodeOver)
+        {
+            Graphics g = CreateGraphics();
+
+            int NodeOverImageWidth = ImageList.Images[NodeOver.ImageIndex].Size.Width + 8;
+            // Once again, we are not dragging to node over, draw the placeholder using the ParentDragDrop bounds
+            int LeftPos, RightPos;
+
+            LeftPos = NodeOver.Bounds.Left - NodeOverImageWidth;
+            RightPos = Width - 4;
+
+            Point[] LeftTriangle = new Point[5]{
+												   new Point(LeftPos, NodeOver.Bounds.Bottom - 4),
+												   new Point(LeftPos, NodeOver.Bounds.Bottom + 4),
+												   new Point(LeftPos + 4, NodeOver.Bounds.Bottom),
+												   new Point(LeftPos + 4, NodeOver.Bounds.Bottom - 1),
+												   new Point(LeftPos, NodeOver.Bounds.Bottom - 5)};
+
+            Point[] RightTriangle = new Point[5]{
+													new Point(RightPos, NodeOver.Bounds.Bottom - 4),
+													new Point(RightPos, NodeOver.Bounds.Bottom + 4),
+													new Point(RightPos - 4, NodeOver.Bounds.Bottom),
+													new Point(RightPos - 4, NodeOver.Bounds.Bottom - 1),
+													new Point(RightPos, NodeOver.Bounds.Bottom - 5)};
+
+            Refresh();
+            g.FillPolygon(Brushes.Black, LeftTriangle);
+            g.FillPolygon(Brushes.Black, RightTriangle);
+            g.DrawLine(new Pen(Color.Black, 2), new Point(LeftPos, NodeOver.Bounds.Bottom), new Point(RightPos, NodeOver.Bounds.Bottom));
+        }
+
+
+        private void DrawAddToFolderPlaceholder(TreeNode NodeOver)
+        {
+            Graphics g = CreateGraphics();
+            int RightPos = NodeOver.Bounds.Right + 6;
+            Point[] RightTriangle = new Point[5]{
+													new Point(RightPos, NodeOver.Bounds.Y + (NodeOver.Bounds.Height / 2) + 4),
+													new Point(RightPos, NodeOver.Bounds.Y + (NodeOver.Bounds.Height / 2) + 4),
+													new Point(RightPos - 4, NodeOver.Bounds.Y + (NodeOver.Bounds.Height / 2)),
+													new Point(RightPos - 4, NodeOver.Bounds.Y + (NodeOver.Bounds.Height / 2) - 1),
+													new Point(RightPos, NodeOver.Bounds.Y + (NodeOver.Bounds.Height / 2) - 5)};
+
+            Refresh();
+            g.FillPolygon(Brushes.Black, RightTriangle);
+        }
+        #endregion
+
 
         /// <summary>
         /// Event handler - deletes the selected node
         /// </summary>
-        public void DeleteElement_Click(object sender, EventArgs e)
+        /*public void DeleteElement_Click(object sender, EventArgs e)
         {
             TreeNode treeNodeToDelete = SelectedNode;
             TreeNode parentNode = treeNodeToDelete.Parent;
@@ -415,17 +618,17 @@ namespace ZGE
 
                 // Tree node properties have been updated
                 // Force parent to reload them to the PropertyBrowser
-                OnPropertiesChanged();
+                //OnPropertiesChanged();
             }
             Invalidate();
-        }       
+        }*/
 
         /// <summary>
         /// This method creates new tree node and appends 
         /// new xml node to the underlying xml document.
         /// </summary>
         /// <param name="parentNode">Parent Tree node to add a child to.</param>
-        private void AddChildNode(TreeNode parentNode, String childName)
+        /*private void AddChildNode(TreeNode parentNode, String childName)
         {
             StatusString = "Adding child node...";
             ZNodeProperties parentNodeProperties = parentNode.Tag as ZNodeProperties;
@@ -459,7 +662,7 @@ namespace ZGE
             StatusString = "Child node added";
             Invalidate();
 
-        }
+        }*/
 
         /// <summary>
         /// FineTune displaying TreeNode with ImageList and ForeColor properties
@@ -483,7 +686,7 @@ namespace ZGE
         /// </summary>
         private void TreeViewEditor_AfterSelectNode(object sender, TreeViewEventArgs e)
         {
-            OnPropertiesChanged();
+            OnSelectedNodeChanged();
         }
 
         /// <summary>
@@ -503,7 +706,7 @@ namespace ZGE
 
             if (e.Button == MouseButtons.Right)
             {
-                TreeNode clickedNode = tree.GetNodeAt(e.Location);                
+                TreeNode clickedNode = tree.GetNodeAt(e.Location);
 
                 // if node contain reference to ZNodeProperties object, than we can start context menu
                 if (clickedNode != null && clickedNode.Tag is ZNodeProperties)
@@ -512,37 +715,54 @@ namespace ZGE
 
                     if (project != null)
                         project.FillContextMenu(clickedNode, xmlContextMenu);
-                    
+
                     if (xmlContextMenu.Items.Count > 0)
                         xmlContextMenu.Show(this, e.Location.X, e.Location.Y);
                 }
             }
-        }        
+        }
+
+        /// <summary>
+        /// Process calculation of suppress_label_edit private field.
+        /// If mouse down occurred on Selected node - we allow label edit mode
+        /// by assigning suppress_label_edit = false.
+        /// </summary>
+        private void TreeViewEditor_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+                SelectedNode = this.GetNodeAt(e.X, e.Y);
+
+            /*if (mouseDownNode == null)
+            {
+                return;
+            }
+
+            // If the node is already selected, prepare to start editing its label
+            if (this.SelectedNode != null && this.SelectedNode == mouseDownNode && this.SelectedNode.Tag is ZNodeProperties)
+            {
+                // Reset LabelEdit property
+                this.LabelEdit = true;
+                suppressLabelEdit = false;
+            }
+            else
+            {
+                suppressLabelEdit = true;
+            }*/
+        }
 
         /// <summary>
         /// This method is called when it is neccessary to notify
         /// parent that property grid should be updated by
         /// properties of the selected item.
         /// </summary>
-        internal void OnPropertiesChanged()
+        internal void OnSelectedNodeChanged()
         {
             // Fire properties set changed event
-            if (PropertiesSetChanged != null)
+            if (SelectedNodeChanged != null)
             {
-                PropertiesSetChanged(this, new EventArgs());
+                SelectedNodeChanged(this, new EventArgs());
             }
         }
-
-        private void OnContentChanged()
-        {
-            // Fire content changed event 
-            // to ensure all subscribers receive the changes
-            if (ContentChanged != null)
-            {
-                ContentChanged(this, new EventArgs());
-            }
-        }
-
 
         TreeNode FindNodeWithTag(TreeNodeCollection nodes, object tag)
         {
@@ -569,67 +789,33 @@ namespace ZGE
         /// </summary>
         /// <param name="sender">ZNodeProperties structure which has been modified.</param>
         /// <param name="e">event argument (not used).</param>
-        internal void XmlPropertiesUpdatedHandler(object sender, XmlNodePropertyChangedEventArgs e)
+        internal void UpdateNodeText(ZNodeProperties props)
         {
-            if (e.NeedCommit)
+            // Modifications through properties: use selected node as default
+            TreeNode treeNode = SelectedNode;
+            if (treeNode.Tag != props)
             {
-                if (e.PropName == "Name")
-                {
-                    // Modifications through properties: use selected node as default
-                    TreeNode treeNode = SelectedNode;
-                    ZNodeProperties props = (ZNodeProperties) sender;
-                    if (treeNode.Tag != props)
-                    {
-                        Console.WriteLine("TreeNode tag mismatch");
-                        treeNode = FindNodeWithTag(Nodes, props);
-                    }
-
-                    if (treeNode != null && props.DisplayName.CompareTo(treeNode.Text) != 0)
-                    {
-                        // Rename tree node
-                        treeNode.Text = props.DisplayName;
-                        Invalidate();
-                    }
-                }
-                OnContentChanged();
+                Console.WriteLine("TreeNode tag mismatch");
+                treeNode = FindNodeWithTag(Nodes, props);
             }
 
-            StatusString = e.StatusString;
+            if (treeNode != null && props.DisplayName.CompareTo(treeNode.Text) != 0)
+            {
+                // Rename tree node
+                treeNode.Text = props.DisplayName;
+                Invalidate();
+            }
+            //StatusString = e.StatusString;
         }
 
-# region Obsolete
-        /// <summary>
-        /// Process calculation of suppress_label_edit private field.
-        /// If mouse down occurred on Selected node - we allow label edit mode
-        /// by assigning suppress_label_edit = false.
-        /// </summary>
-        private void TreeViewEditor_MouseDown(object sender, MouseEventArgs e)
-        {
-            /*mouseDownNode = this.GetNodeAt(e.X, e.Y);
 
-            if (mouseDownNode == null)
-            {
-                return;
-            }
-
-            // If the node is already selected, prepare to start editing its label
-            if (this.SelectedNode != null && this.SelectedNode == mouseDownNode && this.SelectedNode.Tag is ZNodeProperties)
-            {
-                // Reset LabelEdit property
-                this.LabelEdit = true;
-                suppressLabelEdit = false;
-            }
-            else
-            {
-                suppressLabelEdit = true;
-            }*/
-        }
-
+        # region Obsolete
         /// <summary>
         /// Cancels Label editing if suppress_label_edit private field is true.
         /// </summary>
         private void TreeViewEditor_BeforeLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
+            e.CancelEdit = true;
             //e.CancelEdit = suppressLabelEdit;
         }
 
@@ -816,7 +1002,7 @@ namespace ZGE
             HighlightTreeNode(treeNode, props);
             props.XmlNodePropertyChanged += new XmlNodePropertyChangedEventHandler(this.XmlPropertiesUpdatedHandler);*/
         }
-#endregion
+        #endregion
 
     }
 }

@@ -100,7 +100,7 @@ namespace ZGE
         /// <summary>
         /// Occurs when XmlNode have been changed.
         /// </summary>
-        public event XmlNodePropertyChangedEventHandler XmlNodePropertyChanged;        
+        //public event XmlNodePropertyChangedEventHandler XmlNodePropertyChanged;        
 
         
         /// <summary>
@@ -108,8 +108,7 @@ namespace ZGE
         /// </summary>
         public ZNodeProperties(object comp, object parent, object parentList, XmlNode node, TreeNode treeNode)
         {
-            if (node == null) return;
-            
+            if (node == null) return;            
 
             xmlNode = node;
             component = comp;
@@ -162,7 +161,7 @@ namespace ZGE
                 else //if (IsLeafNode(this.xmlNode))
                 {
                     // any other component
-                    return ZTreeView.TreeViewImagesList.ImageIndexValue;
+                    return ZTreeView.TreeViewImagesList.ImageIndexAttribute;
                 }
                 
             }
@@ -233,7 +232,7 @@ namespace ZGE
         /// Appends new child node to the current xmlNode
         /// the appended node has default name and empty inner text.
         /// </summary>
-        public ZNodeProperties AddNewChild(string childName, TreeNode newTreeNode)
+        /*public ZNodeProperties AddNewChild(string childName, TreeNode newTreeNode)
         {
             bool needCommit = false;
             statusString = String.Empty;
@@ -262,13 +261,13 @@ namespace ZGE
                 XmlNodePropertyChanged(this, new XmlNodePropertyChangedEventArgs(needCommit, statusString, "Name"));
             }
             return props;
-        }
+        }*/
 
         /// <summary>
         /// Deletes current xmlNode from the XmlDocument
         /// and from the tree view control.
         /// </summary>
-        public void Delete()
+        /*public void Delete()
         {
             bool needCommit = false;
             statusString = String.Empty;
@@ -292,9 +291,9 @@ namespace ZGE
             {
                 XmlNodePropertyChanged(this, new XmlNodePropertyChangedEventArgs(needCommit, statusString, ""));
             }
-        }
+        }*/
 
-        public string SaveCodeText(string propName, string newValue, Dictionary<XmlNode, string> nodeMap)
+        /*public string SaveCodeText(string propName, string newValue, Dictionary<XmlNode, string> nodeMap)
         {
             string result = null;
             bool found = false;
@@ -330,7 +329,7 @@ namespace ZGE
             }
 
             return result;
-        }
+        }*/
 
         /// <summary>
         /// If the node is a leaf node sets inner text to the NewValue.
@@ -394,26 +393,26 @@ namespace ZGE
             }
         }*/
 
-        private void UpdateAttribute(string propName, object newValue)
-        {
-            XmlAttribute attribute = xmlNode.Attributes[propName];
-            string str = Factory.Serialize(newValue);
-            if (attribute == null)
-            {
-                XmlAttribute newAttribute = xmlNode.OwnerDocument.CreateAttribute(propName);
-                newAttribute.Value = str;
-                xmlNode.Attributes.Append(newAttribute);
-            }
-            else
-                attribute.Value = str;
-
-            /*if (component != null && component is ZComponent)
-            {
-                PropertyInfo pi = component.GetType().GetProperty(propName, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
-                if (pi != null)
-                    pi.SetValue(component, newValue, null);
-            }*/            
-        }
+//         private void UpdateAttribute(string propName, object newValue)
+//         {
+//             XmlAttribute attribute = xmlNode.Attributes[propName];
+//             string str = Factory.Serialize(newValue);
+//             if (attribute == null)
+//             {
+//                 XmlAttribute newAttribute = xmlNode.OwnerDocument.CreateAttribute(propName);
+//                 newAttribute.Value = str;
+//                 xmlNode.Attributes.Append(newAttribute);
+//             }
+//             else
+//                 attribute.Value = str;
+// 
+//             /*if (component != null && component is ZComponent)
+//             {
+//                 PropertyInfo pi = component.GetType().GetProperty(propName, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+//                 if (pi != null)
+//                     pi.SetValue(component, newValue, null);
+//             }*/            
+//         }
 
         /// <summary>
         /// Renames the xmlNode node
@@ -522,31 +521,31 @@ namespace ZGE
         /// <param name="sender"></param>
         /// <param name="e">holds action that caused event to fire and 
         /// information necessary to update xml document</param>
-        internal void PropertyHolderChanged(Object sender, PropertyChangedEventArgs e)
-        {
-            bool needCommit = true;
-            statusString = "Property changed.";
-
-            switch (e.Action)
-            {
-                //case PropertyChangeAction.ElementNodeRenamed:
-                //    RenameNode(e.NewValue);
-                //    break;
-                case PropertyChangeAction.CodeChanged:
-                    //needCommit = ChangeElementNodeText(e.PropName, e.NewValue.ToString());
-                    break;
-                case PropertyChangeAction.AttributeChanged:
-                    UpdateAttribute(e.PropName, e.NewValue);
-                    break;
-                default:
-                    needCommit = false;
-                    break;
-            }
-
-            if (XmlNodePropertyChanged != null)
-            {
-                XmlNodePropertyChanged(this, new XmlNodePropertyChangedEventArgs(needCommit, statusString, e.PropName));
-            }
-        }
+//         internal void PropertyHolderChanged(Object sender, PropertyChangedEventArgs e)
+//         {
+//             bool needCommit = true;
+//             statusString = "Property changed.";
+// 
+//             switch (e.Action)
+//             {
+//                 //case PropertyChangeAction.ElementNodeRenamed:
+//                 //    RenameNode(e.NewValue);
+//                 //    break;
+//                 case PropertyChangeAction.CodeChanged:
+//                     //needCommit = ChangeElementNodeText(e.PropName, e.NewValue.ToString());
+//                     break;
+//                 case PropertyChangeAction.AttributeChanged:
+//                     UpdateAttribute(e.PropName, e.NewValue);
+//                     break;
+//                 default:
+//                     needCommit = false;
+//                     break;
+//             }
+// 
+//             if (XmlNodePropertyChanged != null)
+//             {
+//                 XmlNodePropertyChanged(this, new XmlNodePropertyChangedEventArgs(needCommit, statusString, e.PropName));
+//             }
+//         }
     }
 }

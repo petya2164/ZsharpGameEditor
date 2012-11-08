@@ -42,12 +42,12 @@ namespace ZGE
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolboxSplitter = new System.Windows.Forms.SplitContainer();
+            this.toolbox1 = new ToolboxLibrary.Toolbox();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.xmlTree = new ZGE.ZTreeView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.xmlTreeView = new System.Windows.Forms.TreeView();
             this.splitContainer5 = new System.Windows.Forms.SplitContainer();
             this.splitContainer6 = new System.Windows.Forms.SplitContainer();
             this.codeBox = new ICSharpCode.TextEditor.TextEditorControl();
@@ -69,8 +69,6 @@ namespace ZGE
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.resetBtn = new System.Windows.Forms.ToolStripButton();
             this.startBtn = new System.Windows.Forms.ToolStripButton();
-            this.toolbox1 = new ToolboxLibrary.Toolbox();
-            this.xmlEditor = new ZGE.ZTreeView();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -92,7 +90,6 @@ namespace ZGE
             this.splitContainer3.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            this.tabPage3.SuspendLayout();
             this.splitContainer5.Panel1.SuspendLayout();
             this.splitContainer5.Panel2.SuspendLayout();
             this.splitContainer5.SuspendLayout();
@@ -280,6 +277,17 @@ namespace ZGE
             this.toolboxSplitter.SplitterDistance = 124;
             this.toolboxSplitter.TabIndex = 2;
             // 
+            // toolbox1
+            // 
+            this.toolbox1.DesignerHost = null;
+            this.toolbox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.toolbox1.FilePath = null;
+            this.toolbox1.Location = new System.Drawing.Point(0, 0);
+            this.toolbox1.Name = "toolbox1";
+            this.toolbox1.SelectedCategory = null;
+            this.toolbox1.Size = new System.Drawing.Size(124, 100);
+            this.toolbox1.TabIndex = 0;
+            // 
             // splitContainer3
             // 
             this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -302,7 +310,6 @@ namespace ZGE
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
@@ -312,7 +319,7 @@ namespace ZGE
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.xmlEditor);
+            this.tabPage1.Controls.Add(this.xmlTree);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -320,6 +327,23 @@ namespace ZGE
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Project";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // xmlTree
+            // 
+            this.xmlTree.AllowDrop = true;
+            this.xmlTree.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.xmlTree.HideSelection = false;
+            this.xmlTree.ImageIndex = 0;
+            this.xmlTree.Indent = 15;
+            this.xmlTree.LabelEdit = true;
+            this.xmlTree.Location = new System.Drawing.Point(3, 3);
+            this.xmlTree.Name = "xmlTree";
+            this.xmlTree.SelectedImageIndex = 0;
+            this.xmlTree.Size = new System.Drawing.Size(206, 549);
+            this.xmlTree.StatusString = "";
+            this.xmlTree.TabIndex = 0;
+            this.xmlTree.SelectedNodeChanged += new System.EventHandler(this.xmlTree_SelectedNodeChanged);            
+            this.xmlTree.StatusStringChanged += new System.EventHandler(this.xmlTree_StatusStringChanged);
             // 
             // tabPage2
             // 
@@ -330,26 +354,6 @@ namespace ZGE
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Code";
             this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.xmlTreeView);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(212, 555);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "TreeView";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // xmlTreeView
-            // 
-            this.xmlTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.xmlTreeView.Indent = 19;
-            this.xmlTreeView.Location = new System.Drawing.Point(3, 3);
-            this.xmlTreeView.Name = "xmlTreeView";
-            this.xmlTreeView.Size = new System.Drawing.Size(206, 549);
-            this.xmlTreeView.TabIndex = 0;
             // 
             // splitContainer5
             // 
@@ -584,35 +588,6 @@ namespace ZGE
             this.startBtn.Text = "Start / Stop";
             this.startBtn.Click += new System.EventHandler(this.startBtn_Click);
             // 
-            // toolbox1
-            // 
-            this.toolbox1.DesignerHost = null;
-            this.toolbox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.toolbox1.FilePath = null;
-            this.toolbox1.Location = new System.Drawing.Point(0, 0);
-            this.toolbox1.Name = "toolbox1";
-            this.toolbox1.SelectedCategory = null;
-            this.toolbox1.Size = new System.Drawing.Size(124, 100);
-            this.toolbox1.TabIndex = 0;
-            // 
-            // xmlEditor
-            // 
-            this.xmlEditor.AllowDrop = true;
-            this.xmlEditor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.xmlEditor.HideSelection = false;
-            this.xmlEditor.ImageIndex = 0;
-            this.xmlEditor.Indent = 15;
-            this.xmlEditor.LabelEdit = true;
-            this.xmlEditor.Location = new System.Drawing.Point(3, 3);
-            this.xmlEditor.Name = "xmlEditor";
-            this.xmlEditor.SelectedImageIndex = 0;
-            this.xmlEditor.Size = new System.Drawing.Size(206, 549);
-            this.xmlEditor.StatusString = "Data is not TreeNode";
-            this.xmlEditor.TabIndex = 0;
-            this.xmlEditor.PropertiesSetChanged += new System.EventHandler(this.xmlEditor_PropertiesSetChanged);
-            this.xmlEditor.ContentChanged += new System.EventHandler(this.xmlEditor_ContentChanged);
-            this.xmlEditor.StatusStringChanged += new System.EventHandler(this.xmlEditor_StatusStringChanged);            
-            // 
             // Editor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -651,7 +626,6 @@ namespace ZGE
             this.splitContainer3.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.tabPage3.ResumeLayout(false);
             this.splitContainer5.Panel1.ResumeLayout(false);
             this.splitContainer5.Panel2.ResumeLayout(false);
             this.splitContainer5.ResumeLayout(false);
@@ -692,8 +666,7 @@ namespace ZGE
         private System.Windows.Forms.ToolStripButton toolboxBtn;
         private System.Windows.Forms.SplitContainer toolboxSplitter;
         private ToolboxLibrary.Toolbox toolbox1;
-        private System.Windows.Forms.TreeView xmlTreeView;
-        private ZGE.ZTreeView xmlEditor;
+        private ZGE.ZTreeView xmlTree;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel statusLabel;
         private System.Windows.Forms.SplitContainer splitContainer5;
@@ -701,7 +674,6 @@ namespace ZGE
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripButton startBtn;
         private System.Windows.Forms.SplitContainer splitContainer6;
