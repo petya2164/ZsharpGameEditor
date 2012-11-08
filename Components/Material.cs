@@ -8,6 +8,7 @@ using OpenTK.Graphics.OpenGL;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using OpenTK.Graphics;
+using System.IO;
 
 namespace ZGE.Components
 {
@@ -247,11 +248,12 @@ namespace ZGE.Components
         {
             initialized = true;
             if (FileName == null || FileName.Length == 0) return;
+            string path = Path.Combine(App.AssetsPath, FileName);
 
             //  Try && load the bitmap. Return false on failure.
-            Bitmap image = new Bitmap(App.AssetsPath + FileName);
+            Bitmap image = new Bitmap(path);
             if (image == null) return;
-            Console.WriteLine("Texture loaded: {0}", App.AssetsPath + FileName);
+            Console.WriteLine("Texture loaded: {0}", path);
 
             ReleaseTexture();          
 

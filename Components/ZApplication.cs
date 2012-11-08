@@ -75,7 +75,7 @@ namespace ZGE.Components
     {
         #region Fields
         public string Title = "Untitled";
-        public string AssetsPath = "Assets/";
+        public string AssetsPath = "Assets";
 
         public int Width = 800;
         public int Height = 600;

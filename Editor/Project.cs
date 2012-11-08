@@ -78,13 +78,13 @@ namespace ZGE
             }
         }
 
-        public string Name 
+        public string Name
         {
             get
-            {                
+            {
                 if (app != null && app.Title != null) return app.Title;
                 return "Untitled";
-            }            
+            }
         }
 
         public void UpdateAttribute(ZNodeProperties props, string propName, object newValue)
@@ -100,7 +100,7 @@ namespace ZGE
                 xmlNode.Attributes.Append(newAttribute);
             }
             else
-                attribute.Value = str;            
+                attribute.Value = str;
         }
 
         public void ClearCode()
@@ -125,13 +125,13 @@ namespace ZGE
                 currentCode.Text = codeBoxText;
                 PropertyChangedEventArgs ev = new PropertyChangedEventArgs(codePropertyName, codeBoxText);
                 ev.Action = PropertyChangeAction.CodeChanged;
-                SaveCodeText(codePropertyName, codeBoxText, codeProperties.xmlNode);                
+                SaveCodeText(codePropertyName, codeBoxText, codeProperties.xmlNode);
                 OnXMLChanged();
             }
         }
 
         public void SaveCodeText(string propName, string newValue, XmlNode xmlNode)
-        {            
+        {
             bool found = false;
             XmlNode child = null;
 
@@ -164,7 +164,7 @@ namespace ZGE
                 XmlNode cdata = xmlNode.OwnerDocument.CreateNode(XmlNodeType.CDATA, newValue, xmlNode.NamespaceURI);
                 child.AppendChild(cdata);
                 found = true;
-            }            
+            }
         }
 
         public static Project CreateProject(string filePath, ZTreeView treeView, CodeGenerator codeGen)
@@ -172,7 +172,7 @@ namespace ZGE
             Project project = new Project(filePath);
             project.LoadXml();
             project.BuildApplication(codeGen);
-            if (treeView != null) project.FillTreeView(treeView);            
+            if (treeView != null) project.FillTreeView(treeView);
 
             return project;
         }
@@ -182,7 +182,7 @@ namespace ZGE
             app = null;
             BuildApplication(codeGen);
             if (treeView != null)
-                FillTreeView(treeView);                       
+                FillTreeView(treeView);
         }
 
         public void BuildApplication(CodeGenerator codeGen)
@@ -193,14 +193,14 @@ namespace ZGE
         }
 
         public bool RecompileApplication(CodeGenerator codeGen, ZTreeView treeView)
-        {            
+        {
             if (xmlDoc == null || app == null) return false;
             ZApplication newApp = codeGen.RecompileApplication(xmlDoc, nodeMap, app);
             if (newApp != null)
             {
                 app = newApp;
                 //if (treeView != null) FillTreeView(treeView);
-                
+
                 return true;
             }
             return false;
@@ -210,19 +210,19 @@ namespace ZGE
         {
             this.treeView = treeView;
             treeView.SetProject(this);
-            
-            treeView.Nodes.Clear();            
+
+            treeView.Nodes.Clear();
 
             XmlNode rootElement = xmlDoc.DocumentElement;
-            if (rootElement != null)                               
-               ProcessNode(app, null, 0, treeView.Nodes, rootElement);           
-            
+            if (rootElement != null)
+                ProcessNode(app, null, 0, treeView.Nodes, rootElement);
+
             if (treeView != null)
             {
                 treeView.xmlDocument = xmlDoc;
                 treeView.ExpandAll();
                 treeView.Invalidate();
-            }     
+            }
         }
 
         public bool IsCompatibleType(ZComponent comp, XmlNode xmlNode)
@@ -259,7 +259,7 @@ namespace ZGE
                 }
                 // Check if this node is a ZCode property of the parent
                 else if (parent is ZComponent && fi != null && typeof(CodeLike).IsAssignableFrom(fi.FieldType))
-                {                    
+                {
                     return next_index; //no TreeNode should be created for this
                 }
                 else
@@ -268,23 +268,23 @@ namespace ZGE
                     comp = null;
                     IList findList = (IList) parent.Children;
                     if (parent_list != null) findList = parent_list; // parent_list has the priority
-                    
+
                     for (int index = next_index; index < findList.Count; index++)
                     {
                         ZComponent candidate = findList[index] as ZComponent;
                         if (IsCompatibleType(candidate, xmlNode))
                         {
                             comp = candidate;
-                            next_index = index+1;
+                            next_index = index + 1;
                             break;
                         }
-                    }                        
-                                        
+                    }
+
                     if (comp == null)
                     {
                         Console.WriteLine("SKIPPING subtree - Cannot find matching component: {0}", xmlNode.Name);
                         return next_index;
-                    }                    
+                    }
                 }
             }
 
@@ -308,8 +308,8 @@ namespace ZGE
             foreach (XmlNode childNode in xmlNode.ChildNodes)
             {
                 if (childNode.NodeType == XmlNodeType.Element)
-                {                    
-                    i = ProcessNode(comp, list, i, treeNode.Nodes, childNode);                    
+                {
+                    i = ProcessNode(comp, list, i, treeNode.Nodes, childNode);
                 }
             }
             // construct ZNodeProperties object for the TreeNode and assign it to Tag property
@@ -354,7 +354,7 @@ namespace ZGE
 
             // No dropping on the application node directly
             if (dropProps.component == app) return false;
-            
+
 
             if (asChild) // adding to a list or group
             {
@@ -372,7 +372,7 @@ namespace ZGE
             }
             else // adding as a sibling of dropNode
             {
-                ZComponent dropComp = dropProps.component as ZComponent;   
+                ZComponent dropComp = dropProps.component as ZComponent;
                 // Is dropNode's OwnerList a suitable container for dragNode?
                 if (dropComp != null)
                 {
@@ -427,52 +427,35 @@ namespace ZGE
                 // Add dragComp reference to its new parent/OwnerList
                 ZComponent parent = dropProps.component as ZComponent;
                 if (parent == null) parent = dropProps.parent_component as ZComponent;  // component is a List
-                SetComponentOwner(dragComp, parent, dropProps.component as IList);                
+                SetComponentOwner(dragComp, parent, dropProps.component as IList);
 
                 // Perform Xml operation
                 dropProps.xmlNode.AppendChild(dragProps.xmlNode);
-                
+
                 // Move dragNode to be a child of dropNode in the treeview                
-                dropNode.Expand();
-                //TreeNode treeNode = new TreeNode(dragProps.DisplayName);
+                dropNode.Expand();                
                 dropNode.Nodes.Add(dragNode);
-                //treeNode.Tag = dragProps;
-                //ZTreeView.HighlightTreeNode(treeNode, dragProps);
-                
             }
             else // adding as a sibling of dropNode
             {
                 ZComponent dropComp = dropProps.component as ZComponent;
-                if (dropComp == null) return;
-                // Is dropNode's OwnerList a suitable container for dragNode?
+                if (dropComp == null) return;                
+
+                int plus = 0;  // index before dropComp
+                if (dropSide == ZGE.ZTreeView.DropSide.Bottom) plus = 1; // index after dropComp
+                int index;
 
                 dragComp.Owner = dropComp.Owner;
                 if (dropComp.OwnerList is IList)
                 {
                     dragComp.OwnerList = dropComp.OwnerList;
-                    if (dropSide == ZGE.ZTreeView.DropSide.Top)
-                    {
-                        int index = dropComp.OwnerList.IndexOf(dropComp);
-                        if (index != -1) dropComp.OwnerList.Insert(index, dragComp);
-                    }
-                    else if (dropSide == ZGE.ZTreeView.DropSide.Bottom)
-                    {
-                        int index = dropComp.OwnerList.IndexOf(dropComp);
-                        if (index != -1) dropComp.OwnerList.Insert(index + 1, dragComp);
-                    }                    
+                    index = dropComp.OwnerList.IndexOf(dropComp);
+                    if (index != -1) dropComp.OwnerList.Insert(index + plus, dragComp);
                 }
                 else if (dropComp.Owner is Group)
                 {
-                    if (dropSide == ZGE.ZTreeView.DropSide.Top)
-                    {
-                        int index = dropComp.Owner.Children.IndexOf(dropComp);
-                        if (index != -1) dropComp.Owner.Children.Insert(index, dragComp);
-                    }
-                    else if (dropSide == ZGE.ZTreeView.DropSide.Bottom)
-                    {
-                        int index = dropComp.Owner.Children.IndexOf(dropComp);
-                        if (index != -1) dropComp.Owner.Children.Insert(index + 1, dragComp);
-                    }
+                    index = dropComp.Owner.Children.IndexOf(dropComp);
+                    if (index != -1) dropComp.Owner.Children.Insert(index + plus, dragComp);
                 }
 
                 //Adjust node position in the treeview
@@ -481,32 +464,30 @@ namespace ZGE
                 XmlNode xmlParent = dropProps.xmlNode.ParentNode;
                 if (xmlParent == null) return;
 
+                index = parentNode.Nodes.IndexOf(dropNode);
+                if (index != -1) parentNode.Nodes.Insert(index + plus, dragNode);
+
+                // Perform Xml operation
                 if (dropSide == ZGE.ZTreeView.DropSide.Top)
                 {
-                    int index = parentNode.Nodes.IndexOf(dropNode);
-                    if (index != -1) parentNode.Nodes.Insert(index, dragNode);
-                    // Perform Xml operation
-                    xmlParent.InsertBefore(dragProps.xmlNode, dropProps.xmlNode);                    
+                    xmlParent.InsertBefore(dragProps.xmlNode, dropProps.xmlNode);
                 }
                 else if (dropSide == ZGE.ZTreeView.DropSide.Bottom)
                 {
-                    int index = parentNode.Nodes.IndexOf(dropNode);
-                    if (index != -1) parentNode.Nodes.Insert(index + 1, dragNode);
-                    // Perform Xml operation
                     xmlParent.InsertAfter(dragProps.xmlNode, dropProps.xmlNode);
                 }
             }
 
             treeView.SelectedNode = dragNode;
-            OnXMLChanged(); 
-       }
+            OnXMLChanged();
+        }
 
         public bool CanBeDeleted(TreeNode clickedNode)
         {
             if (treeView == null) return false;
             ZNodeProperties props = clickedNode.Tag as ZNodeProperties;
             if (props == null) return false;
-            Type type = props.component.GetType();           
+            Type type = props.component.GetType();
 
             // The application and member lists cannot be deleted
             if (clickedNode.Level > 0 && !typeof(IList).IsAssignableFrom(type))
@@ -519,7 +500,7 @@ namespace ZGE
         {
             //var assembly = Assembly.GetAssembly(typeof(ZComponent)); 
             //string ns = "ZGE.Components";            
-            return assembly.GetTypes().Where(type => ancestor.IsAssignableFrom(type)).ToList();            
+            return assembly.GetTypes().Where(type => ancestor.IsAssignableFrom(type)).ToList();
         }
 
         public bool IsChildElementAllowed(TreeNode destNode, string childTypeName)
@@ -532,7 +513,7 @@ namespace ZGE
 
         public bool IsChildElementAllowed(TreeNode destNode, Type childType)
         {
-            if (app == null || treeView == null || destNode == null || childType == null) return false;            
+            if (app == null || treeView == null || destNode == null || childType == null) return false;
             ZNodeProperties props = destNode.Tag as ZNodeProperties;
             if (props == null) return false;
 
@@ -556,9 +537,9 @@ namespace ZGE
             else if (props.component is Group)
             {
                 // Any ZComponent can be added to a group
-                return true;                
+                return true;
             }
-            return false;            
+            return false;
         }
 
         public void FillContextMenu(TreeNode clickedNode, ContextMenuStrip xmlContextMenu)
@@ -582,7 +563,7 @@ namespace ZGE
                 ToolStripMenuItem groupItem = new ToolStripMenuItem("Add Group", null, this.AddChildElement_Click);
                 groupItem.Tag = typeof(Group);
                 xmlContextMenu.Items.Add(groupItem);
-                
+
             }
             else if (typeof(IList).IsAssignableFrom(type))
             {
@@ -591,7 +572,7 @@ namespace ZGE
                 {
                     Type baseType = type.GetGenericArguments()[0];
                     list = GetDerivedTypes(typeof(ZComponent).Assembly, baseType);
-                    mainItem = new ToolStripMenuItem("Add "+baseType.Name, null);
+                    mainItem = new ToolStripMenuItem("Add " + baseType.Name, null);
                     xmlContextMenu.Items.Add(mainItem);
                 }
             }
@@ -601,7 +582,7 @@ namespace ZGE
                 list = GetDerivedTypes(typeof(ZComponent).Assembly, typeof(ZComponent));
                 //list = GetDerivedTypes(app.GetType().Assembly, typeof(ZComponent));
                 mainItem = new ToolStripMenuItem("Add Component", null);
-                xmlContextMenu.Items.Add(mainItem);                
+                xmlContextMenu.Items.Add(mainItem);
             }
 
             if (mainItem != null && list.Count > 0)
@@ -611,17 +592,17 @@ namespace ZGE
                 {
                     if (child.IsAbstract) continue;
                     ToolStripMenuItem item = new ToolStripMenuItem(child.Name, null, this.AddChildElement_Click);
-                    item.Tag = child;                    
+                    item.Tag = child;
                     mainItem.DropDownItems.Add(item);
                 }
-            }            
+            }
 
             // The application and member lists cannot be deleted
             if (CanBeDeleted(clickedNode))
             {
                 if (xmlContextMenu.Items.Count > 0) xmlContextMenu.Items.Add(new ToolStripSeparator());
                 xmlContextMenu.Items.Add("Delete component", null, this.DeleteElement_Click);
-            }          
+            }
         }
 
         // Called by ContextMenu items
@@ -629,7 +610,7 @@ namespace ZGE
         {
             if (treeView == null) return;
             TreeNode treeNodeToDelete = treeView.SelectedNode;
-            if (treeNodeToDelete == null) return;          
+            if (treeNodeToDelete == null) return;
             TreeNode parentNode = treeNodeToDelete.Parent;
             if (parentNode == null) return;
 
@@ -639,15 +620,15 @@ namespace ZGE
             {
                 DeleteComponent(props);
                 XmlNode nodeToDeleteFrom = props.xmlNode.ParentNode;
-                if (nodeToDeleteFrom != null)                
+                if (nodeToDeleteFrom != null)
                     nodeToDeleteFrom.RemoveChild(props.xmlNode);
-                
+
                 treeNodeToDelete.Remove();
-                
-                treeView.SelectedNode = parentNode;                
+
+                treeView.SelectedNode = parentNode;
                 treeView.Invalidate();
                 OnXMLChanged();
-            }            
+            }
         }
 
         public void DeleteComponent(ZNodeProperties props)
@@ -656,45 +637,45 @@ namespace ZGE
             if (comp == null) return;
 
             nodeMap.Remove(props.xmlNode);
-           
+
             ZComponent.App.RemoveComponent(comp);     // remove the old component
             // We should always set the Owner <= old Owner has been copied to newObj
 
             if (comp.OwnerList != null)  // delete reference from OwnerList            
                 comp.OwnerList.Remove(comp);
             else if (comp.Owner != null) // delete reference from Owner's Children            
-                comp.Owner.Children.Remove(comp);                
+                comp.Owner.Children.Remove(comp);
             comp.Owner = null;
-            
+
             // If the comp was selected in the editor, then clear that reference
-            if (editor.SelectedComponent == comp)            
+            if (editor.SelectedComponent == comp)
                 editor.SelectedComponent = null;
             if (app.SelectedObject == comp)
                 app.SelectedObject = null;
 
             // Delete named references from the app
             if (comp.HasName())
-            {                
+            {
                 FieldInfo fi = app.GetType().GetField(comp.Name, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 if (fi != null && fi.FieldType == comp.GetType())
                 {
                     Console.WriteLine("Nulling named reference {0} / {1}", fi.Name, fi.FieldType.Name);
                     fi.SetValue(app, null);
-                }                
+                }
             }
             if (typeof(Model).IsAssignableFrom(comp.GetType()))
             {
                 Model newMod = comp as Model;
-                ZComponent.App.RemoveModel(newMod);                
+                ZComponent.App.RemoveModel(newMod);
                 // Refresh scene treeview in the editor (only necessary for GameObjects)
                 //if (newMod != null && newMod.Prototype == false)
-                    //editor.RefreshSceneTreeview();                
-            }            
+                //editor.RefreshSceneTreeview();                
+            }
             props.component = null;
             if (comp.HasName())
                 Console.WriteLine("Component deleted: {0}", comp.Name);
             else
-                Console.WriteLine("Component deleted.");            
+                Console.WriteLine("Component deleted.");
         }
 
         public ZComponent CreateComponent(Type type, ZComponent parent, IList parent_list)
@@ -706,7 +687,7 @@ namespace ZGE
                 //Console.WriteLine("Creating instance of: {0}", type.FullName);
                 comp = (ZComponent) Activator.CreateInstance(type);
                 app.AddComponent(comp);
-                SetComponentOwner(comp, parent, parent_list);               
+                SetComponentOwner(comp, parent, parent_list);
             }
             return comp;
         }
@@ -752,8 +733,8 @@ namespace ZGE
 
         public void AddChildElement(TreeNode parentNode, Type childType)
         {
-            if (treeView == null || parentNode == null || childType == null) return;            
-            Console.WriteLine("Add child called {0}", childType.Name);            
+            if (treeView == null || parentNode == null || childType == null) return;
+            Console.WriteLine("Add child called {0}", childType.Name);
             ZNodeProperties parentProps = parentNode.Tag as ZNodeProperties;
             if (parentProps == null) return;
             string childNodeName = childType.Name;
@@ -772,7 +753,7 @@ namespace ZGE
                         return;
                     }
                 }
-                
+
                 XmlNode xmlNode = parentProps.xmlNode;
                 //  Create new leaf node
                 XmlNode newXmlNode = xmlNode.OwnerDocument.CreateNode(XmlNodeType.Element, childNodeName, xmlNode.NamespaceURI);
@@ -806,8 +787,8 @@ namespace ZGE
                     //editor.RefreshSceneTreeview();
                 }
                 else
-                {                    
-                    comp = CreateComponent(childType, parent, parentProps.component as IList);          
+                {
+                    comp = CreateComponent(childType, parent, parentProps.component as IList);
 
                     if (childNodeName == "Model")
                     {
@@ -818,7 +799,7 @@ namespace ZGE
                         nameAttribute.Value = modelName;
                         newXmlNode.Attributes.Append(nameAttribute);
                         model.Name = modelName;
-                        newTreeNode.Name = String.Format("{0} - {1}", childNodeName, modelName); 
+                        newTreeNode.Name = String.Format("{0} - {1}", childNodeName, modelName);
                     }
 
                     // create child XML nodes for generic member lists                    
@@ -828,28 +809,28 @@ namespace ZGE
                         //if (fi.FieldType.IsGenericType && fi.FieldType.GetGenericTypeDefinition() == typeof(List<>))
                         if (fi != null && typeof(IList).IsAssignableFrom(fi.FieldType) && fi.Name != "Children" && fi.Name != "OwnerList")
                         {
-                            Console.WriteLine("List node created: {0}", fi.Name);                            
+                            Console.WriteLine("List node created: {0}", fi.Name);
                             XmlNode childXmlNode = newXmlNode.OwnerDocument.CreateNode(XmlNodeType.Element, fi.Name, newXmlNode.NamespaceURI);
                             newXmlNode.AppendChild(childXmlNode);
                             nodeMap[childXmlNode] = Guid.NewGuid().ToString();
                         }
-                    }                    
-                }                                
-          
+                    }
+                }
+
                 // build subtree for member lists
                 int i = 0;
                 foreach (XmlNode childNode in newXmlNode.ChildNodes)
                 {
                     if (childNode.NodeType == XmlNodeType.Element)
                     {
-                        i = ProcessNode(comp, null, i, newTreeNode.Nodes, childNode);                    
+                        i = ProcessNode(comp, null, i, newTreeNode.Nodes, childNode);
                     }
                 }
-                
+
                 // construct ZNodeProperties object for the TreeNode and assign it to Tag property
                 ZNodeProperties props = new ZNodeProperties(comp, parent, parentProps.component as IList, newXmlNode, newTreeNode);
-                comp.Tag = props;            
-                newTreeNode.Tag = props;                
+                comp.Tag = props;
+                newTreeNode.Tag = props;
                 //props.XmlNodePropertyChanged += new XmlNodePropertyChangedEventHandler(treeView.UpdateNodeText);
 
                 ZTreeView.HighlightTreeNode(newTreeNode, props);
@@ -862,7 +843,7 @@ namespace ZGE
                 // Force parent to reload them to the PropertyBrowser
                 //treeView.OnPropertiesChanged();
                 treeView.Invalidate();
-                Console.WriteLine("Component added: {0}", childType.Name);                
+                Console.WriteLine("Component added: {0}", childType.Name);
                 treeView.StatusString = "Child node added";
                 OnXMLChanged();
                 // Recompilation is necessary if a new Model was added
@@ -873,7 +854,7 @@ namespace ZGE
             {
                 treeView.StatusString = "Exception occurred: " + ex.Message;
                 Console.WriteLine(ex.ToString());
-            }            
+            }
         }
 
 

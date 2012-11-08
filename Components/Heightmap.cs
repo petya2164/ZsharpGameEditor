@@ -5,6 +5,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Drawing;
 using OpenTK;
+using System.IO;
 
 namespace ZGE.Components
 {
@@ -41,10 +42,11 @@ namespace ZGE.Components
 
             initialized = true;
             if (FileName == null || FileName.Length == 0) return;
+            string path = Path.Combine(App.AssetsPath, FileName);
 
-            using (Bitmap bmp = (Bitmap) Image.FromFile(App.AssetsPath + FileName))
+            using (Bitmap bmp = (Bitmap) Image.FromFile(path))
             {
-                Console.WriteLine("Heightmap loaded: {0}", App.AssetsPath + FileName);
+                Console.WriteLine("Heightmap loaded: {0}", path);
                 Width = bmp.Width;
                 Height = bmp.Height;
                 data = new float[Width, Height];
