@@ -26,7 +26,7 @@ model.Position.Z = -3.0f*(float)Math.Sin(App.Time);]]></Expression>
     </Model>
   </Content>
   <GUI>
-    <RenderText Text="FPS: " Position="5 0 0" Scale="1" />
+    <RenderText Text="Sample Text" Position="5 0 0" Scale="1" />
   </GUI>
   <Scene>
     <Group Name="DesignPrimitives" />

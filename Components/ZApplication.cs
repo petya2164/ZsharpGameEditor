@@ -627,7 +627,7 @@ namespace ZGE.Components
                 if (OnRender.Count > 0)
                 {
                     GL.PushMatrix();
-                    OnRender.ExecuteAll(this); // this should be first: rendering background or skybox
+                    OnRender.ExecuteAll(this); // this comes first: render background or skybox here
                     GL.PopMatrix();
                     Renderer.ApplyDefaultMaterial(true); // clear the material for the scene
                 }
@@ -639,7 +639,7 @@ namespace ZGE.Components
                 GL.PopMatrix();*/
 
                 SetupGUI();
-                Renderer.ApplyDefaultMaterial(true);
+                Renderer.ApplyGUIMaterial(true);
                 foreach (ZComponent comp in GUI)
                 {
                     IRenderable obj = comp as IRenderable;
@@ -747,6 +747,7 @@ namespace ZGE.Components
 
             //	End selection.
             int hits = GL.RenderMode(All.RENDER);
+            
 
             if (hits > 0)
             {

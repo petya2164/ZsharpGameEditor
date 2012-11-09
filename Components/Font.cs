@@ -95,7 +95,8 @@ namespace ZGE.Components
  		    
  		    GL.Enable(All.TEXTURE_2D);
  		    GL.Disable(All.DEPTH_TEST);
-// 		    GL.BindTexture(All.TEXTURE_2D, tex);
+            //GL.Disable(All.LIGHTING);
+ 		    //GL.BindTexture(All.TEXTURE_2D, tex);
 
 		    // Draw the text
 		    GL.Begin(All.QUADS);

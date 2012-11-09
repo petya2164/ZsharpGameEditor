@@ -42,7 +42,7 @@ namespace ZGE.Components
 
             initialized = true;
             if (FileName == null || FileName.Length == 0) return;
-            string path = Path.Combine(App.AssetsPath, FileName);
+            string path = Path.Combine(App.AssetsPath, FileName);            
 
             using (Bitmap bmp = (Bitmap) Image.FromFile(path))
             {

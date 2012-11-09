@@ -309,6 +309,7 @@ namespace ZGE
             dlg.Filter = "XML Files (*.xml)|*.xml";
             dlg.InitialDirectory = Path.Combine(Application.StartupPath, "Projects");            
             dlg.FileName = "Island.xml";
+            dlg.RestoreDirectory = true; // for windows XP
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 openProject(dlg.FileName);
@@ -321,6 +322,7 @@ namespace ZGE
             dlg.Title = "Create new project file";
             dlg.FileName = "Untitled.xml";
             dlg.Filter = "XML Files (*.xml)|*.xml";
+            dlg.RestoreDirectory = true; // for windows XP
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 //exportToXml2(xmlTreeView, dlg.FileName);

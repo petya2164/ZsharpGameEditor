@@ -16,12 +16,15 @@ namespace ZGE.Components
         public static Mesh unitQuad;
         public static Font defaultFont;
         public static Material defaultMaterial;
+        public static Material GUIMaterial;
         public static Texture defaultTexture;
         public static Material currentMaterial;
 
         public static void Init(ZApplication app)
         {
             defaultMaterial = new Material();
+            GUIMaterial = new Material();
+            GUIMaterial.Lighting = false;            
             defaultTexture = new Texture();
             defaultFont = new Font();
 
@@ -51,6 +54,14 @@ namespace ZGE.Components
             unitQuad.CreateVBO(shape);
 
             defaultMaterial.Apply(null);            
+        }
+
+        public static void ApplyGUIMaterial(bool forced)
+        {
+            if (forced)
+                GUIMaterial.Apply(null);
+            else
+                GUIMaterial.Apply(currentMaterial);
         }
 
         public static void ApplyDefaultMaterial(bool forced)
