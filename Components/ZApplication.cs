@@ -85,7 +85,7 @@ namespace ZGE.Components
         public int CurrentHeight;
         [ReadOnly(true)]
         public float AspectRatio;
-        public GraphicsMode Mode = GraphicsMode.Default;
+        public GraphicsMode Mode = new GraphicsMode(32, 24, 8, 0, 0, 2, false);
 
         public VSyncMode VSync = VSyncMode.Off;
         [ReadOnly(true)]
