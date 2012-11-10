@@ -171,9 +171,11 @@ namespace ZGE.Components
         [Browsable(false)]
         List<ZContent> contentList = new List<ZContent>();  // actual list for content components with producers
         [Browsable(false)]
-        Dictionary<string, ZComponent> nameMap = new Dictionary<string, ZComponent>();
+        HashSet<ZComponent> allComponents = new HashSet<ZComponent>();  // set containing all ZComponents
         [Browsable(false)]
-        Dictionary<Type, List<ZComponent>> typeMap = new Dictionary<Type, List<ZComponent>>();
+        Dictionary<string, ZComponent> nameCache = new Dictionary<string, ZComponent>();
+        [Browsable(false)]
+        Dictionary<Type, HashSet<ZComponent>> typeMap = new Dictionary<Type, HashSet<ZComponent>>();
         #endregion
 
         /*public delegate void EmptyHandler();
@@ -189,8 +191,8 @@ namespace ZGE.Components
 
         public event KeyboardHandler OnKeyDown;
         public event KeyboardHandler OnKeyUp;*/
-        //static int serial = 0;
-        //int ID = 0;
+        static int serial = 0;
+        int ID = 0;
 
         #region Code expressions
         public delegate void MouseMethod(MouseDescriptor e);
@@ -206,13 +208,13 @@ namespace ZGE.Components
             // Create the expression after the App reference has been set
             MouseDownExpr = new ZCode<MouseMethod>();
             MouseUpExpr = new ZCode<MouseMethod>();
-            //ID = serial++;
-            //Console.WriteLine(String.Format("ZApplication created: {0}", ID));
+            ID = serial++;
+            Console.WriteLine(String.Format("ZApplication created: {0}", ID));
         }
 
         ~ZApplication()
         {
-            //Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
+            Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
         }
 
         // It can also Unpause the app
@@ -231,20 +233,19 @@ namespace ZGE.Components
         }
 
         #region Component manager
-        public void AddComponent(ZComponent comp)
+        public void AddNewComponent(ZComponent comp)
         {
             Type type = comp.GetType();
             // Do NOT register ZApplication and its derived classes
             if (typeof(ZApplication).IsAssignableFrom(type)) return;
-            if (comp.HasName())
-                nameMap[comp.Name] = comp;
+            allComponents.Add(comp);
+            // Store the name in the name cache
+            if (comp.HasName()) nameCache[comp.Name] = comp;
 
             // TODO: consider all ancestor types
             if (!typeMap.ContainsKey(type))
-                typeMap[type] = new List<ZComponent>();
-
-            if (typeMap[type].Contains(comp) == false)
-                typeMap[type].Add(comp);
+                typeMap[type] = new HashSet<ZComponent>();            
+             typeMap[type].Add(comp);
         }
 
         public void RemoveComponent(ZComponent comp)
@@ -252,13 +253,12 @@ namespace ZGE.Components
             Type type = comp.GetType();
             // Do NOT register ZApplication and its derived classes
             if (typeof(ZApplication).IsAssignableFrom(type)) return;
-            if (comp.HasName())
+            allComponents.Remove(comp);
+            //if (comp.HasName()) nameCache.Remove(comp.Name);
+            // Remove the component from the nameMap - if necessary
+            foreach (var item in nameCache.Where(kvp => kvp.Value == comp).ToList())
             {
-                // Remove the component from the nameMap - if necessary
-                foreach (var item in nameMap.Where(kvp => kvp.Value == comp).ToList())
-                {
-                    nameMap.Remove(item.Key);
-                }
+                nameCache.Remove(item.Key);
             }
 
             // TODO: consider all ancestor types
@@ -272,36 +272,44 @@ namespace ZGE.Components
 
         public ZComponent Find(string name)
         {
+            // Try to find a match in the nameCache
             ZComponent result = null;
-            nameMap.TryGetValue(name, out result);
+            nameCache.TryGetValue(name, out result);
+            if (result != null) return result;
+            // Otherwise, consider all components
+            result = allComponents.Where(it => it.Name == name).First();
+            // Cache the result
+            if (result != null) nameCache[name] = result;
             return result;
         }
 
-        public List<ZComponent> GetComponents(Type type)
+        public HashSet<ZComponent> GetAllComponents()
+        {
+            return allComponents;            
+        }
+
+        public HashSet<ZComponent> GetComponents(Type type)
         {
             if (typeMap.ContainsKey(type))
                 return typeMap[type];
             else
-                return new List<ZComponent>();
-        }
+                return new HashSet<ZComponent>();
+        }        
 
-        public List<ZComponent> GetNamedComponents()
+        public void RefreshName(ZComponent comp, string name, string oldName)
         {
-            return nameMap.Values.ToList();
-        }
-
-        public void RefreshName(ZComponent comp, string name)
-        {
+            if (oldName != null)
+                nameCache.Remove(oldName);
             // Remove the component from the nameMap - if necessary
-            foreach (var item in nameMap.Where(kvp => kvp.Value == comp).ToList())
+            foreach (var item in nameCache.Where(kvp => kvp.Value == comp).ToList())
             {
-                nameMap.Remove(item.Key);
+                nameCache.Remove(item.Key);
             }
             if (comp.HasName())
-                nameMap[comp.Name] = comp;
+                nameCache[comp.Name] = comp;
         }
 
-        public List<String> ListComponentNames(Type type)
+        public List<string> ListComponentNames(Type type)
         {
             List<string> result = new List<string>();
             if (typeMap.ContainsKey(type))
@@ -318,12 +326,8 @@ namespace ZGE.Components
             int count = 0;
             if (typeMap.ContainsKey(type))
             {
-                List<ZComponent> cc = typeMap[type];
-
-                for (int i = 0; i < cc.Count; i++)
-                {
-                    ZComponent comp = cc[i];
-
+                foreach (ZComponent comp in typeMap[type])                
+                {   
                     if (comp.GetType() == type)
                     {
                         count++;

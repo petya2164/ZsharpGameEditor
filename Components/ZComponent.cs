@@ -60,8 +60,8 @@ namespace ZGE.Components
 
         public ZComponent()
         {           
-            // It is not good to add components before they have a Name
-            //if (App != null) App.AddComponent(this);           
+            // It is important to register all components to the App
+            if (App != null) App.AddNewComponent(this);           
         }
 
         ~ZComponent()

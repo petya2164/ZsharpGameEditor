@@ -47,7 +47,7 @@ namespace ZGE.Components
         public Model()
         {            
             Scale = new Vector3(1, 1, 1);
-            App.AddModel(this);
+            if (App != null) App.AddModel(this);
         }  
       
         ~Model()
@@ -67,6 +67,7 @@ namespace ZGE.Components
             clone.Prototype = false;    // a cloned Model automatically becomes a GameObject
             clone.Name = null;          // clones have no names per default
             //clone.GUID = this.GUID;   // a GameObject will inherit the GUID from its parent
+            App.AddNewComponent(clone);
             App.AddModel(clone);
             return clone;
         }
@@ -75,7 +76,7 @@ namespace ZGE.Components
         {
             if (this.Prototype == false) return null; // you cannot clone a GameObject
             Model comp = (Model) this.Clone();
-            App.AddComponent(comp);
+            
             // Use the application as a parent
             if (parent == null) parent = App;            
             comp.Owner = parent;

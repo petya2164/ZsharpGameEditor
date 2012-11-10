@@ -21,6 +21,7 @@ using System.Collections.Generic;
 
 namespace ZGE
 {
+    /*
     #region XmlNodePropertyChangedEventArgs
     /// <summary>
     /// Provides a data for TreeNodeProperties.XmlNodePropertyChanged event.  
@@ -75,7 +76,7 @@ namespace ZGE
     /// </summary>
     public delegate void PropertyChangedEventHandler(Object sender, PropertyChangedEventArgs e);
     #endregion
-
+    */
 
     /// <summary>
     /// Implements middle layer between an XmlNode and XmlNodeProperties classes.
@@ -88,14 +89,16 @@ namespace ZGE
         // Properties holder for the XmlNode        
         //private ZCustomClass properties;
         // The underlying ZComponent
-        internal object component;
-        internal object parent_component;
-        internal IList parent_list;
+        internal ZComponent Component { get; set; }
+        // Or the underlying List
+        internal IList List { get; set; }
+        internal object Parent { get; set; }
+        
         // XmlNode represented by a TreeNode
         internal XmlNode xmlNode;
         internal TreeNode treeNode;
         // Xml operation status string 
-        private string statusString;
+        //private string statusString;
        
         /// <summary>
         /// Occurs when XmlNode have been changed.
@@ -106,15 +109,18 @@ namespace ZGE
         /// <summary>
         /// Initializes a new instance of the TreeNodeProperties with the given XmlNode. 
         /// </summary>
-        public ZNodeProperties(object comp, object parent, object parentList, XmlNode node, TreeNode treeNode)
+        public ZNodeProperties(object target, object parent, XmlNode node, TreeNode treeNode)
         {
             if (node == null) return;            
 
             xmlNode = node;
-            component = comp;
-            if (parent != comp) // a component cannot be its own parent
-                parent_component = parent;
-            this.parent_list = parentList as IList;
+            if (target is ZComponent)
+                Component = target as ZComponent;
+            else if (target is IList)
+                List = target as IList;            
+            if (parent != target) // a component cannot be its own parent
+                Parent = parent;
+            //this.parent_list = parentList as IList;
             this.treeNode = treeNode;            
         }
 
@@ -128,18 +134,7 @@ namespace ZGE
                     displayName = displayName + " - " + attribute.Value;
                 return displayName;                
             }
-        }
-        
-        /// <summary>
-        /// Gets the XmlProperties object that represents current XmlNode.
-        /// </summary>
-        internal object Component
-        {
-            get 
-            {
-                return component; 
-            }
-        }
+        }        
 
         /// <summary>
         /// Gets ZTreeView.TreeViewImagesList value used to display current XmlNode.
@@ -153,7 +148,7 @@ namespace ZGE
                     // root node
                     return ZTreeView.TreeViewImagesList.ImageIndexGroup;
                 }
-                else if (component is IList || component is Group)
+                else if (List is IList || Component is Group)
                 {
                     // component is a List or a Group
                     return ZTreeView.TreeViewImagesList.ImageIndexNode;
@@ -179,7 +174,7 @@ namespace ZGE
                     // root node
                     return System.Drawing.Color.Green;
                 }
-                else if (component is IList || component is Group)
+                else if (List is IList || Component is Group)
                 {
                     // component is a List or a Group                
                     return System.Drawing.Color.Blue;
@@ -194,7 +189,7 @@ namespace ZGE
         /// <summary>
         /// Moves the source node to new location as child node.
         /// </summary>
-        internal static bool MoveXmlNode(XmlNode sourceNode, XmlNode targetNode)
+        /*internal static bool MoveXmlNode(XmlNode sourceNode, XmlNode targetNode)
         {
             // unbind source node from parent node
             if (sourceNode == null || targetNode == null)
@@ -209,7 +204,7 @@ namespace ZGE
             // finally - move sourceNode node to new location (will become a child of targetNode)
             targetNode.AppendChild(sourceNode);
             return true;
-        }
+        }*/
         
         /// <summary>
         /// Indicates whether passed node is a Leaf node by testing it's child nodes' type.
@@ -418,7 +413,7 @@ namespace ZGE
         /// Renames the xmlNode node
         /// </summary>
         /// <param name="newName">new name for the node</param>
-        private void RenameNode(string newName)
+        /*private void RenameNode(string newName)
         {
             XmlNode newXmlNode = xmlNode.OwnerDocument.CreateNode(xmlNode.NodeType, newName, xmlNode.NamespaceURI);
 //             while (((XmlElement)xmlNode).HasAttributes)
@@ -439,7 +434,7 @@ namespace ZGE
 
             xmlNode.ParentNode.ReplaceChild(newXmlNode, xmlNode);
             xmlNode = newXmlNode;
-        }
+        }*/
 
        
         /// <summary>

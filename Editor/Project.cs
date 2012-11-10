@@ -122,9 +122,7 @@ namespace ZGE
         {
             if (currentCode != null && codeProperties != null && codePropertyName != null)
             {
-                currentCode.Text = codeBoxText;
-                PropertyChangedEventArgs ev = new PropertyChangedEventArgs(codePropertyName, codeBoxText);
-                ev.Action = PropertyChangeAction.CodeChanged;
+                currentCode.Text = codeBoxText;                
                 SaveCodeText(codePropertyName, codeBoxText, codeProperties.xmlNode);
                 OnXMLChanged();
             }
@@ -177,12 +175,11 @@ namespace ZGE
             return project;
         }
 
-        public void Rebuild(ZTreeView treeView, CodeGenerator codeGen)
+        public void Reset(ZTreeView treeView, CodeGenerator codeGen)
         {
             app = null;
             BuildApplication(codeGen);
-            if (treeView != null)
-                FillTreeView(treeView);
+            if (treeView != null) FillTreeView(treeView);
         }
 
         public void BuildApplication(CodeGenerator codeGen)
@@ -313,8 +310,9 @@ namespace ZGE
                 }
             }
             // construct ZNodeProperties object for the TreeNode and assign it to Tag property
-            //object target = (list != null) ? list : (object) comp;
-            ZNodeProperties props = new ZNodeProperties((object) list ?? (object) comp, parent, parent_list, xmlNode, treeNode);
+            object target = (object) list ?? (object) comp;
+            object parentObj = (object) parent_list ?? (object) parent;
+            ZNodeProperties props = new ZNodeProperties(target, parentObj, xmlNode, treeNode);
             if (list == null) comp.Tag = props;
 
             if (treeView != null)
@@ -331,7 +329,7 @@ namespace ZGE
             if (treeView == null) return false;
             ZNodeProperties props = dropNode.Tag as ZNodeProperties;
             if (props == null) return false;
-            if (props.component is IList) return true;
+            if (props.List is IList) return true;
             return false;
         }
 
@@ -340,7 +338,7 @@ namespace ZGE
             if (treeView == null) return false;
             ZNodeProperties props = dropNode.Tag as ZNodeProperties;
             if (props == null) return false;
-            if (props.component is Group) return true;
+            if (props.Component is Group) return true;
             return false;
         }
 
@@ -353,26 +351,26 @@ namespace ZGE
             if (dropProps == null) return false;
 
             // No dropping on the application node directly
-            if (dropProps.component == app) return false;
+            if (dropProps.Component == app) return false;
 
 
             if (asChild) // adding to a list or group
             {
                 // Accept GameObjects as children
-                if (dropProps.component == app.Scene)
+                if (dropProps.List == app.Scene)
                 {
-                    Model model = dragProps.component as Model;
+                    Model model = dragProps.Component as Model;
                     if (model != null && model.Prototype == false)
                         return true;
                 }
 
                 // Is dropNode a suitable container (list or group) for dragNode?
-                if (IsChildElementAllowed(dropNode, dragProps.component.GetType()))
+                if (IsChildElementAllowed(dropNode, dragProps.Component.GetType()))
                     return true;
             }
             else // adding as a sibling of dropNode
             {
-                ZComponent dropComp = dropProps.component as ZComponent;
+                ZComponent dropComp = dropProps.Component;
                 // Is dropNode's OwnerList a suitable container for dragNode?
                 if (dropComp != null)
                 {
@@ -383,13 +381,13 @@ namespace ZGE
                         if (listType.IsGenericType)
                         {
                             Type baseType = listType.GetGenericArguments()[0];
-                            if (baseType.IsAssignableFrom(dragProps.component.GetType())) return true;
+                            if (baseType.IsAssignableFrom(dragProps.Component.GetType())) return true;
                         }
 
                         // Accept GameObject siblings
                         if (dropComp.OwnerList == app.Scene)
                         {
-                            Model model = dragProps.component as Model;
+                            Model model = dragProps.Component as Model;
                             if (model != null && model.Prototype == false)
                                 return true;
                         }
@@ -409,7 +407,7 @@ namespace ZGE
             if (dragProps == null) return;
             ZNodeProperties dropProps = dropNode.Tag as ZNodeProperties;
             if (dropProps == null) return;
-            ZComponent dragComp = dragProps.component as ZComponent;
+            ZComponent dragComp = dragProps.Component;
             if (dragComp == null) return;
 
             // Remove dragComp references at its previous location
@@ -425,9 +423,9 @@ namespace ZGE
             if (dropSide == ZGE.ZTreeView.DropSide.Inside) // adding to a list or group
             {
                 // Add dragComp reference to its new parent/OwnerList
-                ZComponent parent = dropProps.component as ZComponent;
-                if (parent == null) parent = dropProps.parent_component as ZComponent;  // component is a List
-                SetComponentOwner(dragComp, parent, dropProps.component as IList);
+                ZComponent parent = dropProps.Component;
+                if (parent == null) parent = dropProps.Parent as ZComponent;  // component is a List
+                SetComponentOwner(dragComp, parent, dropProps.List);
 
                 // Perform Xml operation
                 dropProps.xmlNode.AppendChild(dragProps.xmlNode);
@@ -438,7 +436,7 @@ namespace ZGE
             }
             else // adding as a sibling of dropNode
             {
-                ZComponent dropComp = dropProps.component as ZComponent;
+                ZComponent dropComp = dropProps.Component;
                 if (dropComp == null) return;                
 
                 int plus = 0;  // index before dropComp
@@ -486,8 +484,8 @@ namespace ZGE
         {
             if (treeView == null) return false;
             ZNodeProperties props = clickedNode.Tag as ZNodeProperties;
-            if (props == null) return false;
-            Type type = props.component.GetType();
+            if (props == null || props.Component == null) return false;
+            Type type = props.Component.GetType();
 
             // The application and member lists cannot be deleted
             if (clickedNode.Level > 0 && !typeof(IList).IsAssignableFrom(type))
@@ -517,24 +515,24 @@ namespace ZGE
             ZNodeProperties props = destNode.Tag as ZNodeProperties;
             if (props == null) return false;
 
-            if (props.component == app.Scene)
+            if (props.List == app.Scene)
             {
                 // TODO: Allow more scene elements here 
                 if (typeof(Group).IsAssignableFrom(childType)) return true;
                 // TODO: A Model prototype should not be allowed here
                 //if (childType.IsSubclassOf(Model)) return true;
             }
-            else if (props.component is IList)
+            else if (props.List is IList)
             {
                 // Determine what type of components can be added to the generic list
-                Type listType = props.component.GetType();
+                Type listType = props.List.GetType();
                 if (listType.IsGenericType)
                 {
                     Type baseType = listType.GetGenericArguments()[0];
                     if (baseType.IsAssignableFrom(childType)) return true;
                 }
             }
-            else if (props.component is Group)
+            else if (props.Component is Group)
             {
                 // Any ZComponent can be added to a group
                 return true;
@@ -547,13 +545,11 @@ namespace ZGE
             if (app == null || treeView == null) return;
             xmlContextMenu.Items.Clear();
             ZNodeProperties props = clickedNode.Tag as ZNodeProperties;
-            if (props == null) return;
-
-            Type type = props.component.GetType();
+            if (props == null) return;           
 
             List<Type> list = new List<Type>();
             ToolStripMenuItem mainItem = null;
-            if (props.component == app.Scene)
+            if (props.List == app.Scene)
             {
                 // Add gameobjects
                 list = GetDerivedTypes(app.GetType().Assembly, typeof(Model));
@@ -565,18 +561,19 @@ namespace ZGE
                 xmlContextMenu.Items.Add(groupItem);
 
             }
-            else if (typeof(IList).IsAssignableFrom(type))
+            else if (props.List is IList)
             {
                 // Determine what type of components can be added to the generic list
-                if (type.IsGenericType)
+                Type listType = props.List.GetType();               
+                if (listType.IsGenericType)
                 {
-                    Type baseType = type.GetGenericArguments()[0];
+                    Type baseType = listType.GetGenericArguments()[0];
                     list = GetDerivedTypes(typeof(ZComponent).Assembly, baseType);
                     mainItem = new ToolStripMenuItem("Add " + baseType.Name, null);
                     xmlContextMenu.Items.Add(mainItem);
                 }
             }
-            else if (type == typeof(Group))
+            else if (props.Component is Group)
             {
                 // Any ZComponent can be added to a group
                 list = GetDerivedTypes(typeof(ZComponent).Assembly, typeof(ZComponent));
@@ -633,7 +630,7 @@ namespace ZGE
 
         public void DeleteComponent(ZNodeProperties props)
         {
-            ZComponent comp = props.component as ZComponent;
+            ZComponent comp = props.Component;
             if (comp == null) return;
 
             nodeMap.Remove(props.xmlNode);
@@ -671,7 +668,7 @@ namespace ZGE
                 //if (newMod != null && newMod.Prototype == false)
                 //editor.RefreshSceneTreeview();                
             }
-            props.component = null;
+            props.Component = null;
             if (comp.HasName())
                 Console.WriteLine("Component deleted: {0}", comp.Name);
             else
@@ -686,7 +683,7 @@ namespace ZGE
             {
                 //Console.WriteLine("Creating instance of: {0}", type.FullName);
                 comp = (ZComponent) Activator.CreateInstance(type);
-                app.AddComponent(comp);
+                
                 SetComponentOwner(comp, parent, parent_list);
             }
             return comp;
@@ -764,8 +761,8 @@ namespace ZGE
                 TreeNode newTreeNode = new TreeNode(childNodeName);
                 parentNode.Nodes.Add(newTreeNode);
 
-                ZComponent parent = parentProps.component as ZComponent;
-                if (parent == null) parent = parentProps.parent_component as ZComponent;  // component is a List
+                ZComponent parent = parentProps.Component;
+                if (parent == null) parent = parentProps.Parent as ZComponent;  // component is a List
                 ZComponent comp = null;
 
                 if (childType.BaseType == typeof(Model)) // this is a GameObject
@@ -788,7 +785,7 @@ namespace ZGE
                 }
                 else
                 {
-                    comp = CreateComponent(childType, parent, parentProps.component as IList);
+                    comp = CreateComponent(childType, parent, parentProps.List);
 
                     if (childNodeName == "Model")
                     {
@@ -828,7 +825,8 @@ namespace ZGE
                 }
 
                 // construct ZNodeProperties object for the TreeNode and assign it to Tag property
-                ZNodeProperties props = new ZNodeProperties(comp, parent, parentProps.component as IList, newXmlNode, newTreeNode);
+                object parentObj = (object) parentProps.List ?? (object) parent;
+                ZNodeProperties props = new ZNodeProperties(comp, parentObj , newXmlNode, newTreeNode);
                 comp.Tag = props;
                 newTreeNode.Tag = props;
                 //props.XmlNodePropertyChanged += new XmlNodePropertyChangedEventHandler(treeView.UpdateNodeText);

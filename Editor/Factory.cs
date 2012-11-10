@@ -155,7 +155,7 @@ namespace ZGE
             {
                 //Console.WriteLine("Creating instance of: {0}", type.FullName);
                 comp = (ZComponent) Activator.CreateInstance(type);
-                ZComponent.App.AddComponent(comp);
+                //ZComponent.App.AddComponent(comp);
                 if (parent != null)
                 {
                     comp.Owner = parent;
@@ -244,9 +244,10 @@ namespace ZGE
                         ProcessNode(comp, list, null, childNode);
                 }
             }
-            // construct ZNodeProperties object for the TreeNode and assign it to Tag property
-            object target = (list != null) ? list : (object)comp;
-            ZNodeProperties props = new ZNodeProperties(target, parent, parent_list, xmlNode, treeNode);
+            // construct ZNodeProperties object for the TreeNode and assign it to Tag property            
+            object target = (object) list ?? (object) comp;
+            object parentObj = (object) parent_list ?? (object) parent;
+            ZNodeProperties props = new ZNodeProperties(target, parentObj, xmlNode, treeNode);
             if (list == null) comp.Tag = props;
 
             if (_treeView != null)

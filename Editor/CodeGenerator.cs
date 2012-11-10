@@ -510,7 +510,7 @@ namespace ZGE
                 if (fullBuild)
                 {
                     ParseAttributes(targetClass, obj, xmlNode);
-                    targetClass.init.AddLine(String.Format("AddComponent({0});", obj.name));
+                    //targetClass.init.AddLine(String.Format("AddComponent({0});", obj.name));
                     if (standalone == false) // assign GUIDs to Model components
                     {
                         if (xmlNode.Name == "Model")
@@ -653,6 +653,7 @@ namespace ZGE
                         var staticApp = new StaticVariable(typeof(ZApplication), "DynamicGame", "App", false);
                         model.memberVars.Add(staticApp);
                         ns.mainClass.constructor.AddLine(String.Format("{0}.App = this;", modelName));
+
                         //model.constructor.AddLine("InitializeComponents();");
                         //model.init = new Method("public void InitializeComponents()");
                         //model.init.AddLine("CreateNamedComponents();");
@@ -687,7 +688,7 @@ namespace ZGE
         {
             foreach (FieldInfo dest in newType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
-                //if (dest.Name == "ID") continue;
+                if (dest.Name == "ID") continue;
                 // Check if this node is a List property of the parent
                 FieldInfo src = oldType.GetField(dest.Name, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 
@@ -729,7 +730,7 @@ namespace ZGE
             if (typeof(ZApplication).IsAssignableFrom(newObj.GetType()) == false)
             {
                 ZComponent.App.RemoveComponent(oldObj);     // remove the old component
-                ZComponent.App.AddComponent(newObj);        // add the new component
+                //ZComponent.App.AddNewComponent(newObj);        // add the new component
                 
                 // We should always set the Owner <= old Owner has been copied to newObj
                 
@@ -761,6 +762,17 @@ namespace ZGE
                             fi.SetValue(ZComponent.App, newObj);
                         }
                     }
+                    // Clear the static DynamicGame reference 'App' in the old model classes
+                    // It is enough to consider the prototypes
+                    if (newMod.Prototype)
+                    {
+                        FieldInfo fi = oldObj.GetType().GetField("App", BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                        if (fi != null)
+                        {
+                            //Console.WriteLine("Setting named reference {0} / {1}", fi.Name, fi.FieldType.Name);
+                            fi.SetValue(oldObj, null);
+                        }
+                    }
                 }
             }           
             
@@ -768,18 +780,18 @@ namespace ZGE
             ZNodeProperties props = newObj.Tag as ZNodeProperties;
             if (props != null)
             {
-                props.component = newObj;          
+                props.Component = newObj;          
 
                 TreeNode treeNode = props.treeNode;
                 if (treeNode != null)
                     foreach (TreeNode childNode in treeNode.Nodes)
                     {
                         ZNodeProperties props1 = childNode.Tag as ZNodeProperties;
-                        if (props1 != null && props1.parent_component == oldObj)
+                        if (props1 != null && props1.Parent == oldObj)
                         {
-                            props1.parent_component = newObj;                            
+                            props1.Parent = newObj;                            
                         }
-                        foreach (TreeNode grandchildNode in childNode.Nodes)
+                        /*foreach (TreeNode grandchildNode in childNode.Nodes)
                         {
                             ZNodeProperties props2 = grandchildNode.Tag as ZNodeProperties;
                             if (props2 != null && props2.parent_component == oldObj)
@@ -790,9 +802,16 @@ namespace ZGE
                                 ZComponent grandchild = props2.component as ZComponent;
                                 if (grandchild != null && grandchild.Owner == oldObj) grandchild.Owner = newObj;
                             }
-                        }
+                        }*/
                     }
             }
+
+            // oldObj can also be the Owner of its grandchildren (in various member lists)
+            // the Owner reference must be updated to newObj in all components 
+            foreach(ZComponent comp in ZComponent.App.GetAllComponents())
+                if (comp.Owner == oldObj) comp.Owner = newObj;
+
+
             // If the oldObj was selected in the editor, then we have to replace it with newObj 
             if (editor.SelectedComponent == oldObj)
             {

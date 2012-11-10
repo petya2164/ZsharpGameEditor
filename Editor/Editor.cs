@@ -28,7 +28,8 @@ using System.Collections.Specialized;
 namespace ZGE
 {
     public partial class Editor : Form
-    {         
+    {      
+#region Fields
         bool loaded = false;
         ZApplication app = null;
         Project project;
@@ -42,7 +43,8 @@ namespace ZGE
         XmlEditorForm _xmlForm = new XmlEditorForm();
         CodeViewForm _codeForm = new CodeViewForm();
         MouseDescriptor md = new MouseDescriptor();
-        
+#endregion
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Editor"/> class.
         /// </summary>
@@ -201,7 +203,7 @@ namespace ZGE
         }
 
         public void RefreshSceneTreeview()
-        {
+        {            
             sceneTreeView.Nodes.Clear();
             foreach (ZComponent comp in app.Scene)
                 AddElementToTree(comp, sceneTreeView.Nodes);
@@ -543,7 +545,7 @@ namespace ZGE
                 this.Cursor = Cursors.WaitCursor;                
 
                 //Try to rebuild project from the XML document stored in memory
-                project.Rebuild(xmlTree, codegen);
+                project.Reset(xmlTree, codegen);
                 if (project.app != null)
                 {
                     SetApplication();
@@ -589,7 +591,7 @@ namespace ZGE
 
                     RefreshSceneTreeview();
                     // The old ZApplication should be finalized at this point 
-                    // All references should be eliminated
+                    // All references should be cleared
                     GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
                     
                     //SelectedComponent = app;  // the old selected component might be invalid
@@ -650,8 +652,7 @@ namespace ZGE
                 ZNodeProperties nodeProps = comp.Tag as ZNodeProperties;                
                 if (nodeProps != null)
                 {
-                    GridItem parent = g.Parent;
-                    PropertyChangedEventArgs ev = null;
+                    GridItem parent = g.Parent;                    
                     if (parent != null && parent.GridItemType == GridItemType.Property)
                         project.UpdateAttribute(nodeProps, parent.PropertyDescriptor.Name, parent.Value);
                     else
@@ -662,7 +663,7 @@ namespace ZGE
                 if (obj != null) obj.Refresh();
                 if (g.PropertyDescriptor.Name == "Name")
                 {
-                    ZComponent.App.RefreshName(comp, g.Value as string);
+                    ZComponent.App.RefreshName(comp, g.Value as string, e.OldValue as string);
                     if (nodeProps != null) xmlTree.UpdateNodeText(nodeProps);
                     // TODO: Also update named references in XML attributes
                 }
