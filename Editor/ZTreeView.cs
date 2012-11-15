@@ -713,8 +713,8 @@ namespace ZGE
                 {
                     tree.SelectedNode = clickedNode;
 
-                    if (project != null)
-                        project.FillContextMenu(clickedNode, xmlContextMenu);
+                    xmlContextMenu.Items.Clear();
+                    if (project != null) project.FillContextMenu(clickedNode, xmlContextMenu);
 
                     if (xmlContextMenu.Items.Count > 0)
                         xmlContextMenu.Show(this, e.Location.X, e.Location.Y);

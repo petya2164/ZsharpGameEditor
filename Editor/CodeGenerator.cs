@@ -688,7 +688,7 @@ namespace ZGE
         {
             foreach (FieldInfo dest in newType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
-                if (dest.Name == "ID") continue;
+                //if (dest.Name == "ID") continue;
                 // Check if this node is a List property of the parent
                 FieldInfo src = oldType.GetField(dest.Name, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 
@@ -763,7 +763,8 @@ namespace ZGE
                         }
                     }
                     // Clear the static DynamicGame reference 'App' in the old model classes
-                    // It is enough to consider the prototypes
+                    // It is enough to do this for the prototypes (there is one prototype for each class)
+                    // If we don't null this, the old application will never be finalized
                     if (newMod.Prototype)
                     {
                         FieldInfo fi = oldObj.GetType().GetField("App", BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
@@ -787,6 +788,7 @@ namespace ZGE
                     foreach (TreeNode childNode in treeNode.Nodes)
                     {
                         ZNodeProperties props1 = childNode.Tag as ZNodeProperties;
+                        // Clear the reference to oldObj in the ZNodeProperties of all children / member lists
                         if (props1 != null && props1.Parent == oldObj)
                         {
                             props1.Parent = newObj;                            

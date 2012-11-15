@@ -12,6 +12,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
 
+using Gwen.Control;
+using Gwen.Input;
+
 namespace ZGE.Components
 {
     #region MouseDescriptor
@@ -80,9 +83,9 @@ namespace ZGE.Components
         public int Width = 800;
         public int Height = 600;
         [ReadOnly(true)]
-        public int CurrentWidth;
+        public int CurrentWidth = 800;
         [ReadOnly(true)]
-        public int CurrentHeight;
+        public int CurrentHeight = 600;
         [ReadOnly(true)]
         public float AspectRatio;
         public GraphicsMode Mode = new GraphicsMode(32, 24, 8, 0, 0, 2, false);
@@ -123,6 +126,16 @@ namespace ZGE.Components
         double lastUpdate = 0.0;
         double lastRender = 0.0;
         MovingAverage fpsMA = new MovingAverage();
+
+        // Gwen GUI
+        public bool GUIEnabled = true;
+        private int prevMouseX = 0;
+        private int prevMouseY = 0;
+        private Gwen.Input.OpenTKInput input;
+        private Gwen.Renderer.OpenTKRenderer renderer;
+        private Gwen.Skin.Base skin;
+        [Browsable(false)]
+        public Gwen.Control.Canvas Canvas = null;
 
 
         [Browsable(false)]
@@ -191,8 +204,8 @@ namespace ZGE.Components
 
         public event KeyboardHandler OnKeyDown;
         public event KeyboardHandler OnKeyUp;*/
-        static int serial = 0;
-        int ID = 0;
+        //static int serial = 0;
+        //int ID = 0;
 
         #region Code expressions
         public delegate void MouseMethod(MouseDescriptor e);
@@ -208,13 +221,13 @@ namespace ZGE.Components
             // Create the expression after the App reference has been set
             MouseDownExpr = new ZCode<MouseMethod>();
             MouseUpExpr = new ZCode<MouseMethod>();
-            ID = serial++;
-            Console.WriteLine(String.Format("ZApplication created: {0}", ID));
+            //ID = serial++;
+            //Console.WriteLine(String.Format("ZApplication created: {0}", ID));
         }
 
         ~ZApplication()
         {
-            Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
+            //Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
         }
 
         // It can also Unpause the app
@@ -465,38 +478,44 @@ namespace ZGE.Components
 
         public virtual void MouseDown(object sender, MouseDescriptor e)
         {
-            // GUI has priority in handling mouse events
-
-            // Then the camera
-            if (Camera == null || Camera.MouseDown(e) == false)
+            // GUI has priority in handling mouse events            
+            if (GUIEnabled == false || Canvas == null || Canvas.Input_MouseButton((int) e.Button, true) == false)
             {
-                if (MouseDownExpr != null && MouseDownExpr.callback != null)
-                    MouseDownExpr.callback(e);
+                Console.WriteLine("MouseDown unhandled");
+                // Then the camera
+                if (Camera == null || Camera.MouseDown(e) == false)
+                {
+                    if (MouseDownExpr != null && MouseDownExpr.callback != null)
+                        MouseDownExpr.callback(e);
 
-                // Selection & Dragbox Selection 
+                    // Selection & Dragbox Selection 
+                }
             }
         }
 
         public virtual Model MouseUp(object sender, MouseDescriptor e)
         {
             // GUI has priority in handling mouse events
-
-            // Then the camera
-            if (Camera == null || Camera.MouseUp(e) == false)
+            if (GUIEnabled == false || Canvas == null || Canvas.Input_MouseButton((int) e.Button, false) == false)
             {
-                if (MouseUpExpr != null && MouseUpExpr.callback != null)
-                    MouseUpExpr.callback(e);
-
-                // Selection & Dragbox Selection                
-                if (SelectionEnabled && e.Button == SelectButton)
+                Console.WriteLine("MouseUp unhandled");
+                // Then the camera
+                if (Camera == null || Camera.MouseUp(e) == false)
                 {
-                    //  Do a hit test.
-                    ZComponent comp = MousePick(e.X, e.Y);
-                    if (comp != null)
+                    if (MouseUpExpr != null && MouseUpExpr.callback != null)
+                        MouseUpExpr.callback(e);
+
+                    // Selection & Dragbox Selection                
+                    if (SelectionEnabled && e.Button == SelectButton)
                     {
-                        Console.WriteLine("MousePick result: {0}", comp.Name);
-                        SelectedObject = comp as Model;
-                        return SelectedObject;
+                        //  Do a hit test.
+                        ZComponent comp = MousePick(e.X, e.Y);
+                        if (comp != null)
+                        {
+                            Console.WriteLine("MousePick result: {0}", comp.Name);
+                            SelectedObject = comp as Model;
+                            return SelectedObject;
+                        }
                     }
                 }
             }
@@ -505,17 +524,57 @@ namespace ZGE.Components
 
         public virtual void MouseMove(object sender, MouseDescriptor e)
         {
-            if (Camera != null) Camera.MouseMove(e);
+            int dx = e.X - prevMouseX;
+            int dy = e.Y - prevMouseY;
+            prevMouseX = e.X;
+            prevMouseY = e.Y;
+
+            // GUI has priority in handling mouse events
+            if (GUIEnabled == false || Canvas == null || Canvas.Input_MouseMoved(e.X, e.Y, dx, dy) == false)
+            {
+                // Then the camera
+                if (Camera == null || Camera.MouseMove(e) == false)
+                {
+
+                }
+            }            
         }
 
         public virtual void MouseWheel(object sender, MouseDescriptor e)
         {
-            if (Camera != null) Camera.MouseWheel(e);
+            // GUI has priority in handling mouse events
+            // WheelDelta is already multiplied by 120 => Gwen expects a 60x multiplier so divide it by 2
+            if (GUIEnabled == false || Canvas == null || Canvas.Input_MouseWheel(e.WheelDelta / 2) == false)
+            {
+                // Then the camera
+                if (Camera == null || Camera.MouseWheel(e) == false)
+                {
+
+                }
+            }            
         }
 
         public virtual void Load()
         {
             Renderer.Init(this);
+
+            // Initialize the GUI
+            if (GUIEnabled)
+            {
+                renderer = new Gwen.Renderer.OpenTKRenderer();
+                skin = new Gwen.Skin.TexturedBase(renderer, "DefaultSkin.png");
+                //skin = new Gwen.Skin.Simple(renderer);
+                //skin.DefaultFont = new Font(renderer, "Courier", 10);
+                Canvas = new Canvas(skin);
+
+                //input = new OpenTKInput();
+                //input.Initialize(Canvas);
+
+                Canvas.SetSize(App.CurrentWidth, App.CurrentHeight);
+                Canvas.ShouldDrawBackground = false;
+                //canvas.BackgroundColor = Color.FromArgb(255, 150, 170, 170);
+                //canvas.KeyboardInputEnabled = true;
+            }            
 
             //  Initialise the scene.
             //SharpGL.SceneGraph.Helpers.SceneHelper.InitialiseModelingScene(scene);
@@ -546,6 +605,10 @@ namespace ZGE.Components
             GL.Viewport(x, y, width, height);
 
             this.AspectRatio = width / (float) height;
+            if (GUIEnabled)
+            {
+                if (Canvas != null) Canvas.SetSize(width, height);
+            }            
             OnResize.ExecuteAll(this);
         }
 
@@ -553,7 +616,7 @@ namespace ZGE.Components
         {
             GL.MatrixMode(All.PROJECTION);
             GL.LoadIdentity();
-            GL.Ortho(0, CurrentWidth, 0, CurrentHeight, 1, -1);
+            GL.Ortho(0, CurrentWidth, CurrentHeight, 0, -1, 1);
             GL.MatrixMode(All.MODELVIEW);
             GL.LoadIdentity();
         }
@@ -644,6 +707,12 @@ namespace ZGE.Components
 
                 SetupGUI();
                 Renderer.ApplyGUIMaterial(true);
+                // Render Gwen GUI
+                if (GUIEnabled)
+                {
+                    if (Canvas != null) Canvas.RenderCanvas();
+                }
+                
                 foreach (ZComponent comp in GUI)
                 {
                     IRenderable obj = comp as IRenderable;

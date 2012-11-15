@@ -5,6 +5,7 @@ obj
 # mstest test results
 TestResults
 Backup
+/GwenGUI
 *.pdb
 *.vshost.exe
 *.manifest
@@ -20,4 +21,3 @@ Backup
 /Dependencies/OpenTK/Source/GLControl/OpenTK.GLControl.xml
 /DynamicGame.cs
 /test.png
-

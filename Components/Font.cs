@@ -106,10 +106,10 @@ namespace ZGE.Components
                 RectangleF r = charTexcoords[c];
                 //RectangleF r = new RectangleF(0,0,1.0f,1.0f);
 
-                GL.TexCoord2(r.Left, r.Bottom); GL.Vertex2(x, y);
-                GL.TexCoord2(r.Right, r.Bottom); GL.Vertex2(x + w * size, y);
-                GL.TexCoord2(r.Right, r.Top); GL.Vertex2(x + w * size, y + charHeight * size);
-                GL.TexCoord2(r.Left, r.Top); GL.Vertex2(x, y + charHeight * size);
+                GL.TexCoord2(r.Left, r.Top); GL.Vertex2(x, y);
+                GL.TexCoord2(r.Right, r.Top); GL.Vertex2(x + w * size, y);
+                GL.TexCoord2(r.Right, r.Bottom); GL.Vertex2(x + w * size, y + charHeight * size);
+                GL.TexCoord2(r.Left, r.Bottom); GL.Vertex2(x, y + charHeight * size);
 
 			    /*GL.TexCoord2(coords[c][0]); GL.Vertex2f(x, y + height*size);
 			    GL.TexCoord2(coords[c][1]); GL.Vertex2f(x + widths[c]*size, y + height*size);

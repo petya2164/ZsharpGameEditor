@@ -53,7 +53,7 @@ namespace ZGE.Components
         ~Model()
         {
             if (App != null) App.RemoveModel(this);
-            Console.WriteLine("Model finalized: " + Name);
+            //Console.WriteLine("Model finalized: " + Name);
         }
 
         public void Refresh()

@@ -11,12 +11,6 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 
-
-// using SharpGL.SceneGraph;
-// using SharpGL.SceneGraph.Primitives;
-// using SharpGL.SceneGraph.Quadrics;
-// using SharpGL.SceneGraph.Assets;
-
 using ZGE.Components;
 
 namespace ZGE
@@ -25,13 +19,7 @@ namespace ZGE
     public class Standalone : GameWindow
     {
         ZApplication app;
-        MouseDescriptor md = new MouseDescriptor();
-
-        //const float rotation_speed = 180.0f;
-        //float angle;
-        //Scene scene = new Scene();
-        //Cube cube;
-        //Texture texture = new Texture();
+        MouseDescriptor md = new MouseDescriptor();       
 
         /// <summary>Creates a 800x600 window with the specified title.</summary>
         public Standalone(ZApplication _app)

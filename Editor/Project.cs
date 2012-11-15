@@ -40,8 +40,7 @@ namespace ZGE
 
         ~Project()
         {
-            if (treeView != null)
-                treeView.SetProject(null);
+            //if (treeView != null) treeView.SetProject(null);
         }
 
         public void LoadXml()
@@ -543,8 +542,10 @@ namespace ZGE
         public void FillContextMenu(TreeNode clickedNode, ContextMenuStrip xmlContextMenu)
         {
             if (app == null || treeView == null) return;
-            xmlContextMenu.Items.Clear();
+            //Console.WriteLine("FillContextMenu  reference {0} / {1}", fi.Name, fi.FieldType.Name);
             ZNodeProperties props = clickedNode.Tag as ZNodeProperties;
+            Console.WriteLine("FillContextMenu {0} ", clickedNode.Text);
+            if (props == null) Console.WriteLine("FillContextMenu null props");
             if (props == null) return;           
 
             List<Type> list = new List<Type>();
