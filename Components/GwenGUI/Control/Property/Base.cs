@@ -1,17 +1,19 @@
 ﻿using System;
+using ZGE.Components;
 
 namespace Gwen.Control.Property
 {
     /// <summary>
     /// Base control for property entry.
     /// </summary>
-    public class Base : Control.ControlBase
+    [HideComponent]
+    public class PropertyBase : Control.GUIControl
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Base"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Base(Control.ControlBase parent) : base(parent)
+        public PropertyBase(Control.GUIControl parent) : base(parent)
         {
             Height = 17;
         }
@@ -37,7 +39,7 @@ namespace Gwen.Control.Property
                 ValueChanged.Invoke(this);
         }
 
-        protected virtual void OnValueChanged(Control.ControlBase control)
+        protected virtual void OnValueChanged(Control.GUIControl control)
         {
             DoChanged();
         }

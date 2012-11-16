@@ -8,7 +8,7 @@ namespace Gwen.Control
     /// <summary>
     /// Base slider.
     /// </summary>
-    public class Slider : ControlBase
+    public class Slider : GUIControl
     {
         protected readonly SliderBar m_SliderBar;
         protected bool m_SnapToNotches;
@@ -63,7 +63,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="Slider"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        protected Slider(ControlBase parent)
+        protected Slider(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetBounds(new Rectangle(0, 0, 32, 128));
@@ -177,7 +177,7 @@ namespace Gwen.Control
             return true;
         }
 
-        protected virtual void OnMoved(ControlBase control)
+        protected virtual void OnMoved(GUIControl control)
         {
             SetValueInternal(CalculateValue());
         }

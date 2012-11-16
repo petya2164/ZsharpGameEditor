@@ -9,6 +9,7 @@ namespace ZGE.Components
     [HideComponent]
     public abstract class ZCommand : ZComponent
     {
+        public ZCommand(ZComponent parent) : base(parent) { }
         public abstract void Execute(ZComponent caller);
     }
 
@@ -34,7 +35,8 @@ namespace ZGE.Components
         public List<ZCommand> OnIteration = new List<ZCommand>();
         public int Iteration;
 
-        public Repeat()
+        public Repeat(ZComponent parent)
+            : base(parent)
         {
             //WhileExp.Header = "public bool #METHOD#()";            
         }
@@ -72,7 +74,8 @@ namespace ZGE.Components
         [Browsable(false)]
         public List<ZCommand> OnFalse = new List<ZCommand>();
 
-        public Condition()
+        public Condition(ZComponent parent)
+            : base(parent)
         {
             //Expression.Header = "public bool #METHOD#()";            
         }
@@ -102,9 +105,10 @@ namespace ZGE.Components
         [ReadOnlyAttribute(true)]
         public char Char;
         [ReadOnlyAttribute(true)]
-        public double LastPressedAt; 
+        public double LastPressedAt;
 
-        public KeyDown()
+        public KeyDown(ZComponent parent)
+            : base(parent)
         {            
         }
 
@@ -133,7 +137,7 @@ namespace ZGE.Components
     {
         public ZComponent Component;
 
-        public RefreshContent() { }
+        public RefreshContent(ZComponent parent) : base(parent) { }
 
         public override void Execute(ZComponent caller)
         {
@@ -156,7 +160,8 @@ namespace ZGE.Components
         [ReadOnlyAttribute(true)]
         public bool Stopped;
 
-        public ZTimer()
+        public ZTimer(ZComponent parent)
+            : base(parent)
         {            
             Reset();
         }
@@ -191,7 +196,7 @@ namespace ZGE.Components
     {
         public ZCommand Component;
 
-        public CallComponent() { }
+        public CallComponent(ZComponent parent) : base(parent) { }
 
         public override void Execute(ZComponent caller)
         {

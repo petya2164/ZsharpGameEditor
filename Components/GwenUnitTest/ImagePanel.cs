@@ -5,7 +5,7 @@ namespace Gwen.UnitTest
 {
     public class ImagePanel : GUnit
     {
-        public ImagePanel(ControlBase parent)
+        public ImagePanel(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             // Normal

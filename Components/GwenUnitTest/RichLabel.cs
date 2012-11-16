@@ -8,7 +8,7 @@ namespace Gwen.UnitTest
     {
         private Font f1, f2, f3;
 
-        public RichLabel(ControlBase parent) : base(parent)
+        public RichLabel(ZGE.Components.ZComponent parent) : base(parent)
         {
             Control.RichLabel label = new Control.RichLabel(this);
             label.SetBounds(10, 10, 400, 200);

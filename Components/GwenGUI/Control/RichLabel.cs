@@ -7,7 +7,7 @@ namespace Gwen.Control
     /// <summary>
     /// Multiline label with text chunks having different color/font.
     /// </summary>
-    public class RichLabel : ControlBase
+    public class RichLabel : GUIControl
     {
         protected struct TextBlock
         {
@@ -31,7 +31,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="RichLabel"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public RichLabel(ControlBase parent)
+        public RichLabel(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             newline = new string[] { Environment.NewLine };
@@ -240,8 +240,8 @@ namespace Gwen.Control
                 Rebuild();
 
             // align bottoms. this is still not ideal, need to take font metrics into account.
-            ControlBase prev = null;
-            foreach (ControlBase child in Children)
+            GUIControl prev = null;
+            foreach (GUIControl child in Children)
             {
                 if (prev != null && child.Y == prev.Y)
                 {

@@ -25,7 +25,8 @@ namespace ZGE.Components
         [Browsable(false)]
         public RefreshDelegate OnRefresh;
 
-        public Heightmap()
+        public Heightmap(ZComponent parent)
+            : base(parent)
         {
         }
 
@@ -76,7 +77,9 @@ namespace ZGE.Components
 
     public class MeshHeightmap : MeshProducer
     {
-        public Heightmap Heightmap;        
+        public Heightmap Heightmap; 
+       
+        public MeshHeightmap(ZComponent parent): base(parent) {}
 
         public override void ProduceOutput(ZContent content)
         {

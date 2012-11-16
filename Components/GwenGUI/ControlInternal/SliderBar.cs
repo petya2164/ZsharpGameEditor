@@ -19,7 +19,7 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="SliderBar"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public SliderBar(ControlBase parent)
+        public SliderBar(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             Target = this;

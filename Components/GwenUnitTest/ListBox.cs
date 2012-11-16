@@ -6,7 +6,7 @@ namespace Gwen.UnitTest
 {
     public class ListBox : GUnit
     {
-        public ListBox(ControlBase parent)
+        public ListBox(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             {
@@ -130,13 +130,13 @@ namespace Gwen.UnitTest
             }
         }
 
-        void RowSelected(ControlBase control)
+        void RowSelected(GUIControl control)
         {
             Control.ListBox list = control as Control.ListBox;
             UnitPrint(String.Format("ListBox: RowSelected: {0}", list[list.SelectedRowIndex].Text));
         }
 
-        void RowUnSelected(ControlBase control)
+        void RowUnSelected(GUIControl control)
         {
             // todo: how to determine which one was unselected (store somewhere)
             // or pass row as the event param?

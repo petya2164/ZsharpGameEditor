@@ -1,15 +1,17 @@
 ﻿using System;
 using Gwen.ControlInternal;
+using ZGE.Components;
 
 namespace Gwen.Control
 {
     /// <summary>
     /// Single property row.
     /// </summary>
-    public class PropertyRow : ControlBase
+    [HideComponent]
+    public class PropertyRow : GUIControl
     {
         private readonly Label m_Label;
-        private readonly Property.Base m_Property;
+        private readonly Property.PropertyBase m_Property;
         private bool m_LastEditing;
         private bool m_LastHover;
 
@@ -49,7 +51,7 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="parent">Parent control.</param>
         /// <param name="prop">Property control associated with this row.</param>
-        public PropertyRow(ControlBase parent, Property.Base prop)
+        public PropertyRow(GUIControl parent, Property.PropertyBase prop)
             : base(parent)
         {
             PropertyRowLabel label = new PropertyRowLabel(this);
@@ -59,7 +61,7 @@ namespace Gwen.Control
             m_Label = label;
 
             m_Property = prop;
-            m_Property.Parent = this;
+            m_Property.ParentControl = this;
             m_Property.Dock = Pos.Fill;
             m_Property.ValueChanged += OnValueChanged;
         }
@@ -93,7 +95,7 @@ namespace Gwen.Control
         /// <param name="skin">Skin to use.</param>
         protected override void Layout(Skin.Base skin)
         {
-            Properties parent = Parent as Properties;
+            Properties parent = ParentControl as Properties;
             if (null == parent) return;
 
             m_Label.Width = parent.SplitWidth;
@@ -104,7 +106,7 @@ namespace Gwen.Control
             }
         }
 
-        protected virtual void OnValueChanged(ControlBase control)
+        protected virtual void OnValueChanged(GUIControl control)
         {
             if (ValueChanged != null)
                 ValueChanged.Invoke(this);

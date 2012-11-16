@@ -11,7 +11,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="StatusBar"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public StatusBar(ControlBase parent)
+        public StatusBar(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             Height = 22;
@@ -26,9 +26,9 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="control">Control to add.</param>
         /// <param name="right">Determines whether the control should be added to the right side of the bar.</param>
-        public void AddControl(ControlBase control, bool right)
+        public void AddControl(GUIControl control, bool right)
         {
-            control.Parent = this;
+            control.ParentControl = this;
             control.Dock = right ? Pos.Right : Pos.Left;
         }
 

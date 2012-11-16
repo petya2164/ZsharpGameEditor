@@ -4,10 +4,10 @@ using Gwen.ControlInternal;
 
 namespace Gwen.Control
 {
-    public class HorizontalSplitter : ControlBase
+    public class HorizontalSplitter : GUIControl
     {
         private readonly SplitterBar m_VSplitter;
-        private readonly ControlBase[] m_Sections;
+        private readonly GUIControl[] m_Sections;
 
         private float m_VVal; // 0-1
         private int m_BarSize; // pixels
@@ -32,10 +32,10 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="CrossSplitter"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public HorizontalSplitter(ControlBase parent)
+        public HorizontalSplitter(ZGE.Components.ZComponent parent)
             : base(parent)
         {
-            m_Sections = new ControlBase[2];
+            m_Sections = new GUIControl[2];
             
             m_VSplitter = new SplitterBar(this);
             m_VSplitter.SetPosition(0, 128);
@@ -89,7 +89,7 @@ namespace Gwen.Control
             m_VSplitter.MoveTo(m_VSplitter.X, (Height - m_VSplitter.Height) * (m_VVal));
         }
         
-        protected void OnVerticalMoved(ControlBase control)
+        protected void OnVerticalMoved(GUIControl control)
         {
             m_VVal = CalculateValueVertical();
             Invalidate();
@@ -130,14 +130,14 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="index">Section index (0-3).</param>
         /// <param name="panel">Control to assign.</param>
-        public void SetPanel(int index, ControlBase panel)
+        public void SetPanel(int index, GUIControl panel)
         {
             m_Sections[index] = panel;
             
             if (panel != null)
             {
                 panel.Dock = Pos.None;
-                panel.Parent = this;
+                panel.ParentControl = this;
             }
 
             Invalidate();
@@ -148,7 +148,7 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="index">Section index (0-3).</param>
         /// <returns>Specified section.</returns>
-        public ControlBase GetPanel(int index)
+        public GUIControl GetPanel(int index)
         {
             return m_Sections[index];
         }

@@ -27,7 +27,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="CheckBox"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public CheckBox(ControlBase parent)
+        public CheckBox(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetSize(15, 15);

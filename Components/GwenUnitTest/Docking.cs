@@ -8,7 +8,7 @@ namespace Gwen.UnitTest
         private readonly Font font;
         private Control.Label outer;
 
-        public Docking(ControlBase parent)
+        public Docking(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             font = Skin.DefaultFont.Copy();
@@ -43,7 +43,7 @@ namespace Gwen.UnitTest
             inner5.SetSize(100, 100); 
             inner5.Dock = Pos.Fill;
 
-            outer.DrawDebugOutlines = true;
+            //outer.DrawDebugOutlines = true;
 
             inner1.UserData = CreateControls(inner1, 0, "Control 1", 440, 10);
             inner2.UserData = CreateControls(inner2, 1, "Control 2", 650, 10);
@@ -67,7 +67,7 @@ namespace Gwen.UnitTest
             //DrawDebugOutlines = true;
         }
 
-        ControlBase CreateControls(Control.ControlBase subject, int dock_idx, String name, int x, int y)
+        GUIControl CreateControls(Control.GUIControl subject, int dock_idx, String name, int x, int y)
         {
             Control.GroupBox gb = new Control.GroupBox(this);
             gb.SetBounds(x, y, 200, 150);
@@ -137,7 +137,7 @@ namespace Gwen.UnitTest
             return gb;
         }
 
-        void PaddingChanged(ControlBase control)
+        void PaddingChanged(GUIControl control)
         {
             Control.Slider val = control as Control.Slider;
             int i = (int)val.Value;
@@ -145,36 +145,36 @@ namespace Gwen.UnitTest
             outer.Invalidate();
         }
 
-        void MarginChanged(ControlBase control)
+        void MarginChanged(GUIControl control)
         {
-            ControlBase inner = control.UserData as ControlBase;
+            GUIControl inner = control.UserData as GUIControl;
             Control.Slider val = control as Control.Slider;
             int i = (int)val.Value;
             inner.Margin = new Margin(i, i, i, i);
             outer.Invalidate();
         }
 
-        void WidthChanged(ControlBase control)
+        void WidthChanged(GUIControl control)
         {
-            ControlBase inner = control.UserData as ControlBase;
+            GUIControl inner = control.UserData as GUIControl;
             Control.Slider val = control as Control.Slider;
             inner.Width = (int)val.Value;
             outer.Invalidate();
         }
 
-        void HeightChanged(ControlBase control)
+        void HeightChanged(GUIControl control)
         {
-            ControlBase inner = control.UserData as ControlBase;
+            GUIControl inner = control.UserData as GUIControl;
             Control.Slider val = control as Control.Slider;
             inner.Height = (int)val.Value;
             outer.Invalidate();
         }
 
-        void DockChanged(ControlBase control)
+        void DockChanged(GUIControl control)
         {
-            ControlBase inner = (ControlBase) control.UserData;
+            GUIControl inner = (GUIControl) control.UserData;
             RadioButtonGroup rbg = (RadioButtonGroup) control;
-            ControlBase gb = inner.UserData as ControlBase;
+            GUIControl gb = inner.UserData as GUIControl;
             Control.Slider w = gb.FindChildByName("Width", true) as Control.Slider;
             Control.Slider h = gb.FindChildByName("Height", true) as Control.Slider;
 

@@ -5,7 +5,7 @@ namespace Gwen.Control
     /// <summary>
     /// CheckBox with label.
     /// </summary>
-    public class LabeledCheckBox : ControlBase
+    public class LabeledCheckBox : GUIControl
     {
         private readonly CheckBox m_CheckBox;
         private readonly LabelClickable m_Label;
@@ -39,7 +39,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="LabeledCheckBox"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public LabeledCheckBox(ControlBase parent)
+        public LabeledCheckBox(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetSize(200, 19);
@@ -60,7 +60,7 @@ namespace Gwen.Control
         /// <summary>
         /// Handler for CheckChanged event.
         /// </summary>
-        protected virtual void OnCheckChanged(ControlBase control)
+        protected virtual void OnCheckChanged(GUIControl control)
         {
             if (m_CheckBox.IsChecked)
             {

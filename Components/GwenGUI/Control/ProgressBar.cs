@@ -32,7 +32,7 @@ namespace Gwen.Control
                 m_Progress = value;
                 if (m_AutoLabel)
                 {
-                    int displayVal = (int)(m_Progress * 100);
+                    int displayVal = Util.Round(m_Progress * 100);
                     Text = displayVal.ToString() + "%";
                 }
             }
@@ -47,7 +47,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ProgressBar"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ProgressBar(ControlBase parent)
+        public ProgressBar(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             MouseInputEnabled = true; // [omeg] what? was true
@@ -57,7 +57,7 @@ namespace Gwen.Control
 
             Alignment = Pos.Center;
             m_Progress = 0;
-            m_AutoLabel = true;
+            m_AutoLabel = true;                        
         }
 
         /// <summary>

@@ -12,7 +12,8 @@ namespace ZGE.Components
         [CategoryAttribute("Expressions")]
         public ZCode<ModelMethod> Expression = new ZCode<ModelMethod>();
 
-        public ZExpression()
+        public ZExpression(ZComponent parent)
+            : base(parent)
         {            
             //Expression.Header = "public void #METHOD#()";
         }
@@ -27,14 +28,15 @@ namespace ZGE.Components
     // This is a dummy parent class for all "Definitions"
     public abstract class Definition : ZComponent
     {
-        public Definition() { }
+        public Definition(ZComponent parent) : base(parent) { }
     }
 
     public class CustomCode : Definition
     {
         public CustomCodeDefinition Code = new CustomCodeDefinition();
 
-        public CustomCode()
+        public CustomCode(ZComponent parent)
+            : base(parent)
         {                        
         }       
     }

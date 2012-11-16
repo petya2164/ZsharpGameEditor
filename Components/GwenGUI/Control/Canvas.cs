@@ -10,16 +10,16 @@ namespace Gwen.Control
     /// <summary>
     /// Canvas control. It should be the root parent for all other controls.
     /// </summary>
-    public class Canvas : ControlBase
+    public class Canvas : GUIControl
     {
         private bool m_NeedsRedraw;
-        private float m_Scale;
+        private float m_Scale = 1.0f;
 
         private Color m_BackgroundColor;
 
         // [omeg] these are not created by us, so no disposing
-        internal ControlBase FirstTab;
-        internal ControlBase NextTab;
+        internal GUIControl FirstTab;
+        internal GUIControl NextTab;
 
         private readonly List<IDisposable> m_DisposeQueue; // dictionary for faster access?
 
@@ -60,11 +60,11 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="Canvas"/> class.
         /// </summary>
         /// <param name="skin">Skin to use.</param>
-        public Canvas(Skin.Base skin): base(null)
+        public Canvas(): base(null)
         {
             SetBounds(0, 0, 10000, 10000);
-            SetSkin(skin, false);
-            Scale = 1.0f;
+            //SetSkin(skin, false);
+            //Scale = 1.0f;
             BackgroundColor = Color.White;
             ShouldDrawBackground = false;
 
@@ -186,7 +186,7 @@ namespace Gwen.Control
         /// Adds given control to the delete queue and detaches it from canvas. Don't call from Dispose, it modifies child list.
         /// </summary>
         /// <param name="control">Control to delete.</param>
-        public void AddDelayedDelete(ControlBase control)
+        public void AddDelayedDelete(GUIControl control)
         {
             if (!m_DisposeQueue.Contains(control))
             {

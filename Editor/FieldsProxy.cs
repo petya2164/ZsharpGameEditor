@@ -154,7 +154,8 @@ namespace ZGE
             props = new PropertyDescriptorCollection(null);
             foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(_target, attributes, true))
             {
-                props.Add(prop);
+                if (prop.IsReadOnly == false)
+                    props.Add(prop);
             }
             foreach (FieldInfo field in _target.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
             {

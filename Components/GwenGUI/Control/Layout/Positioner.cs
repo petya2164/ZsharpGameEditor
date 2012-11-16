@@ -1,11 +1,13 @@
 ﻿using System;
+using ZGE.Components;
 
 namespace Gwen.Control.Layout
 {
     /// <summary>
     /// Helper control that positions its children in a specific way.
     /// </summary>
-    public class Positioner : ControlBase
+    [HideComponent]
+    public class Positioner : GUIControl
     {
         private Pos m_Pos;
 
@@ -18,7 +20,7 @@ namespace Gwen.Control.Layout
         /// Initializes a new instance of the <see cref="Positioner"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Positioner(ControlBase parent) : base(parent)
+        public Positioner(ZGE.Components.ZComponent parent) : base(parent)
         {
             Pos = Pos.Left | Pos.Top;
         }
@@ -29,7 +31,7 @@ namespace Gwen.Control.Layout
         /// <param name="skin">Skin to use.</param>
         protected override void PostLayout(Skin.Base skin)
         {
-            foreach (ControlBase child in Children) // ok?
+            foreach (GUIControl child in Children) // ok?
             {
                 child.SetPosition(m_Pos, 0, 0);
             }
@@ -39,13 +41,14 @@ namespace Gwen.Control.Layout
     /// <summary>
     /// Helper class that centers all its children.
     /// </summary>
+    [HideComponent]
     public class Center : Positioner
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Center"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Center(ControlBase parent) : base(parent)
+        public Center(ZGE.Components.ZComponent parent) : base(parent)
         {
             Pos = Pos.Center;
         }

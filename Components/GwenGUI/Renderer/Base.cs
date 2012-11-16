@@ -397,7 +397,7 @@ namespace Gwen.Renderer
         /// </summary>
         public Rectangle Translate(Rectangle rect)
         {
-            return new Rectangle(TranslateX(rect.X), TranslateY(rect.Y), Util.Ceil(rect.Width * Scale), Util.Ceil(rect.Height * Scale));
+            return new Rectangle(TranslateX(rect.X), TranslateY(rect.Y), Util.CeilNonNeg(rect.Width * Scale), Util.CeilNonNeg(rect.Height * Scale));
         }
 
         /// <summary>

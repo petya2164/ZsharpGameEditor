@@ -1,18 +1,20 @@
 ﻿using System;
 using Gwen.ControlInternal;
+using ZGE.Components;
 
 namespace Gwen.Control
 {
     /// <summary>
     /// Property table/tree.
     /// </summary>
+    [HideComponent]
     public class PropertyTree : TreeControl
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyTree"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public PropertyTree(ControlBase parent)
+        public PropertyTree(ZGE.Components.ZComponent parent)
             : base(parent)
         {
 

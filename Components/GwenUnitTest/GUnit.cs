@@ -3,11 +3,11 @@ using Gwen.Control;
 
 namespace Gwen.UnitTest
 {
-    public class GUnit : ControlBase
+    public class GUnit : GUIControl
     {
         public UnitTest UnitTest;
 
-        public GUnit(ControlBase parent) : base(parent)
+        public GUnit(ZGE.Components.ZComponent parent) : base(parent)
         {
             
         }

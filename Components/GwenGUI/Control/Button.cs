@@ -1,5 +1,6 @@
 ﻿using System;
 using Gwen.Input;
+using System.ComponentModel;
 
 namespace Gwen.Control
 {
@@ -52,6 +53,7 @@ namespace Gwen.Control
         /// <summary>
         /// Indicates whether the button is depressed.
         /// </summary>
+        [Browsable(false)]
         public bool IsDepressed
         {
             get { return m_Depressed; }
@@ -67,11 +69,13 @@ namespace Gwen.Control
         /// <summary>
         /// Indicates whether the button is toggleable.
         /// </summary>
+        [CategoryAttribute("Behavior")]
         public bool IsToggle { get { return m_Toggle; } set { m_Toggle = value; } }
 
         /// <summary>
         /// Determines the button's toggle state.
         /// </summary>
+        [CategoryAttribute("Behavior")]
         public bool ToggleState
         {
             get { return m_ToggleStatus; }
@@ -98,13 +102,13 @@ namespace Gwen.Control
 
                 Redraw();
             }
-        }
+        }        
 
         /// <summary>
         /// Control constructor.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Button(ControlBase parent)
+        public Button(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetSize(100, 20);
@@ -124,7 +128,7 @@ namespace Gwen.Control
         /// <summary>
         /// "Clicks" the button.
         /// </summary>
-        public virtual void Press(ControlBase control)
+        public virtual void Press(GUIControl control)
         {
             OnClicked();
         }

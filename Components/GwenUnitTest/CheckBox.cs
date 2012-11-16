@@ -5,7 +5,7 @@ namespace Gwen.UnitTest
 {
     public class CheckBox : GUnit
     {
-        public CheckBox(ControlBase parent)
+        public CheckBox(ZGE.Components.ZComponent parent)
             : base(parent)
         {
 
@@ -32,17 +32,17 @@ namespace Gwen.UnitTest
             Align.PlaceDownLeft(check2, labeled2, 20);
         }
 
-        void OnChecked(ControlBase control)
+        void OnChecked(GUIControl control)
         {
             UnitPrint("CheckBox: Checked");
         }
 
-        void OnCheckChanged(ControlBase control)
+        void OnCheckChanged(GUIControl control)
         {
             UnitPrint("CheckBox: CheckChanged");
         }
 
-        void OnUnchecked(ControlBase control)
+        void OnUnchecked(GUIControl control)
         {
             UnitPrint("CheckBox: UnChecked");
         }

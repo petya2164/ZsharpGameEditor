@@ -6,7 +6,7 @@ namespace Gwen.Control
     /// <summary>
     /// Base for controls whose interior can be scrolled.
     /// </summary>
-    public class ScrollControl : ControlBase
+    public class ScrollControl : GUIControl
     {
         private bool m_CanScrollH;
         private bool m_CanScrollV;
@@ -34,7 +34,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ScrollControl"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ScrollControl(ControlBase parent)
+        public ScrollControl(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             MouseInputEnabled = true;
@@ -51,7 +51,7 @@ namespace Gwen.Control
             m_CanScrollH = true;
             m_HorizontalScrollBar.NudgeAmount = 30;
 
-            m_InnerPanel = new ControlBase(this);
+            m_InnerPanel = new GUIControl(this);
             m_InnerPanel.SetPosition(0, 0);
             m_InnerPanel.Margin = Margin.Five;
             m_InnerPanel.SendToBack();
@@ -116,12 +116,12 @@ namespace Gwen.Control
             m_InnerPanel.SetSize(width, height);
         }
 
-        protected virtual void VBarMoved(ControlBase control)
+        protected virtual void VBarMoved(GUIControl control)
         {
             Invalidate();
         }
 
-        protected virtual void HBarMoved(ControlBase control)
+        protected virtual void HBarMoved(GUIControl control)
         {
             Invalidate();
         }
@@ -131,7 +131,7 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="oldChildBounds"></param>
         /// <param name="child"></param>
-        protected override void OnChildBoundsChanged(System.Drawing.Rectangle oldChildBounds, ControlBase child)
+        protected override void OnChildBoundsChanged(System.Drawing.Rectangle oldChildBounds, GUIControl child)
         {
             UpdateScrollBars();
         }

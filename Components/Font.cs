@@ -129,7 +129,8 @@ namespace ZGE.Components
         }
 
 
-        public Font()
+        public Font(ZComponent parent)
+            : base(parent)
         {
         }
 
@@ -326,7 +327,7 @@ namespace ZGE.Components
         }
     }
 
-    public class RenderText : ZCommand, IRenderable
+    public class RenderText : GUIComponent, IRenderable
     {
         public Font Font;
         public delegate string TextMethod(ZComponent caller, string original);
@@ -337,12 +338,13 @@ namespace ZGE.Components
         public Vector3 Rotation;
         public float Scale = 1.0f;
 
-        public RenderText()
+        public RenderText(ZComponent parent)
+            : base(parent)
         {
             //TextExpression.Header = "public string #METHOD#(RenderText rt)";           
         }
 
-        public override void Execute(ZComponent caller)
+        public virtual void Execute(ZComponent caller)
         {
             string txt = Text;
             if (TextExpression != null && TextExpression.callback != null)

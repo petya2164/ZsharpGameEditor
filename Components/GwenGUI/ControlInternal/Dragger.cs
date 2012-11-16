@@ -8,13 +8,13 @@ namespace Gwen.ControlInternal
     /// <summary>
     /// Base for controls that can be dragged by mouse.
     /// </summary>
-    public class Dragger : ControlBase
+    public class Dragger : GUIControl
     {
         protected bool m_Held;
         protected Point m_HoldPos;
-        protected ControlBase m_Target;
+        protected GUIControl m_Target;
 
-        internal ControlBase Target { get { return m_Target; } set { m_Target = value; } }
+        internal GUIControl Target { get { return m_Target; } set { m_Target = value; } }
 
         /// <summary>
         /// Indicates if the control is being dragged.
@@ -30,7 +30,7 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="Dragger"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Dragger(ControlBase parent) : base(parent)
+        public Dragger(ZGE.Components.ZComponent parent) : base(parent)
         {
             MouseInputEnabled = true;
             m_Held = false;
@@ -76,8 +76,8 @@ namespace Gwen.ControlInternal
             Point p = new Point(x - m_HoldPos.X, y - m_HoldPos.Y);
 
             // Translate to parent
-            if (m_Target.Parent != null)
-                p = m_Target.Parent.CanvasPosToLocal(p);
+            if (m_Target.ParentControl != null)
+                p = m_Target.ParentControl.CanvasPosToLocal(p);
 
             //m_Target->SetPosition( p.x, p.y );
             m_Target.MoveTo(p.X, p.Y);

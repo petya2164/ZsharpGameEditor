@@ -17,62 +17,6 @@ using Gwen.Input;
 
 namespace ZGE.Components
 {
-    #region MouseDescriptor
-    public class MouseDescriptor
-    {
-        public MouseDescriptor() { }
-
-        readonly bool[] button_state = new bool[Enum.GetValues(typeof(MouseButton)).Length];
-        //public int Clicks { get; }
-        public MouseButton Button { get; set; }
-        public int WheelDelta { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
-
-        /// <summary>
-        /// Gets a System.Boolean indicating the state of the specified MouseButton.
-        /// </summary>
-        /// <param name="button">The MouseButton to check.</param>
-        /// <returns>True if the MouseButton is pressed, false otherwise.</returns>
-        public bool this[MouseButton button]
-        {
-            get
-            {
-                return button_state[(int) button];
-            }
-            set
-            {
-                button_state[(int) button] = value;
-            }
-        }
-    }
-    #endregion
-
-    #region MovingAverage
-    public class MovingAverage
-    {
-        double[] values = new double[60];  // all 0's initially
-        double sum = 0;
-        int pos = 0;
-
-        public MovingAverage() { }
-
-        public void AddValue(double v)
-        {
-            sum -= values[pos];  // only need the array to subtract old value
-            sum += v;
-            values[pos] = v;
-            pos = (pos + 1) % values.Length;
-        }
-
-        public double Average()
-        {
-            return sum / values.Length;
-        }
-    }
-    #endregion
-
-
     [HideComponent]
     public class ZApplication : ZComponent
     {
@@ -170,7 +114,7 @@ namespace ZGE.Components
         [Browsable(false)]
         public List<ContentLike> Content = new List<ContentLike>();
         [Browsable(false)]
-        public List<ZComponent> GUI = new List<ZComponent>();
+        public List<GUIComponent> GUI = new List<GUIComponent>();
         [Browsable(false)]
         public ObservableCollection<ZComponent> Scene = new ObservableCollection<ZComponent>();
         #endregion
@@ -215,12 +159,14 @@ namespace ZGE.Components
         public ZCode<MouseMethod> MouseUpExpr;
         #endregion        
 
-        public ZApplication()
+        public ZApplication(): base(null)
         {
             App = this; // there can be only one ZApplication at a time
+            SetStaticReferences(); // set the other static references in Model classes
             // Create the expression after the App reference has been set
             MouseDownExpr = new ZCode<MouseMethod>();
             MouseUpExpr = new ZCode<MouseMethod>();
+            Canvas = new Canvas();
             //ID = serial++;
             //Console.WriteLine(String.Format("ZApplication created: {0}", ID));
         }
@@ -229,6 +175,12 @@ namespace ZGE.Components
         {
             //Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
         }
+
+        // Used in generated code for DynamicGame
+        public virtual void CreateNamedComponents() {}
+        public virtual void InitializeComponents() {}
+        public virtual void SetStaticReferences() {}
+        
 
         // It can also Unpause the app
         public void Pause()
@@ -481,7 +433,7 @@ namespace ZGE.Components
             // GUI has priority in handling mouse events            
             if (GUIEnabled == false || Canvas == null || Canvas.Input_MouseButton((int) e.Button, true) == false)
             {
-                Console.WriteLine("MouseDown unhandled");
+                //Console.WriteLine("MouseDown unhandled");
                 // Then the camera
                 if (Camera == null || Camera.MouseDown(e) == false)
                 {
@@ -498,7 +450,7 @@ namespace ZGE.Components
             // GUI has priority in handling mouse events
             if (GUIEnabled == false || Canvas == null || Canvas.Input_MouseButton((int) e.Button, false) == false)
             {
-                Console.WriteLine("MouseUp unhandled");
+                //Console.WriteLine("MouseUp unhandled");
                 // Then the camera
                 if (Camera == null || Camera.MouseUp(e) == false)
                 {
@@ -565,7 +517,7 @@ namespace ZGE.Components
                 skin = new Gwen.Skin.TexturedBase(renderer, "DefaultSkin.png");
                 //skin = new Gwen.Skin.Simple(renderer);
                 //skin.DefaultFont = new Font(renderer, "Courier", 10);
-                Canvas = new Canvas(skin);
+                Canvas.SetSkin(skin, false);
 
                 //input = new OpenTKInput();
                 //input.Initialize(Canvas);
@@ -576,8 +528,8 @@ namespace ZGE.Components
                 //canvas.KeyboardInputEnabled = true;
             }            
 
-            //  Initialise the scene.
-            //SharpGL.SceneGraph.Helpers.SceneHelper.InitialiseModelingScene(scene);
+            // Create components after the GUI has been initialized
+            InitializeComponents();
 
             // Initialize all content
             foreach (ZContent comp in contentList)

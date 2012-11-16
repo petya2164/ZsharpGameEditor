@@ -10,7 +10,7 @@ namespace Gwen.UnitTest
         private readonly Font font2;
         private readonly Font font3;
 
-        public Label(ControlBase parent) : base(parent)
+        public Label(ZGE.Components.ZComponent parent) : base(parent)
         {
             {
                 Control.Label label = new Control.Label(this);
@@ -143,7 +143,7 @@ namespace Gwen.UnitTest
                 l33.Text = "BR";
                 l33.Alignment = Pos.Bottom | Pos.Right;
 
-                outer.DrawDebugOutlines = true;
+                //outer.DrawDebugOutlines = true;
             }
         }
 

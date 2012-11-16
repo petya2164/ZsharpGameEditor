@@ -10,7 +10,7 @@ namespace Gwen.UnitTest
         private readonly Font m_Font2;
         private readonly Font m_Font3;
 
-        public TextBox(ControlBase parent)
+        public TextBox(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             int row = 0;
@@ -167,13 +167,13 @@ namespace Gwen.UnitTest
             base.Dispose();
         }
 
-        void OnEdit(ControlBase control)
+        void OnEdit(GUIControl control)
         {
             Control.TextBox box = control as Control.TextBox;
             UnitPrint(String.Format("TextBox: OnEdit: {0}", box.Text));
         }
 
-        void OnSubmit(ControlBase control)
+        void OnSubmit(GUIControl control)
         {
             Control.TextBox box = control as Control.TextBox;
             UnitPrint(String.Format("TextBox: OnSubmit: {0}", box.Text));

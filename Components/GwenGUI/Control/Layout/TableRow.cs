@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Drawing;
+using ZGE.Components;
 
 namespace Gwen.Control.Layout
 {
     /// <summary>
     /// Single table row.
     /// </summary>
-    public class TableRow : ControlBase
+    [HideComponent]
+    public class TableRow : GUIControl
     {
         // [omeg] todo: get rid of this
         public const int MaxColumns = 5;
@@ -44,7 +46,7 @@ namespace Gwen.Control.Layout
         /// Initializes a new instance of the <see cref="TableRow"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public TableRow(ControlBase parent)
+        public TableRow(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_Columns = new Label[MaxColumns];
@@ -127,12 +129,12 @@ namespace Gwen.Control.Layout
         /// <param name="column">Column number.</param>
         /// <param name="control">Cell contents.</param>
         /// <param name="enableMouseInput">Determines whether mouse input should be enabled for the cell.</param>
-        public void SetCellContents(int column, ControlBase control, bool enableMouseInput)
+        public void SetCellContents(int column, GUIControl control, bool enableMouseInput)
         {
             if (null == m_Columns[column]) 
                 return;
 
-            control.Parent = m_Columns[column];
+            control.ParentControl = m_Columns[column];
             m_Columns[column].MouseInputEnabled = enableMouseInput;
         }
 
@@ -141,7 +143,7 @@ namespace Gwen.Control.Layout
         /// </summary>
         /// <param name="column">Column number.</param>
         /// <returns>Control embedded in the cell.</returns>
-        public ControlBase GetCellContents(int column)
+        public GUIControl GetCellContents(int column)
         {
             return m_Columns[column];
         }
@@ -213,7 +215,7 @@ namespace Gwen.Control.Layout
         /// Handler for Copy event.
         /// </summary>
         /// <param name="from">Source control.</param>
-        protected override void OnCopy(ControlBase from)
+        protected override void OnCopy(GUIControl from)
         {
             Platform.Neutral.SetClipboardText(Text);
         }

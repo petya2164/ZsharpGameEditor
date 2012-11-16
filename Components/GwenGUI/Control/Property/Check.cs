@@ -1,11 +1,13 @@
 ﻿using System;
+using ZGE.Components;
 
 namespace Gwen.Control.Property
 {
     /// <summary>
     /// Checkable property.
     /// </summary>
-    public class Check : Base
+    [HideComponent]
+    public class Check : PropertyBase
     {
         protected readonly Control.CheckBox m_CheckBox;
 
@@ -13,7 +15,7 @@ namespace Gwen.Control.Property
         /// Initializes a new instance of the <see cref="Check"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Check(Control.ControlBase parent)
+        public Check(Control.GUIControl parent)
             : base(parent)
         {
             m_CheckBox = new Control.CheckBox(this);

@@ -7,7 +7,7 @@ namespace Gwen.Control
     /// <summary>
     /// Tree control node.
     /// </summary>
-    public class TreeNode : ControlBase
+    public class TreeNode : GUIControl
     {
         public const int TreeIndentation = 14;
 
@@ -116,7 +116,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="TreeNode"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public TreeNode(ControlBase parent)
+        public TreeNode(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_ToggleButton = new TreeToggleButton(this);
@@ -129,7 +129,7 @@ namespace Gwen.Control
             m_Title.DoubleClickedLeft += OnDoubleClickName;
             m_Title.Clicked += OnClickName;
 
-            m_InnerPanel = new ControlBase(this);
+            m_InnerPanel = new GUIControl(this);
             m_InnerPanel.Dock = Pos.Top;
             m_InnerPanel.Height = 100;
             m_InnerPanel.Margin = new Margin(TreeIndentation, 1, 0, 0);
@@ -153,7 +153,7 @@ namespace Gwen.Control
             }
 
             skin.DrawTreeNode(this, m_InnerPanel.IsVisible, IsSelected, m_Title.Height, m_Title.TextRight,
-                (int)(m_ToggleButton.Y + m_ToggleButton.Height * 0.5f), bottom, m_TreeControl == Parent); // IsRoot
+                (int)(m_ToggleButton.Y + m_ToggleButton.Height * 0.5f), bottom, m_TreeControl == ParentControl); // IsRoot
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace Gwen.Control
         public void ExpandAll()
         {
             Open();
-            foreach (ControlBase child in Children)
+            foreach (GUIControl child in Children)
             {
                 TreeNode node = child as TreeNode;
                 if (node == null)
@@ -276,7 +276,7 @@ namespace Gwen.Control
             if (m_Title != null)
                 m_Title.ToggleState = false;
 
-            foreach (ControlBase child in Children)
+            foreach (GUIControl child in Children)
             {
                 TreeNode node = child as TreeNode;
                 if (node == null)
@@ -289,7 +289,7 @@ namespace Gwen.Control
         /// Handler for the toggle button.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnToggleButtonPress(ControlBase control)
+        protected virtual void OnToggleButtonPress(GUIControl control)
         {
             if (m_ToggleButton.ToggleState)
             {
@@ -305,7 +305,7 @@ namespace Gwen.Control
         /// Handler for label double click.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnDoubleClickName(ControlBase control)
+        protected virtual void OnDoubleClickName(GUIControl control)
         {
             if (!m_ToggleButton.IsVisible)
                 return;
@@ -316,7 +316,7 @@ namespace Gwen.Control
         /// Handler for label click.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnClickName(ControlBase control)
+        protected virtual void OnClickName(GUIControl control)
         {
             if (LabelPressed != null)
                 LabelPressed.Invoke(this);

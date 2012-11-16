@@ -44,7 +44,8 @@ namespace ZGE.Components
         [Browsable(false)]
         public List<ZCommand> OnRender = new List<ZCommand>();
 
-        public Model()
+        public Model(ZComponent parent)
+            : base(parent)
         {            
             Scale = new Vector3(1, 1, 1);
             if (App != null) App.AddModel(this);
@@ -79,15 +80,11 @@ namespace ZGE.Components
             
             // Use the application as a parent
             if (parent == null) parent = App;            
-            comp.Owner = parent;
-            if (parent == App)
-            {
-                comp.OwnerList = App.Scene;
-                App.Scene.Add(comp);
-                // components in member lists are not considered children!
-            }
+            
+            if (parent == App)            
+                comp.SetOwner(parent, App.Scene);             
             else
-                parent.Children.Add(comp);
+                comp.SetOwner(parent, null);               
             
             return comp;
         }
@@ -192,7 +189,8 @@ namespace ZGE.Components
         public bool UseSpawnerPosition;
         public bool SpawnerIsParent;  //Spawned model becomes child to currentmodel
 
-        public SpawnModel()
+        public SpawnModel(ZComponent parent)
+            : base(parent)
         {
             //SpawnStyle = SpawnStyle.Clone;
             Scale = new Vector3(1, 1, 1);
@@ -234,7 +232,8 @@ namespace ZGE.Components
     {
         public Model Model;
 
-        public RemoveModel()
+        public RemoveModel(ZComponent parent)
+            : base(parent)
         {
         }
 
@@ -250,9 +249,7 @@ namespace ZGE.Components
     {
         public Model OfType;
 
-        public RemoveAllModels()
-        {
-        }
+        public RemoveAllModels(ZComponent parent): base(parent){}        
 
         public override void Execute(ZComponent caller)
         {

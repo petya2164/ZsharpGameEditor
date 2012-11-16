@@ -12,7 +12,7 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="PropertyTreeNode"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public PropertyTreeNode(ControlBase parent)
+        public PropertyTreeNode(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_Title.TextColorOverride = Skin.Colors.Properties.Title;

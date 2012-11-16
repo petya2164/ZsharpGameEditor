@@ -24,7 +24,7 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="ScrollBarBar"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ScrollBarBar(ControlBase parent)
+        public ScrollBarBar(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             RestrictToParent = true;
@@ -77,7 +77,7 @@ namespace Gwen.ControlInternal
         /// <param name="skin">Skin to use.</param>
         protected override void Layout(Skin.Base skin)
         {
-            if (null == Parent)
+            if (null == ParentControl)
                 return;
 
             //Move to our current position to force clamping - is this a hack?

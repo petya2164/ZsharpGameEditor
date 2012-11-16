@@ -5,7 +5,7 @@ namespace Gwen.UnitTest
 {
     public class TreeControl : GUnit
     {
-        public TreeControl(ControlBase parent)
+        public TreeControl(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             {
@@ -57,19 +57,19 @@ namespace Gwen.UnitTest
             }
         }
 
-        void NodeCollapsed(ControlBase control)
+        void NodeCollapsed(GUIControl control)
         {
             TreeNode node = control as TreeNode;
             UnitPrint(String.Format("Node collapsed: {0}", node.Text));
         }
 
-        void NodeExpanded(ControlBase control)
+        void NodeExpanded(GUIControl control)
         {
             TreeNode node = control as TreeNode;
             UnitPrint(String.Format("Node expanded: {0}", node.Text));
         }
 
-        void NodeSelected(ControlBase control)
+        void NodeSelected(GUIControl control)
         {
             TreeNode node = control as TreeNode;
             UnitPrint(String.Format("Node selected: {0}", node.Text));

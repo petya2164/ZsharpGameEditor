@@ -12,11 +12,11 @@ namespace Gwen.DragDrop
     public static class DragAndDrop
     {
         public static Package CurrentPackage;
-        public static ControlBase HoveredControl;
-        public static ControlBase SourceControl;
+        public static GUIControl HoveredControl;
+        public static GUIControl SourceControl;
 
-        private static ControlBase m_LastPressedControl;
-        private static ControlBase m_NewHoveredControl;
+        private static GUIControl m_LastPressedControl;
+        private static GUIControl m_NewHoveredControl;
         private static Point m_LastPressedPos;
         private static int m_MouseX;
         private static int m_MouseY;
@@ -83,7 +83,7 @@ namespace Gwen.DragDrop
             return true;
         }
 
-        private static void UpdateHoveredControl(ControlBase control, int x, int y)
+        private static void UpdateHoveredControl(GUIControl control, int x, int y)
         {
             //
             // We use this global variable to represent our hovered control
@@ -113,7 +113,7 @@ namespace Gwen.DragDrop
             {
                 // We can't drop on this control, so lets try to drop
                 // onto its parent..
-                m_NewHoveredControl = m_NewHoveredControl.Parent;
+                m_NewHoveredControl = m_NewHoveredControl.ParentControl;
 
                 // Its parents are dead. We can't drop it here.
                 // Show the NO WAY cursor.
@@ -135,7 +135,7 @@ namespace Gwen.DragDrop
             m_NewHoveredControl = null;
         }
 
-        public static bool Start(ControlBase control, Package package)
+        public static bool Start(GUIControl control, Package package)
         {
             if (CurrentPackage != null)
             {
@@ -147,7 +147,7 @@ namespace Gwen.DragDrop
             return true;
         }
 
-        public static bool OnMouseButton(ControlBase hoveredControl, int x, int y, bool down)
+        public static bool OnMouseButton(GUIControl hoveredControl, int x, int y, bool down)
         {
             if (!down)
             {
@@ -176,7 +176,7 @@ namespace Gwen.DragDrop
             return false;
         }
 
-        public static bool OnMouseMoved(ControlBase hoveredControl, int x, int y)
+        public static bool OnMouseMoved(GUIControl hoveredControl, int x, int y)
         {
             // Always keep these up to date, they're used to draw the dragged control.
             m_MouseX = x;
@@ -222,7 +222,7 @@ namespace Gwen.DragDrop
             skin.Renderer.RenderOffset = old;
         }
 
-        public static void ControlDeleted(ControlBase control)
+        public static void ControlDeleted(GUIControl control)
         {
             if (SourceControl == control)
             {

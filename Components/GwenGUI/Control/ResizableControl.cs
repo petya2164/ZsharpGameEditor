@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Drawing;
 using Gwen.ControlInternal;
+using ZGE.Components;
 
 namespace Gwen.Control
 {
     /// <summary>
     /// Base resizable control.
     /// </summary>
-    public class ResizableControl : ControlBase
+    [HideComponent]
+    public class ResizableControl : GUIControl
     {
         private bool m_ClampMovement;
         private readonly Resizer[] m_Resizer;
@@ -26,7 +28,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ResizableControl"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ResizableControl(ControlBase parent)
+        public ResizableControl(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_Resizer = new Resizer[10];
@@ -86,7 +88,7 @@ namespace Gwen.Control
         /// Handler for the resized event.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnResized(ControlBase control)
+        protected virtual void OnResized(GUIControl control)
         {
             if (Resized != null)
                 Resized.Invoke(this);
@@ -145,7 +147,7 @@ namespace Gwen.Control
             if (height < minSize.Y) height = minSize.Y;
 
             // Clamp to parent's window
-            ControlBase parent = Parent;
+            GUIControl parent = ParentControl;
             if (parent != null && m_ClampMovement)
             {
                 if (x + width > parent.Width) x = parent.Width - width;

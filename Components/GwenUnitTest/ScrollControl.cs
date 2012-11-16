@@ -5,7 +5,7 @@ namespace Gwen.UnitTest
 {
     public class ScrollControl : GUnit
     {
-        public ScrollControl(ControlBase parent)
+        public ScrollControl(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             {

@@ -102,7 +102,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ListBox"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ListBox(ControlBase parent)
+        public ListBox(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_SelectedRows = new List<TableRow>();
@@ -171,7 +171,7 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="control">Row to select.</param>
         /// <param name="clearOthers">Determines whether to deselect previously selected rows.</param>
-        public void SelectRow(ControlBase control, bool clearOthers)
+        public void SelectRow(GUIControl control, bool clearOthers)
         {
             if (!AllowMultiSelect || clearOthers)
                 UnselectAll();
@@ -278,7 +278,7 @@ namespace Gwen.Control
         /// Handler for the row selection event.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnRowSelected(ControlBase control)
+        protected virtual void OnRowSelected(GUIControl control)
         {
             // [omeg] changed default behavior
             bool clear = false;// !InputHandler.InputHandler.IsShiftDown;
@@ -315,7 +315,7 @@ namespace Gwen.Control
             m_Table.SizeToContents(0); // autosize without constraints
         }
 
-        private void TableResized(ControlBase control)
+        private void TableResized(GUIControl control)
         {
             if (m_SizeToContents)
             {

@@ -7,7 +7,7 @@ namespace Gwen.UnitTest
     {
         private readonly Control.Button buttonA, buttonB, buttonC, buttonD, buttonE, buttonF, buttonG, buttonH;
 
-        public Button(ControlBase parent)
+        public Button(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             buttonA = new Control.Button(this);
@@ -55,32 +55,32 @@ namespace Gwen.UnitTest
             Align.PlaceDownLeft(buttonH, buttonG, 10);
         }
 
-        private void onButtonAc(ControlBase control)
+        private void onButtonAc(GUIControl control)
         {
             UnitPrint("Button: Clicked");
         }
 
-        private void onButtonAp(ControlBase control)
+        private void onButtonAp(GUIControl control)
         {
             UnitPrint("Button: Pressed");
         }
 
-        private void onButtonAr(ControlBase control)
+        private void onButtonAr(GUIControl control)
         {
             UnitPrint("Button: Released");
         }
 
-        private void onToggle(ControlBase control)
+        private void onToggle(GUIControl control)
         {
             UnitPrint("Button: Toggled");
         }
 
-        private void onToggleOn(ControlBase control)
+        private void onToggleOn(GUIControl control)
         {
             UnitPrint("Button: OnToggleOn");
         }
 
-        private void onToggleOff(ControlBase control)
+        private void onToggleOff(GUIControl control)
         {
             UnitPrint("Button: ToggledOff");
         }

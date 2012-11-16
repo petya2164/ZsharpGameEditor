@@ -13,7 +13,8 @@ namespace ZGE.Components
     {
         public Vector3 Scale;
 
-        public MeshProducer()
+        public MeshProducer(ZComponent parent)
+            : base(parent)
         {
             Scale = Vector3.One;
         }
@@ -24,6 +25,8 @@ namespace ZGE.Components
         public bool Grid2DOnly;
         public int XCount;
         public int YCount;
+
+        public MeshBox(ZComponent parent): base(parent) {}
 
         public override void ProduceOutput(ZContent content)
         {
@@ -83,6 +86,8 @@ namespace ZGE.Components
     {
         public int ZSamples;
         public int RadialSamples;
+
+        public MeshSphere(ZComponent parent): base(parent) {}
 
         public override void ProduceOutput(ZContent content)
         {

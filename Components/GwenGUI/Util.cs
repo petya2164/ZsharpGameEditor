@@ -24,6 +24,11 @@ namespace Gwen
             return (int)Math.Ceiling(x);
         }
 
+        public static int CeilNonNeg(float x)
+        {
+            return Math.Max(0, (int) Math.Ceiling(x));
+        }
+
         public static Rectangle FloatRect(float x, float y, float w, float h)
         {
             return new Rectangle((int)x, (int)y, (int)w, (int)h);

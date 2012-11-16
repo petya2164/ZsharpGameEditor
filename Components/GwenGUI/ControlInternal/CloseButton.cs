@@ -15,7 +15,7 @@ namespace Gwen.ControlInternal
         /// </summary>
         /// <param name="parent">Parent control.</param>
         /// <param name="owner">Window that owns this button.</param>
-        public CloseButton(ControlBase parent, WindowControl owner)
+        public CloseButton(GUIControl parent, WindowControl owner)
             : base(parent)
         {
             m_Window = owner;

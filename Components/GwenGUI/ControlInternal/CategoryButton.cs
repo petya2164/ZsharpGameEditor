@@ -14,7 +14,7 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="CategoryButton"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public CategoryButton(ControlBase parent) : base(parent)
+        public CategoryButton(ZGE.Components.ZComponent parent) : base(parent)
         {
             Alignment = Pos.Left | Pos.CenterV;
             m_Alt = false;

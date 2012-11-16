@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Drawing;
 using Gwen.Control.Layout;
+using ZGE.Components;
 
 namespace Gwen.Control
 {
     /// <summary>
     /// List box row (selectable).
     /// </summary>
+    [HideComponent]
     public class ListBoxRow : TableRow
     {
         private bool m_Selected;
@@ -15,7 +17,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ListBoxRow"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ListBoxRow(ControlBase parent)
+        public ListBoxRow(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             MouseInputEnabled = true;

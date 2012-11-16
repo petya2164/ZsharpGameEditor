@@ -116,7 +116,7 @@ namespace ZGE
             return assembly.GetTypes().Where(type => type.Namespace == myNamespace);            
         }
 
-        public bool IsToolboxItem(Type t)
+        public static bool IsToolboxItem(Type t)
         {
             object[] attributes = t.GetCustomAttributes(typeof(HideComponent), false);
             foreach (HideComponent attribute in attributes)
@@ -130,6 +130,22 @@ namespace ZGE
         private void LoadToolboxComponents()
         {
             List<Type> components = new List<Type>();
+            foreach (Type t in GetTypesFromNamespace(Assembly.GetAssembly(typeof(ZApplication)), "Gwen.Control"))
+            {
+                if (t.IsClass && t.IsPublic && typeof(Gwen.Control.GUIControl).IsAssignableFrom(t))
+                {
+                    TypeDescriptor.AddAttributes(t, new TypeConverterAttribute(typeof(ComponentList)));
+
+                    if (t.IsAbstract == false && IsToolboxItem(t))
+                    {
+                        Console.WriteLine(t.FullName);
+                        components.Add(t);
+                    }
+                }
+            }
+            toolbox1.AddTab("GUI Controls", components.ToArray());
+
+            components.Clear();
             foreach (Type t in GetTypesFromNamespace(Assembly.GetAssembly(typeof(ZApplication)), "ZGE.Components"))
             {
                 if (t.IsClass && t.IsPublic && typeof(ZComponent).IsAssignableFrom(t))
@@ -216,7 +232,7 @@ namespace ZGE
             this.Text = DefaultFormTitle + " - " + project.Name;
         }
 
-        internal void SetApplication()
+        internal void SetApplication(bool fullClear)
         {
             app = project.app;
             if (app != null)
@@ -224,6 +240,13 @@ namespace ZGE
                 SetFormTitle();
                 app.Scene.CollectionChanged -= Scene_CollectionChanged;
                 app.Scene.CollectionChanged += Scene_CollectionChanged;
+
+                if (fullClear)
+                {
+                    glControl1.VSync = (app.VSync == VSyncMode.On);
+                    Application.Idle -= Application_Idle;
+                    Application.Idle += Application_Idle;
+                }                
             }            
         }
 
@@ -233,7 +256,8 @@ namespace ZGE
         }
 
         private void closeProject(bool fullClear)
-        {            
+        {
+            Application.Idle -= Application_Idle;
             SelectedComponent = null;
             if (fullClear) this.Text = DefaultFormTitle;
             sceneTreeView.Nodes.Clear();
@@ -274,11 +298,11 @@ namespace ZGE
                 project = Project.CreateProject(filePath, xmlTree, codegen);
                 if (project != null && project.app != null)
                 {
-                    SetApplication();
+                    SetApplication(true);
                     project.XMLChanged += project_XMLChanged;
                     RefreshSceneTreeview();
 
-                    glControl1_Load(this, null);
+                    //glControl1_Load(this, null);
                     glControl1_Resize(this, null);
                     app.Pause();
                     SelectedComponent = app;
@@ -352,18 +376,13 @@ namespace ZGE
             loaded = true;
             if (app == null)
             {
+                // Load the last project when the editor starts
                 if (loadThisProject != null && loadThisProject.Length > 0)
                 {
                     openProject(loadThisProject);
                     loadThisProject = null;
-                }
-                return;
-            }
-            app.Load();
-            glControl1.VSync = (app.VSync == VSyncMode.On);
-
-            Application.Idle -= Application_Idle;
-            Application.Idle += Application_Idle; // press TAB twice after +=            
+                }                
+            }                      
         }
 
         public void Application_Idle(object sender, EventArgs e)
@@ -548,10 +567,9 @@ namespace ZGE
                 project.Reset(xmlTree, codegen);
                 if (project.app != null)
                 {
-                    SetApplication();
+                    SetApplication(true);
                     RefreshSceneTreeview();
-
-                    glControl1_Load(this, null);
+                    
                     glControl1_Resize(this, null);
                     app.Pause();
                     SelectedComponent = app;
@@ -586,7 +604,7 @@ namespace ZGE
                 //Console.WriteLine("SelectedComponent is {0}", SelectedComponent.GetType().AssemblyQualifiedName);
                 if (project.RecompileApplication(codegen, xmlTree))
                 {
-                    SetApplication();
+                    SetApplication(false);
                     //app.Pause();                
 
                     RefreshSceneTreeview();

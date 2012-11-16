@@ -12,7 +12,7 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="CategoryHeaderButton"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public CategoryHeaderButton(ControlBase parent)
+        public CategoryHeaderButton(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             ShouldDrawBackground = false;

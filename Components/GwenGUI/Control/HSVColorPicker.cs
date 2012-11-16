@@ -7,7 +7,7 @@ namespace Gwen.Control
     /// <summary>
     /// HSV color picker with "before" and "after" color boxes.
     /// </summary>
-    public class HSVColorPicker : ControlBase, IColorPicker
+    public class HSVColorPicker : GUIControl, IColorPicker
     {
         private readonly ColorLerpBox m_LerpBox;
         private readonly ColorSlider m_ColorSlider;
@@ -33,7 +33,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="HSVColorPicker"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public HSVColorPicker(ControlBase parent)
+        public HSVColorPicker(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             MouseInputEnabled = true;
@@ -109,7 +109,7 @@ namespace Gwen.Control
             SetColor(DefaultColor);
         }
 
-        private void NumericTyped(ControlBase control)
+        private void NumericTyped(GUIControl control)
         {
             TextBoxNumeric box = control as TextBoxNumeric;
             if (null == box) return;
@@ -187,13 +187,13 @@ namespace Gwen.Control
             m_After.Color = color;
         }
 
-        private void ColorBoxChanged(ControlBase control)
+        private void ColorBoxChanged(GUIControl control)
         {
             UpdateControls(SelectedColor);
             Invalidate();
         }
 
-        private void ColorSliderChanged(ControlBase control)
+        private void ColorSliderChanged(GUIControl control)
         {
             if (m_LerpBox != null)
                 m_LerpBox.SetColor(m_ColorSlider.SelectedColor, true);

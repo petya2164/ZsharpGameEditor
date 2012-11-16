@@ -68,9 +68,9 @@ namespace ZGE
         public override void WriteCode(StringBuilder sb)
         {
             if (create)
-                sb.IndentedLines("internal static " + typeName + " " + name + " = new " + typeName + "();");
+                sb.IndentedLines("internal new static " + typeName + " " + name + " = new " + typeName + "();");
             else
-                sb.IndentedLines("internal static " + typeName + " " + name + ";");
+                sb.IndentedLines("internal new static " + typeName + " " + name + ";");
         }
     }
 
@@ -113,6 +113,7 @@ namespace ZGE
         public Method init;
         public Method createNamed;
         public Method restore;
+        public Method staticRef;
         public List<Method> methods = new List<Method>();
         int objID = 0;
         int methodID = 0;
@@ -165,6 +166,12 @@ namespace ZGE
             sb.IndentedLines("// Constructor");
             if (constructor != null) constructor.WriteCode(sb);
             sb.AppendLine("");
+            if (staticRef != null)
+            {
+                sb.IndentedLines("// SetStaticReferences");
+                staticRef.WriteCode(sb);
+                sb.AppendLine("");
+            }
             if (createNamed != null)
             {
                 sb.IndentedLines("// CreateNamedComponents");
@@ -304,6 +311,7 @@ namespace ZGE
             cu.AddUsing("using OpenTK.Graphics;");
             cu.AddUsing("using OpenTK.Graphics.OpenGL;");
             cu.AddUsing("using ZGE.Components;");
+            cu.AddUsing("using Gwen.Control;");
             //if (standalone == false)
             //    cu.AddUsing("using System.ComponentModel");
 
@@ -311,13 +319,14 @@ namespace ZGE
             cu.namespaces.Add(ns);
             Class main = new Class(typeof(ZApplication), "DynamicGame", "ZApplication", "this");
             ns.mainClass = main;
-            main.constructor = new Method("public DynamicGame(bool createAll)");
+            main.constructor = new Method("public DynamicGame()");
             if (fullBuild)
             {
-                main.constructor.AddLine("if (createAll) InitializeComponents();");
-                main.init = new Method("public void InitializeComponents()");
+                //main.constructor.AddLine("if (createAll) InitializeComponents();");
+                main.init = new Method("public override void InitializeComponents()");
                 main.init.AddLine("CreateNamedComponents();");
-                main.createNamed = new Method("public void CreateNamedComponents()");
+                main.createNamed = new Method("public override void CreateNamedComponents()");
+                main.staticRef = new Method("public override void SetStaticReferences()");
             }
             else
             {                
@@ -327,6 +336,7 @@ namespace ZGE
             
 
             types = Factory.GetTypesFromNamespace(Assembly.GetAssembly(typeof(ZApplication)), "ZGE.Components");
+            types.AddRange(Factory.GetTypesFromNamespace(Assembly.GetAssembly(typeof(ZApplication)), "Gwen.Control"));
             Variable dummy = new Variable(typeof(ZApplication), "DynamicGame", "this", false);
             if (rootElement != null)
                 ProcessNode(main, dummy, null, rootElement);
@@ -365,17 +375,32 @@ namespace ZGE
                     {
                         Type type = fi.FieldType;
                         SetAttribute(targetClass, type, val, obj.name, attribute.Name);
-                    }
+                    }                    
                     else
                     {
-                        // These components might have custom fields (those will be resolved after compilation)
-                        if (xmlNode.Name == "ZApplication" || xmlNode.Name == "Model" || xmlNode.Name == "GameObject")
-                        {
-                            unresolved.Add(new UnresolvedField { targetClass = targetClass, objName = obj.name, 
-                                                                 objTypeName = obj.typeName, fieldName = attribute.Name, value = val });
+                        // Also try a Property with a public setter
+                        PropertyInfo pi = obj.type.GetProperty(attribute.Name, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+                        if (pi != null && pi.GetSetMethod() != null)
+                        {                            
+                            SetAttribute(targetClass, pi.PropertyType, val, obj.name, attribute.Name);
                         }
-                        else                                                  
-                            Console.WriteLine(" Field not found: {0} - {1}", attribute.Name, val);
+                        else
+                        {
+                            // These components might have custom fields (those will be resolved after compilation)
+                            if (xmlNode.Name == "ZApplication" || xmlNode.Name == "Model" || xmlNode.Name == "GameObject")
+                            {
+                                unresolved.Add(new UnresolvedField
+                                {
+                                    targetClass = targetClass,
+                                    objName = obj.name,
+                                    objTypeName = obj.typeName,
+                                    fieldName = attribute.Name,
+                                    value = val
+                                });
+                            }
+                            else
+                                Console.WriteLine(" Field not found: {0} - {1}", attribute.Name, val);
+                        }                        
                     }
                 }
             }
@@ -383,21 +408,28 @@ namespace ZGE
 
         private void FixUnresolvedAttribute(UnresolvedField field, Assembly assembly)
         {
-            Type objType = assembly.GetType("ZGE." + field.objTypeName);
+            Type objType = assembly.GetType("ZGE." + field.objTypeName);  // Custom classes are in the ZGE namespace
             if (objType == null)
             {
                 Console.WriteLine(" Cannot find custom type: {0}", field.objTypeName);
                 return;
             }
+            // Use the objType from the new, dynamically generated assembly to find the unresolved field
             FieldInfo fi = objType.GetField(field.fieldName, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
             if (fi != null)
-            {
-                Type type = fi.FieldType;
-                SetAttribute(field.targetClass, type, field.value, field.objName, field.fieldName);
+            {                
+                SetAttribute(field.targetClass, fi.FieldType, field.value, field.objName, field.fieldName);
             }
             else
             {
-                Console.WriteLine(" Custom field not found: {0} - {1}", field.fieldName, field.value);
+                // Also try a Property with a public setter
+                PropertyInfo pi = objType.GetProperty(field.fieldName, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+                if (pi != null && pi.GetSetMethod() != null)
+                {
+                    SetAttribute(field.targetClass, pi.PropertyType, field.value, field.objName, field.fieldName);
+                }
+                else                        
+                    Console.WriteLine(" Custom field not found: {0} - {1}", field.fieldName, field.value);
             }
         }
 
@@ -471,7 +503,7 @@ namespace ZGE
                             targetClass.init.AddLine(String.Format("var {0} = ({1}) {2}.Clone();", objName, typeName, model));
                         }
                         else
-                            targetClass.init.AddLine(String.Format("var {0} = new {1}();", objName, typeName));
+                            targetClass.init.AddLine(String.Format("var {0} = new {1}({2});", objName, typeName, parent.name));
                     }                    
                 }
                 else
@@ -487,12 +519,12 @@ namespace ZGE
                             targetClass.createNamed.AddLine(String.Format("{0} = ({1}) {2}.Clone();", objName, typeName, model));
                         }
                         else
-                            targetClass.createNamed.AddLine(String.Format("{0} = new {1}();", objName, typeName));
+                            targetClass.createNamed.AddLine(String.Format("{0} = new {1}({2});", objName, typeName, parent.name));
                     }
                     else if (xmlNode.Name == "Model") 
                     {
                         targetClass.restore.AddLine("");
-                        targetClass.restore.AddLine(String.Format("{0} = new {1}();", objName, typeName));
+                        targetClass.restore.AddLine(String.Format("{0} = new {1}({2});", objName, typeName, parent.name));
                         string currentGuid = "";
                         nodeMap.TryGetValue(xmlNode, out currentGuid);
                         targetClass.restore.AddLine(String.Format("CodeGenerator.Restore({0}, oldApp.FindPrototype(\"{1}\"));", objName, currentGuid));
@@ -523,18 +555,19 @@ namespace ZGE
                     if (parent != null)
                     {
                         // We always need an Owner
-                        targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
+                        //targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
 
                         if (targetList != null) // components in member lists are not considered children!
                         {
                             //Console.WriteLine("Adding to list: {0}", parent_list.GetType().Name);
-                            targetClass.init.AddLine(String.Format("{0}.OwnerList = (IList) {1}.{2};", obj.name, parent.name, targetList));
-                            targetClass.init.AddLine(String.Format("{0}.{1}.Add({2});", parent.name, targetList, obj.name));
+                            //targetClass.init.AddLine(String.Format("{0}.OwnerList = (IList) {1}.{2};", obj.name, parent.name, targetList));
+                            //targetClass.init.AddLine(String.Format("{0}.{1}.Add({2});", parent.name, targetList, obj.name));
+                            targetClass.init.AddLine(String.Format("{0}.SetOwner({1}, (IList) {1}.{2});", obj.name, parent.name, targetList));
                         }
                         else
-                        {
-                            //targetClass.init.AddLine(String.Format("{0}.Owner = {1};", obj.name, parent.name));
-                            targetClass.init.AddLine(String.Format("{0}.Children.Add({1});", parent.name, obj.name));
+                        {                            
+                            //targetClass.init.AddLine(String.Format("{0}.Children.Add({1});", parent.name, obj.name));
+                            targetClass.init.AddLine(String.Format("{0}.SetOwner({1}, null);", obj.name, parent.name));
                         }
                     }
                 }               
@@ -649,10 +682,10 @@ namespace ZGE
                         string modelName = obj.name + "Model";
                         Class model = new Class(typeof(Model), modelName, "Model", modelName);
 
-                        model.constructor = new Method("public " + modelName + "()");
+                        model.constructor = new Method("public " + modelName + "(ZComponent parent): base(parent)");
                         var staticApp = new StaticVariable(typeof(ZApplication), "DynamicGame", "App", false);
                         model.memberVars.Add(staticApp);
-                        ns.mainClass.constructor.AddLine(String.Format("{0}.App = this;", modelName));
+                        ns.mainClass.staticRef.AddLine(String.Format("{0}.App = this;", modelName));
 
                         //model.constructor.AddLine("InitializeComponents();");
                         //model.init = new Method("public void InitializeComponents()");
@@ -723,7 +756,7 @@ namespace ZGE
             // A reference to oldObj should be updated to newObj in its Children
             foreach (ZComponent child in newObj.Children)
             {
-                if (child.Owner == oldObj) child.Owner = newObj;
+                if (child.Owner == oldObj) child.ReplaceOwner(newObj);
             }
 
             // If it is NOT a ZApplication
@@ -745,7 +778,7 @@ namespace ZGE
                     int idx = newObj.Owner.Children.IndexOf(oldObj);
                     if (idx != -1) newObj.Owner.Children[idx] = newObj;
                 }
-                oldObj.Owner = null;
+                oldObj.ReplaceOwner(null);
                 
 
                 if (typeof(Model).IsAssignableFrom(newObj.GetType()))
@@ -811,7 +844,7 @@ namespace ZGE
             // oldObj can also be the Owner of its grandchildren (in various member lists)
             // the Owner reference must be updated to newObj in all components 
             foreach(ZComponent comp in ZComponent.App.GetAllComponents())
-                if (comp.Owner == oldObj) comp.Owner = newObj;
+                if (comp.Owner == oldObj) comp.ReplaceOwner(newObj);
 
 
             // If the oldObj was selected in the editor, then we have to replace it with newObj 
@@ -844,7 +877,7 @@ namespace ZGE
 
                 // If there weren't any errors, create an instance of "DynamicGame"
                 var type = res.CompiledAssembly.GetType("ZGE.DynamicGame");
-                var app = (ZApplication) Activator.CreateInstance(type, new object[] { false });
+                var app = (ZApplication) Activator.CreateInstance(type);
                 if (app != null)
                 {                      
                     ZComponent.App = app;  // Just to make sure
@@ -883,7 +916,7 @@ namespace ZGE
 
             // If there weren't any errors, get an instance of "DynamicGame"
             var type = res.CompiledAssembly.GetType("ZGE.DynamicGame");
-            var app = (ZApplication) Activator.CreateInstance(type, new object[] { fullBuild });
+            var app = (ZApplication) Activator.CreateInstance(type);
             if (app != null)
             {                    
                 Console.WriteLine("New ZApplication created.");                    

@@ -58,8 +58,9 @@ namespace ZGE.Components
         [Browsable(false)]
         public object Tag;        
 
-        public ZComponent()
-        {           
+        public ZComponent(ZComponent parent)
+        {
+            Owner = parent;
             // It is important to register all components to the App
             if (App != null) App.AddNewComponent(this);           
         }
@@ -74,7 +75,39 @@ namespace ZGE.Components
         {
             return (Name != null && Name.Length > 0);    
         }
-        
+
+        public virtual void ReplaceOwner(ZComponent parent)
+        {            
+            Owner = parent;                
+        }
+
+        public virtual void SetOwner(ZComponent parent, IList parent_list)
+        {
+            if (parent != null)
+            {
+                Owner = parent;
+                if (parent_list != null)
+                {
+                    OwnerList = parent_list;
+                    parent_list.Add(this);
+                    // components in member lists are not considered children!
+                }
+                else
+                {
+                    OwnerList = null;
+                    parent.Children.Add(this);
+                }
+            }
+            else
+            {
+                if (OwnerList != null)  // delete reference from OwnerList            
+                    OwnerList.Remove(this);
+                else if (Owner != null) // delete reference from Owner's Children            
+                    Owner.Children.Remove(this);
+                Owner = null;
+                OwnerList = null;
+            }
+        }        
 
         //public virtual void Update() { } 
 
@@ -93,7 +126,7 @@ namespace ZGE.Components
 
     public class Group : ContentLike, IRenderable, IUpdateable
     {
-        public Group() { }        
+        public Group(ZComponent parent) : base(parent) { }        
 
         public void Update()
         {
@@ -116,10 +149,16 @@ namespace ZGE.Components
         }        
     }
 
+    // This is a dummy parent class for all components that can be added to the GUI
+    public abstract class GUIComponent : ZComponent
+    {
+        public GUIComponent(ZComponent parent): base(parent) { }
+    }
+
     // This is a dummy parent class for all classes that can be added to app contents
     public abstract class ContentLike : ZComponent
     {
-        public ContentLike() { }
+        public ContentLike(ZComponent parent) : base(parent) { }
     }
 
     
@@ -131,7 +170,8 @@ namespace ZGE.Components
         [Browsable(false)]
         public List<ZContentProducer> Producers = new List<ZContentProducer>();
 
-        public ZContent()
+        public ZContent(ZComponent parent)
+            : base(parent)
         {
             App.AddContent(this);            
         }
@@ -151,6 +191,7 @@ namespace ZGE.Components
     [HideComponent]
     public abstract class ZContentProducer: ZComponent, INeedRefresh
     {
+        public ZContentProducer(ZComponent parent): base(parent) {}
         public void Refresh()
         {
             if (Owner == null) return;

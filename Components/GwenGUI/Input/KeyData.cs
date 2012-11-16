@@ -10,7 +10,7 @@ namespace Gwen.Input
     {
         public readonly bool[] KeyState;
         public readonly float [] NextRepeat;
-        public ControlBase Target;
+        public GUIControl Target;
         public bool LeftMouseDown;
         public bool RightMouseDown;
 

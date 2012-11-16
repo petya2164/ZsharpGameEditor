@@ -31,7 +31,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="Menu"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Menu(ControlBase parent)
+        public Menu(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetBounds(0, 0, 10, 10);
@@ -164,7 +164,7 @@ namespace Gwen.Control
         /// Mouse hover handler.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnHoverItem(ControlBase control)
+        protected virtual void OnHoverItem(GUIControl control)
         {
             if (!ShouldHoverOpenMenu) return;
 

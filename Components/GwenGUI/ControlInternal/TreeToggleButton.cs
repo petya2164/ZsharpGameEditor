@@ -12,7 +12,7 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="TreeToggleButton"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public TreeToggleButton(ControlBase parent)
+        public TreeToggleButton(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             IsToggle = true;

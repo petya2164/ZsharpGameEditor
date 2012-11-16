@@ -5,7 +5,7 @@ namespace Gwen.UnitTest
 {
     public class ComboBox : GUnit
     {
-        public ComboBox(ControlBase parent)
+        public ComboBox(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             {
@@ -42,7 +42,7 @@ namespace Gwen.UnitTest
             }
         }
 
-        void OnComboSelect(ControlBase control)
+        void OnComboSelect(GUIControl control)
         {
             Control.ComboBox combo = control as Control.ComboBox;
             UnitPrint(String.Format("ComboBox: OnComboSelect: {0}", combo.SelectedItem.Text));

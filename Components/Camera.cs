@@ -23,7 +23,8 @@ namespace ZGE.Components
         public float ClipNear;
         public float ClipFar;
 
-        public Camera()
+        public Camera(ZComponent parent)
+            : base(parent)
         {
             Position = new Vector3(0, 0, 5);
             Target = new Vector3(0, 0, 0);
@@ -80,7 +81,8 @@ namespace ZGE.Components
     {
         public float FOV = MathHelper.PiOver4;
 
-        public ProjectiveCamera()
+        public ProjectiveCamera(ZComponent parent)
+            : base(parent)
         {            
         }
 
@@ -100,7 +102,8 @@ namespace ZGE.Components
     {
         public float OrthoZoom = 1.0f;
 
-        public OrthoCamera()
+        public OrthoCamera(ZComponent parent)
+            : base(parent)
         {           
         }
 
@@ -136,7 +139,8 @@ namespace ZGE.Components
         //public Vector3 ReferenceUpVector = new Vector3(0, 0, 1);
         Vector2 panStartPos;
 
-        public InteractiveCamera()
+        public InteractiveCamera(ZComponent parent)
+            : base(parent)
         {            
         }
 

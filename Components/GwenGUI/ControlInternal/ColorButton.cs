@@ -20,7 +20,7 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="ColorButton"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ColorButton(ControlBase parent) : base(parent)
+        public ColorButton(ZGE.Components.ZComponent parent) : base(parent)
         {
             m_Color = Color.Black;
             Text = String.Empty;

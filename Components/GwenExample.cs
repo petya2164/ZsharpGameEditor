@@ -11,24 +11,6 @@ using Gwen.Input;
 
 namespace ZGE.Components
 {
-    public class RenderGwen : ZCommand, IRenderable
-    {
-        public GwenExample Target;
-
-        public RenderGwen() { }
-        
-
-        public override void Execute(ZComponent caller)
-        {
-            if (Target != null) Target.RenderCanvas();
-        }
-
-        public void Render()
-        {
-            if (!Enabled) return;
-            Execute(this);
-        }
-    }
 
     public class GwenExample: ZContent   
     {
@@ -41,7 +23,7 @@ namespace ZGE.Components
         
         private bool altDown = false;
 
-        public GwenExample()
+        public GwenExample(ZComponent parent): base(parent)
         {
                        
         }

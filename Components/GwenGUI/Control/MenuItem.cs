@@ -13,7 +13,7 @@ namespace Gwen.Control
         private bool m_Checkable;
         private bool m_Checked;
         private Menu m_Menu;
-        private ControlBase m_SubmenuArrow;
+        private GUIControl m_SubmenuArrow;
         private Label m_Accelerator;
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="MenuItem"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public MenuItem(ControlBase parent)
+        public MenuItem(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_OnStrip = false;

@@ -22,11 +22,11 @@ namespace ZGE.Components
 
         public static void Init(ZApplication app)
         {
-            defaultMaterial = new Material();
-            GUIMaterial = new Material();
+            defaultMaterial = new Material(null);
+            GUIMaterial = new Material(null);
             GUIMaterial.Lighting = false;            
-            defaultTexture = new Texture();
-            defaultFont = new Font();
+            defaultTexture = new Texture(null);
+            defaultFont = new Font(null);
 
             GL.MatrixMode(All.MODELVIEW);
           
@@ -50,7 +50,7 @@ namespace ZGE.Components
             //GL.Enable(All.NORMALIZE);
 
             var shape = new UnitQuad();
-            unitQuad = new Mesh() { Name = "UnitQuad" };            
+            unitQuad = new Mesh(null) { Name = "UnitQuad" };            
             unitQuad.CreateVBO(shape);
 
             defaultMaterial.Apply(null);            
@@ -98,7 +98,7 @@ namespace ZGE.Components
 
     public class RenderSprite : ZCommand
     {
-        public RenderSprite() { }
+        public RenderSprite(ZComponent parent): base(parent) { }
         public override void Execute(ZComponent caller)
         {
             if (Renderer.unitQuad != null) Renderer.unitQuad.Render();
@@ -109,11 +109,7 @@ namespace ZGE.Components
     {
         public Mesh Mesh;
 
-        public RenderMesh() { }
-        public RenderMesh(Mesh mesh)
-        {
-            Mesh = mesh;
-        }
+        public RenderMesh(ZComponent parent) : base(parent) { }        
 
         public override void Execute(ZComponent caller)
         {
@@ -126,14 +122,11 @@ namespace ZGE.Components
         //[DefaultValue(Color.White)]
         public Color Color;
 
-        public RenderSetColor()
+        public RenderSetColor(ZComponent parent)
+            : base(parent)
         {
             Color = Color.White;
-        }
-        public RenderSetColor(Color color)
-        {
-            Color = color;
-        }
+        }        
 
         public override void Execute(ZComponent caller)
         {
@@ -146,6 +139,8 @@ namespace ZGE.Components
         public Vector3 Translate;
         public Vector3 Rotate;
         public Vector3 Scale;
+
+        public RenderTransform(ZComponent parent): base(parent) {}
 
         public override void Execute(ZComponent caller)
         {
@@ -169,13 +164,13 @@ namespace ZGE.Components
         //public delegate void ModelMethod(Model model);
         //public ZCode VertexExpression;
 
-        public RenderNet() { }
+        public RenderNet(ZComponent parent): base(parent) { }
 
         public override void Execute(ZComponent caller)
         {
             if (Mesh == null)
             {
-                Mesh = new Mesh(); // Make it dynamic
+                Mesh = new Mesh(null); // Make it dynamic
                 Shape shape = new Shape();
                 shape.MakeNet(XCount, YCount);
                 if (VertexColors && shape.Colors == null)

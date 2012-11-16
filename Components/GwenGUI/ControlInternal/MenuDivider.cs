@@ -6,13 +6,13 @@ namespace Gwen.ControlInternal
     /// <summary>
     /// Divider menu item.
     /// </summary>
-    public class MenuDivider : ControlBase
+    public class MenuDivider : GUIControl
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MenuDivider"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public MenuDivider(ControlBase parent)
+        public MenuDivider(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             Height = 1;

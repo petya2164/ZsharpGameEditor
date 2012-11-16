@@ -154,20 +154,10 @@ namespace ZGE
             if (type != null)
             {
                 //Console.WriteLine("Creating instance of: {0}", type.FullName);
-                comp = (ZComponent) Activator.CreateInstance(type);
+                comp = (ZComponent) Activator.CreateInstance(type, new object[] { parent });
                 //ZComponent.App.AddComponent(comp);
-                if (parent != null)
-                {
-                    comp.Owner = parent;
-                    if (parent_list != null)
-                    {
-                        comp.OwnerList = parent_list;
-                        parent_list.Add(comp);
-                        // components in member lists are not considered children!
-                    }
-                    else
-                        parent.Children.Add(comp);
-                }
+                comp.SetOwner(parent, parent_list);
+                
                 if (xmlNode != null)
                     SetFields(comp, xmlNode);                
             }

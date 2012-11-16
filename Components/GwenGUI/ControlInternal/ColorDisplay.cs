@@ -7,7 +7,7 @@ namespace Gwen.ControlInternal
     /// <summary>
     /// Color square.
     /// </summary>
-    public class ColorDisplay : ControlBase
+    public class ColorDisplay : GUIControl
     {
         private Color m_Color;
         //private bool m_DrawCheckers;
@@ -16,7 +16,7 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="ColorDisplay"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ColorDisplay(ControlBase parent) : base(parent)
+        public ColorDisplay(ZGE.Components.ZComponent parent) : base(parent)
         {
             SetSize(32, 32);
             m_Color = Color.FromArgb(255, 255, 0, 0);

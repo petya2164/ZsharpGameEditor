@@ -6,10 +6,10 @@ namespace Gwen.Anim
 {
     public class Animation
     {
-        protected ControlBase m_Control;
+        protected GUIControl m_Control;
 
         //private static List<Animation> g_AnimationsListed = new List<Animation>(); // unused
-        private static readonly Dictionary<ControlBase, List<Animation>> m_Animations = new Dictionary<ControlBase, List<Animation>>();
+        private static readonly Dictionary<GUIControl, List<Animation>> m_Animations = new Dictionary<GUIControl, List<Animation>>();
 
         protected virtual void Think()
         {
@@ -21,7 +21,7 @@ namespace Gwen.Anim
             get { throw new InvalidOperationException("Pure virtual function call"); }
         }
 
-        public static void Add(ControlBase control, Animation animation)
+        public static void Add(GUIControl control, Animation animation)
         {
             animation.m_Control = control;
             if (!m_Animations.ContainsKey(control))
@@ -29,7 +29,7 @@ namespace Gwen.Anim
             m_Animations[control].Add(animation);
         }
 
-        public static void Cancel(ControlBase control)
+        public static void Cancel(GUIControl control)
         {
             if (m_Animations.ContainsKey(control))
             {
@@ -40,7 +40,7 @@ namespace Gwen.Anim
 
         internal static void GlobalThink()
         {
-            foreach (KeyValuePair<ControlBase, List<Animation>> pair in m_Animations)
+            foreach (KeyValuePair<GUIControl, List<Animation>> pair in m_Animations)
             {
                 var valCopy = pair.Value.FindAll(x =>true); // list copy so foreach won't break when we remove elements
                 foreach (Animation animation in valCopy)

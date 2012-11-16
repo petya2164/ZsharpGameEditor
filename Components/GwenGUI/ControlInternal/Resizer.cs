@@ -21,13 +21,13 @@ namespace Gwen.ControlInternal
         /// Initializes a new instance of the <see cref="Resizer"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Resizer(ControlBase parent)
+        public Resizer(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_ResizeDir = Pos.Left;
             MouseInputEnabled = true;
             SetSize(6, 6);
-            Target = parent;
+            Target = parent as GUIControl;
         }
 
         /// <summary>

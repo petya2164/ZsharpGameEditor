@@ -8,7 +8,7 @@ namespace Gwen.Control
     /// <summary>
     /// RGBA color picker.
     /// </summary>
-    public class ColorPicker : ControlBase, IColorPicker
+    public class ColorPicker : GUIControl, IColorPicker
     {
         private Color m_Color;
 
@@ -46,7 +46,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ColorPicker"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ColorPicker(ControlBase parent) : base(parent)
+        public ColorPicker(ZGE.Components.ZComponent parent) : base(parent)
         {
             MouseInputEnabled = true;
 
@@ -84,7 +84,7 @@ namespace Gwen.Control
             slider.ValueChanged += SlidersMoved;
         }
 
-        private void NumericTyped(ControlBase control)
+        private void NumericTyped(GUIControl control)
         {
             TextBoxNumeric box = control as TextBoxNumeric;
             if (null == box)
@@ -162,7 +162,7 @@ namespace Gwen.Control
                 ColorChanged.Invoke(this);
         }
 
-        private void SlidersMoved(ControlBase control)
+        private void SlidersMoved(GUIControl control)
         {
             /*
             HorizontalSlider* redSlider		= gwen_cast<HorizontalSlider>(	FindChildByName( "RedSlider",   true ) );

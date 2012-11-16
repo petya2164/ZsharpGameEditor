@@ -6,13 +6,13 @@ namespace Gwen.ControlInternal
     /// <summary>
     /// Drag&drop highlight.
     /// </summary>
-    public class Highlight : ControlBase
+    public class Highlight : GUIControl
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Highlight"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Highlight(ControlBase parent) : base(parent)
+        public Highlight(ZGE.Components.ZComponent parent) : base(parent)
         {
             
         }

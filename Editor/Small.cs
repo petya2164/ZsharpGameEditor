@@ -29,18 +29,18 @@ namespace ZGE
 
             //tri = new Triangle();
             //cube = new Cube();
-            mesh1 = new Mesh();
-            prod = new MeshSphere();
+            mesh1 = new Mesh(null);
+            prod = new MeshSphere(null);
             prod.ZSamples = 4;
             prod.RadialSamples = 10;
             mesh1.Producers.Add(prod);
 
-            model1 = new Model();
+            model1 = new Model(null);
             //model1.Position.X = -1.0f;
-            model1.OnRender.Add(new RenderSetColor(Color.Red));
-            model1.OnRender.Add(new RenderMesh(mesh1));
+           // model1.OnRender.Add(new RenderSetColor(Color.Red));
+           // model1.OnRender.Add(new RenderMesh(mesh1));
 
-            var spawn1 = new SpawnModel();
+            var spawn1 = new SpawnModel(null);
             spawn1.Model = model1;
             spawn1.Position = new Vector3(-1, 0, 0);
             OnLoad.Add(spawn1);                        

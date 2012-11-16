@@ -23,6 +23,8 @@ namespace ZGE.Components
     {
         Vbo vbo = new Vbo();
 
+        public Mesh(ZComponent parent): base(parent) {}
+
         ~Mesh()
         {
             ReleaseBuffers();

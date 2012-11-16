@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Linq;
+using ZGE.Components;
 
 namespace Gwen.Control.Layout
 {
     /// <summary>
     /// Base class for multi-column tables.
     /// </summary>
-    public class Table : ControlBase
+    [HideComponent]
+    public class Table : GUIControl
     {
         // only children of this control should be TableRow.
 
@@ -43,7 +45,7 @@ namespace Gwen.Control.Layout
         /// Initializes a new instance of the <see cref="Table"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Table(ControlBase parent) : base(parent)
+        public Table(ZGE.Components.ZComponent parent) : base(parent)
         {
             m_ColumnCount = 1;
             m_DefaultRowHeight = 22;
@@ -115,7 +117,7 @@ namespace Gwen.Control.Layout
         /// <param name="row">Row to add.</param>
         public void AddRow(TableRow row)
         {
-            row.Parent = this;
+            row.ParentControl = this;
             row.ColumnCount = m_ColumnCount;
             row.Height = m_DefaultRowHeight;
             row.Dock = Pos.Top;
@@ -222,7 +224,7 @@ namespace Gwen.Control.Layout
 
                 for (int i = 0; i < ColumnCount; i++)
                 {
-                    ControlBase cell = row.GetColumn(i);
+                    GUIControl cell = row.GetColumn(i);
                     if (null != cell)
                     {
                         if (i < ColumnCount - 1 || m_MaxWidth == 0)

@@ -6,7 +6,7 @@ namespace Gwen.Control
     /// <summary>
     /// RadioButton with label.
     /// </summary>
-    public class LabeledRadioButton : ControlBase
+    public class LabeledRadioButton : GUIControl
     {
         private readonly RadioButton m_RadioButton;
         private readonly LabelClickable m_Label;
@@ -20,7 +20,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="LabeledRadioButton"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public LabeledRadioButton(ControlBase parent)
+        public LabeledRadioButton(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetSize(100, 20);

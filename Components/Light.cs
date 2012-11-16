@@ -25,7 +25,8 @@ namespace ZGE.Components
         public float SpotExponent;
         public float SpotCutoff;
 
-        public Light()
+        public Light(ZComponent parent)
+            : base(parent)
         {
             Enabled = true;
             SpotDirection = new Vector3(0, 0, -1);

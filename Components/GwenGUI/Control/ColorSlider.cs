@@ -7,7 +7,7 @@ namespace Gwen.Control
     /// <summary>
     /// HSV hue selector.
     /// </summary>
-    public class ColorSlider : ControlBase
+    public class ColorSlider : GUIControl
     {
         private int m_SelectedDist;
         private bool m_Depressed;
@@ -22,7 +22,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ColorSlider"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ColorSlider(ControlBase parent)
+        public ColorSlider(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetSize(32, 128);

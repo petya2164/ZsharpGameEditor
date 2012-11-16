@@ -36,7 +36,8 @@ namespace ZGE.Components
         public Color EmissionColor;
         public int Shininess;
 
-        public Material()
+        public Material(ZComponent parent)
+            : base(parent)
         {
 
         }
@@ -215,7 +216,8 @@ namespace ZGE.Components
         [ReadOnlyAttribute(true)]
         public int Height;
 
-        public Texture()
+        public Texture(ZComponent parent)
+            : base(parent)
         {
         }
 
@@ -332,6 +334,8 @@ namespace ZGE.Components
     public class UseMaterial : ZCommand
     {
         public Material Material;
+
+        public UseMaterial(ZComponent parent): base(parent) {}
 
         public override void Execute(ZComponent caller)
         {

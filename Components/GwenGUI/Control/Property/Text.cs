@@ -1,11 +1,13 @@
 ﻿using System;
+using ZGE.Components;
 
 namespace Gwen.Control.Property
 {
     /// <summary>
     /// Text property.
     /// </summary>
-    public class Text : Base
+    [HideComponent]
+    public class Text : PropertyBase
     {
         protected readonly TextBox m_TextBox;
 
@@ -13,7 +15,7 @@ namespace Gwen.Control.Property
         /// Initializes a new instance of the <see cref="Text"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Text(Control.ControlBase parent) : base(parent)
+        public Text(Control.GUIControl parent) : base(parent)
         {
             m_TextBox = new TextBox(this);
             m_TextBox.Dock = Pos.Fill;

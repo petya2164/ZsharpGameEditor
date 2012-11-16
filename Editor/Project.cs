@@ -185,6 +185,7 @@ namespace ZGE
         {
             if (xmlDoc == null) return;
             app = codeGen.CreateApplication(xmlDoc, true);
+            app.Load(); // load the app to create its components
             nodeMap = codeGen.nodeMap;  // we need the GUIDs in the nodeMap for recompilation
         }
 
@@ -195,6 +196,7 @@ namespace ZGE
             if (newApp != null)
             {
                 app = newApp;
+                
                 //if (treeView != null) FillTreeView(treeView);
 
                 return true;
@@ -410,12 +412,8 @@ namespace ZGE
             if (dragComp == null) return;
 
             // Remove dragComp references at its previous location
-            if (dragComp.OwnerList != null)  // delete reference from OwnerList            
-                dragComp.OwnerList.Remove(dragComp);
-            else if (dragComp.Owner != null) // delete reference from Owner's Children            
-                dragComp.Owner.Children.Remove(dragComp);
-            dragComp.Owner = null;
-            dragComp.OwnerList = null;
+            dragComp.SetOwner(null, null);      // delete references from OwnerList or from Owner's Children
+            
             // Remove dragNode from the treeview
             dragNode.Remove();
 
@@ -424,7 +422,7 @@ namespace ZGE
                 // Add dragComp reference to its new parent/OwnerList
                 ZComponent parent = dropProps.Component;
                 if (parent == null) parent = dropProps.Parent as ZComponent;  // component is a List
-                SetComponentOwner(dragComp, parent, dropProps.List);
+                dragComp.SetOwner(parent, dropProps.List);
 
                 // Perform Xml operation
                 dropProps.xmlNode.AppendChild(dragProps.xmlNode);
@@ -442,14 +440,14 @@ namespace ZGE
                 if (dropSide == ZGE.ZTreeView.DropSide.Bottom) plus = 1; // index after dropComp
                 int index;
 
-                dragComp.Owner = dropComp.Owner;
+                dragComp.ReplaceOwner(dropComp.Owner);
                 if (dropComp.OwnerList is IList)
                 {
                     dragComp.OwnerList = dropComp.OwnerList;
                     index = dropComp.OwnerList.IndexOf(dropComp);
                     if (index != -1) dropComp.OwnerList.Insert(index + plus, dragComp);
                 }
-                else if (dropComp.Owner is Group)
+                else //if (dropComp.Owner is Group)
                 {
                     index = dropComp.Owner.Children.IndexOf(dropComp);
                     if (index != -1) dropComp.Owner.Children.Insert(index + plus, dragComp);
@@ -498,6 +496,13 @@ namespace ZGE
             //var assembly = Assembly.GetAssembly(typeof(ZComponent)); 
             //string ns = "ZGE.Components";            
             return assembly.GetTypes().Where(type => ancestor.IsAssignableFrom(type)).ToList();
+        }
+
+        public static List<Type> GetDerivedTypes(Type mainType, Type ancestor)
+        {
+            var assembly = Assembly.GetAssembly(mainType); 
+            string ns = "Gwen.UnitTest";         //exclude this namespace
+            return assembly.GetTypes().Where(type => type.Namespace != ns && Editor.IsToolboxItem(type) && ancestor.IsAssignableFrom(type)).ToList();
         }
 
         public bool IsChildElementAllowed(TreeNode destNode, string childTypeName)
@@ -553,7 +558,7 @@ namespace ZGE
             if (props.List == app.Scene)
             {
                 // Add gameobjects
-                list = GetDerivedTypes(app.GetType().Assembly, typeof(Model));
+                list = GetDerivedTypes(app.GetType(), typeof(Model));
                 mainItem = new ToolStripMenuItem("Add GameObject", null);
                 xmlContextMenu.Items.Add(mainItem);
                 // Add group                
@@ -569,7 +574,7 @@ namespace ZGE
                 if (listType.IsGenericType)
                 {
                     Type baseType = listType.GetGenericArguments()[0];
-                    list = GetDerivedTypes(typeof(ZComponent).Assembly, baseType);
+                    list = GetDerivedTypes(typeof(ZComponent), baseType);
                     mainItem = new ToolStripMenuItem("Add " + baseType.Name, null);
                     xmlContextMenu.Items.Add(mainItem);
                 }
@@ -577,7 +582,7 @@ namespace ZGE
             else if (props.Component is Group)
             {
                 // Any ZComponent can be added to a group
-                list = GetDerivedTypes(typeof(ZComponent).Assembly, typeof(ZComponent));
+                list = GetDerivedTypes(typeof(ZComponent), typeof(ZComponent));
                 //list = GetDerivedTypes(app.GetType().Assembly, typeof(ZComponent));
                 mainItem = new ToolStripMenuItem("Add Component", null);
                 xmlContextMenu.Items.Add(mainItem);
@@ -639,11 +644,7 @@ namespace ZGE
             ZComponent.App.RemoveComponent(comp);     // remove the old component
             // We should always set the Owner <= old Owner has been copied to newObj
 
-            if (comp.OwnerList != null)  // delete reference from OwnerList            
-                comp.OwnerList.Remove(comp);
-            else if (comp.Owner != null) // delete reference from Owner's Children            
-                comp.Owner.Children.Remove(comp);
-            comp.Owner = null;
+            comp.SetOwner(null, null);   // delete references from OwnerList or from Owner's Children  
 
             // If the comp was selected in the editor, then clear that reference
             if (editor.SelectedComponent == comp)
@@ -683,28 +684,13 @@ namespace ZGE
             if (type != null)
             {
                 //Console.WriteLine("Creating instance of: {0}", type.FullName);
-                comp = (ZComponent) Activator.CreateInstance(type);
-                
-                SetComponentOwner(comp, parent, parent_list);
+                comp = (ZComponent) Activator.CreateInstance(type, new object[] { parent });                
+                comp.SetOwner(parent, parent_list);
             }
             return comp;
         }
 
-        public static void SetComponentOwner(ZComponent comp, ZComponent parent, IList parent_list)
-        {
-            if (parent != null)
-            {
-                comp.Owner = parent;
-                if (parent_list != null)
-                {
-                    comp.OwnerList = parent_list;
-                    parent_list.Add(comp);
-                    // components in member lists are not considered children!
-                }
-                else
-                    parent.Children.Add(comp);
-            }
-        }
+        
 
         // Called by ContextMenu items
         private void AddChildElement_Click(object sender, EventArgs e)

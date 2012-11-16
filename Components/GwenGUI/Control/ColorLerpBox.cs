@@ -7,7 +7,7 @@ namespace Gwen.Control
     /// <summary>
     /// Linear-interpolated HSV color box.
     /// </summary>
-    public class ColorLerpBox : ControlBase
+    public class ColorLerpBox : GUIControl
     {
         private Point m_CursorPos;
         private bool m_Depressed;
@@ -23,7 +23,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ColorLerpBox"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ColorLerpBox(ControlBase parent) : base(parent)
+        public ColorLerpBox(ZGE.Components.ZComponent parent) : base(parent)
         {
             SetColor(Color.FromArgb(255, 255, 128, 0), true);
             SetSize(128, 128);

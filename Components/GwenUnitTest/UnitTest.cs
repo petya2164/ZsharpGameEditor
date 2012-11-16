@@ -7,18 +7,18 @@ namespace Gwen.UnitTest
 {
     public class UnitTest : DockBase
     {
-        private Control.ControlBase m_LastControl;
+        private Control.GUIControl m_LastControl;
         private readonly Control.StatusBar m_StatusBar;
         private readonly Control.ListBox m_TextOutput;
         private Control.TabButton m_Button;
         private readonly Control.CollapsibleList m_List;
-        private readonly Center m_Center;
+        //private readonly Center m_Center;
         private readonly Control.LabeledCheckBox m_DebugCheck;
 
         public double Fps; // set this in your rendering loop
         public String Note; // additional text to display in status bar
 
-        public UnitTest(ControlBase parent) : base(parent)
+        public UnitTest(ZGE.Components.ZComponent parent) : base(parent)
         {
             Dock = Pos.Fill;
             SetSize(1024, 768);
@@ -129,22 +129,22 @@ namespace Gwen.UnitTest
             btn.Clicked += OnCategorySelect;
         }
 
-        private void DebugCheckChanged(ControlBase control)
+        private void DebugCheckChanged(GUIControl control)
         {
-            if (m_DebugCheck.IsChecked)
+            /*if (m_DebugCheck.IsChecked)
                 m_Center.DrawDebugOutlines = true;
             else
-                m_Center.DrawDebugOutlines = false;
+                m_Center.DrawDebugOutlines = false;*/
             Invalidate();
         }
 
-        private void OnCategorySelect(ControlBase control)
+        private void OnCategorySelect(GUIControl control)
         {
             if (m_LastControl != null)
             {
                 m_LastControl.Hide();
             }
-            ControlBase test = control.UserData as ControlBase;
+            GUIControl test = control.UserData as GUIControl;
             test.Show();
             m_LastControl = test;
         }

@@ -6,7 +6,7 @@ namespace Gwen.Control
     /// <summary>
     /// CollapsibleCategory control. Used in CollapsibleList.
     /// </summary>
-    public class CollapsibleCategory : ControlBase
+    public class CollapsibleCategory : GUIControl
     {
         private readonly Button m_HeaderButton;
         private readonly CollapsibleList m_List;
@@ -54,7 +54,7 @@ namespace Gwen.Control
         /// </summary>
         public Button GetSelectedButton()
         {
-            foreach (ControlBase child in Children)
+            foreach (GUIControl child in Children)
             {
                 CategoryButton button = child as CategoryButton;
                 if (button == null)
@@ -71,7 +71,7 @@ namespace Gwen.Control
         /// Handler for header button toggle event.
         /// </summary>
         /// <param name="control">Source control.</param>
-        protected virtual void OnHeaderToggle(ControlBase control)
+        protected virtual void OnHeaderToggle(GUIControl control)
         {
             if (Collapsed != null)
                 Collapsed.Invoke(this);
@@ -81,7 +81,7 @@ namespace Gwen.Control
         /// Handler for Selected event.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnSelected(ControlBase control)
+        protected virtual void OnSelected(GUIControl control)
         {
             CategoryButton child = control as CategoryButton;
             if (child == null) return;
@@ -134,7 +134,7 @@ namespace Gwen.Control
         /// </summary>
         public void UnselectAll()
         {
-            foreach (ControlBase child in Children)
+            foreach (GUIControl child in Children)
             {
                 CategoryButton button = child as CategoryButton;
                 if (button == null)
@@ -161,7 +161,7 @@ namespace Gwen.Control
 
             // alternate row coloring
             bool b = true;
-            foreach (ControlBase child in Children)
+            foreach (GUIControl child in Children)
             {
                 CategoryButton button = child as CategoryButton;
                 if (button == null)

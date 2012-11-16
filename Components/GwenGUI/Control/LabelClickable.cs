@@ -11,7 +11,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="LabelClickable"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public LabelClickable(ControlBase parent)
+        public LabelClickable(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             IsToggle = false;

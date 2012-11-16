@@ -7,7 +7,7 @@ namespace Gwen.UnitTest
     {
         private readonly Control.TabControl m_DockControl;
 
-        public TabControl(ControlBase parent)
+        public TabControl(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             {
@@ -16,7 +16,7 @@ namespace Gwen.UnitTest
 
                 {
                     Control.TabButton button = m_DockControl.AddPage("Controls");
-                    ControlBase page = button.Page;
+                    GUIControl page = button.Page;
 
                     {
                         Control.RadioButtonGroup radio = new Control.RadioButtonGroup(page, "Tab position");
@@ -51,7 +51,7 @@ namespace Gwen.UnitTest
             }
         }
 
-        void OnDockChange(ControlBase control)
+        void OnDockChange(GUIControl control)
         {
             RadioButtonGroup rc = (RadioButtonGroup)control;
 

@@ -8,7 +8,7 @@ namespace Gwen.UnitTest
         private int m_WindowCount;
         private readonly Random rand;
 
-        public Window(ControlBase parent)
+        public Window(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             rand = new Random();
@@ -25,7 +25,7 @@ namespace Gwen.UnitTest
             m_WindowCount = 1;
         }
 
-        void OpenWindow(ControlBase control)
+        void OpenWindow(GUIControl control)
         {
             Control.WindowControl window = new Control.WindowControl(GetCanvas(),"",false);
             window.Caption = String.Format("Window {0}", m_WindowCount);
@@ -35,7 +35,7 @@ namespace Gwen.UnitTest
             m_WindowCount++;
         }
 
-        void OpenMsgbox(ControlBase control)
+        void OpenMsgbox(GUIControl control)
         {
             MessageBox window = new MessageBox(GetCanvas(), 
                 String.Format("Window {0}   MessageBox window = new MessageBox(GetCanvas(), String.Format(  MessageBox window = new MessageBox(GetCanvas(), String.Format(", m_WindowCount), "");

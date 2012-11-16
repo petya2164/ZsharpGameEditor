@@ -8,7 +8,7 @@ namespace Gwen.Control
     /// </summary>
     public class TabButton : Button
     {
-        private ControlBase m_Page;
+        private GUIControl m_Page;
         private TabControl m_Control;
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Gwen.Control
         /// <summary>
         /// Interior of the tab.
         /// </summary>
-        public ControlBase Page { get { return m_Page; } set { m_Page = value; } }
+        public GUIControl Page { get { return m_Page; } set { m_Page = value; } }
 
         /// <summary>
         /// Determines whether the control should be clipped to its bounds while rendering.
@@ -46,7 +46,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="TabButton"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public TabButton(ControlBase parent)
+        public TabButton(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             DragAndDrop_SetPackage(true, "TabButtonMove", null);
@@ -118,11 +118,11 @@ namespace Gwen.Control
         {
             if (down)
             {
-                var count = Parent.Children.Count;
-                int me = Parent.Children.IndexOf(this);
+                var count = ParentControl.Children.Count;
+                int me = ParentControl.Children.IndexOf(this);
                 if (me + 1 < count)
                 {
-                    var nextTab = Parent.Children[me + 1];
+                    var nextTab = ParentControl.Children[me + 1];
                     TabControl.OnTabPressed(nextTab);
                     InputHandler.KeyboardFocus = nextTab;
                 }
@@ -142,11 +142,11 @@ namespace Gwen.Control
         {
             if (down)
             {
-                var count = Parent.Children.Count;
-                int me = Parent.Children.IndexOf(this);
+                var count = ParentControl.Children.Count;
+                int me = ParentControl.Children.IndexOf(this);
                 if (me - 1 >= 0)
                 {
-                    var prevTab = Parent.Children[me - 1];
+                    var prevTab = ParentControl.Children[me - 1];
                     TabControl.OnTabPressed(prevTab);
                     InputHandler.KeyboardFocus = prevTab;
                 }

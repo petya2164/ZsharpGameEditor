@@ -21,7 +21,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="CollapsibleList"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public CollapsibleList(ControlBase parent) : base(parent)
+        public CollapsibleList(ZGE.Components.ZComponent parent) : base(parent)
         {
             EnableScroll(false, true);
             AutoHideBars = true;
@@ -34,7 +34,7 @@ namespace Gwen.Control
         /// </summary>
         public Button GetSelectedButton()
         {
-            foreach (ControlBase child in Children)
+            foreach (GUIControl child in Children)
             {
                 CollapsibleCategory cat = child as CollapsibleCategory;
                 if (cat == null)
@@ -55,7 +55,7 @@ namespace Gwen.Control
         /// <param name="category">Category control to add.</param>
         protected virtual void Add(CollapsibleCategory category)
         {
-            category.Parent = this;
+            category.ParentControl = this;
             category.Dock = Pos.Top;
             category.Margin = new Margin(1, 0, 1, 1);
             category.Selected += OnCategorySelected;
@@ -91,7 +91,7 @@ namespace Gwen.Control
         /// </summary>
         public virtual void UnselectAll()
         {
-            foreach (ControlBase child in Children)
+            foreach (GUIControl child in Children)
             {
                 CollapsibleCategory cat = child as CollapsibleCategory;
                 if (cat == null)
@@ -105,7 +105,7 @@ namespace Gwen.Control
         /// Handler for ItemSelected event.
         /// </summary>
         /// <param name="control">Event source: <see cref="CollapsibleList"/>.</param>
-        protected virtual void OnCategorySelected(ControlBase control)
+        protected virtual void OnCategorySelected(GUIControl control)
         {
             CollapsibleCategory cat = control as CollapsibleCategory;
             if (cat == null) return;
@@ -118,7 +118,7 @@ namespace Gwen.Control
         /// Handler for category collapsed event.
         /// </summary>
         /// <param name="control">Event source: <see cref="CollapsibleCategory"/>.</param>
-        protected virtual void OnCategoryCollapsed(ControlBase control)
+        protected virtual void OnCategoryCollapsed(GUIControl control)
         {
             CollapsibleCategory cat = control as CollapsibleCategory;
             if (cat == null) return;

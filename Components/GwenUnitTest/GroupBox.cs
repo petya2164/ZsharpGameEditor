@@ -5,7 +5,7 @@ namespace Gwen.UnitTest
 {
     public class GroupBox : GUnit
     {
-        public GroupBox(ControlBase parent) : base(parent)
+        public GroupBox(ZGE.Components.ZComponent parent) : base(parent)
         {
             {
                 Control.GroupBox gb = new Control.GroupBox(this);
@@ -110,7 +110,7 @@ namespace Gwen.UnitTest
             }
             
             // at the end to apply to all children
-            DrawDebugOutlines = true;
+            //DrawDebugOutlines = true;
         }
     }
 }

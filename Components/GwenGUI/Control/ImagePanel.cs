@@ -6,7 +6,7 @@ namespace Gwen.Control
     /// <summary>
     /// Image container.
     /// </summary>
-    public class ImagePanel : ControlBase
+    public class ImagePanel : GUIControl
     {
         private readonly Texture m_Texture;
         private readonly float[] m_uv;
@@ -16,7 +16,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ImagePanel"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ImagePanel(ControlBase parent)
+        public ImagePanel(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_uv = new float[4];

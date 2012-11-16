@@ -11,7 +11,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="MenuStrip"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public MenuStrip(ControlBase parent)
+        public MenuStrip(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetBounds(0, 0, 200, 22);

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Drawing;
 using Gwen.ControlInternal;
+using System.ComponentModel;
 
 namespace Gwen.Control
 {
     /// <summary>
     /// Static text label.
     /// </summary>
-    public class Label : ControlBase
+    public class Label : GUIControl
     {
         private readonly Text m_Text;
         private Pos m_Align;
@@ -17,16 +18,19 @@ namespace Gwen.Control
         /// <summary>
         /// Text alignment.
         /// </summary>
+        [CategoryAttribute("Appearance")]
         public Pos Alignment { get { return m_Align; } set { m_Align = value; Invalidate(); } }
 
         /// <summary>
         /// Text.
         /// </summary>
+        [CategoryAttribute("Appearance")]
         public String Text { get { return m_Text.String; } set { SetText(value, true); } }
 
         /// <summary>
         /// Font.
         /// </summary>
+        [CategoryAttribute("Appearance")]
         public Font Font
         {
             get { return m_Text.Font; }
@@ -42,16 +46,19 @@ namespace Gwen.Control
         /// <summary>
         /// Text color.
         /// </summary>
+        [CategoryAttribute("Appearance")]
         public Color TextColor { get { return m_Text.TextColor; } set { m_Text.TextColor = value; } }
 
         /// <summary>
         /// Override text color (used by tooltips).
         /// </summary>
+        [Browsable(false)]
         public Color TextColorOverride { get { return m_Text.TextColorOverride; } set { m_Text.TextColorOverride = value; } }
 
         /// <summary>
         /// Text override - used to display different string.
         /// </summary>
+        [Browsable(false)]
         public String TextOverride { get { return m_Text.TextOverride; } set { m_Text.TextOverride = value; } }
         
         /// <summary>
@@ -80,18 +87,20 @@ namespace Gwen.Control
         /// <summary>
         /// Determines if the control should autosize to its text.
         /// </summary>
+        [CategoryAttribute("Layout")]
         public bool AutoSizeToContents { get { return m_AutoSizeToContents; } set { m_AutoSizeToContents = value; Invalidate(); InvalidateParent(); } }
 
         /// <summary>
         /// Text padding.
         /// </summary>
+        [CategoryAttribute("Appearance")]
         public Padding TextPadding { get { return m_TextPadding; } set { m_TextPadding = value; Invalidate(); InvalidateParent(); } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Label"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Label(ControlBase parent) : base(parent)
+        public Label(ZGE.Components.ZComponent parent) : base(parent)
         {
             m_Text = new Text(this);
             //m_Text.Font = Skin.DefaultFont;

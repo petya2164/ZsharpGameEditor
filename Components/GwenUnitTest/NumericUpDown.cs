@@ -5,7 +5,7 @@ namespace Gwen.UnitTest
 {
     public class NumericUpDown : GUnit
     {
-        public NumericUpDown(ControlBase parent)
+        public NumericUpDown(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             Control.NumericUpDown ctrl = new Control.NumericUpDown(this);
@@ -16,7 +16,7 @@ namespace Gwen.UnitTest
             ctrl.ValueChanged += OnValueChanged;
         }
 
-        void OnValueChanged(ControlBase control)
+        void OnValueChanged(GUIControl control)
         {
             UnitPrint(String.Format("NumericUpDown: ValueChanged: {0}", ((Control.NumericUpDown)control).Value));
         }

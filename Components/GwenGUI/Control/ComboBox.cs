@@ -10,7 +10,7 @@ namespace Gwen.Control
     public class ComboBox : Button
     {
         private readonly Menu m_Menu;
-        private readonly ControlBase m_Button;
+        private readonly GUIControl m_Button;
         private MenuItem m_SelectedItem;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="ComboBox"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ComboBox(ControlBase parent)
+        public ComboBox(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetSize(100, 20);
@@ -123,7 +123,7 @@ namespace Gwen.Control
         /// Internal handler for item selected event.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnItemSelected(ControlBase control)
+        protected virtual void OnItemSelected(GUIControl control)
         {
             //Convert selected to a menu item
             MenuItem item = control as MenuItem;
@@ -174,7 +174,7 @@ namespace Gwen.Control
         {
             if (null == m_Menu) return;
 
-            m_Menu.Parent = GetCanvas();
+            m_Menu.ParentControl = GetCanvas();
             m_Menu.IsHidden = false;
             m_Menu.BringToFront();
 

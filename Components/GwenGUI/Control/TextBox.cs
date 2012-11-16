@@ -84,7 +84,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="TextBox"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public TextBox(ControlBase parent)
+        public TextBox(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetSize(200, 20);
@@ -234,7 +234,7 @@ namespace Gwen.Control
         /// Handler for Paste event.
         /// </summary>
         /// <param name="from">Source control.</param>
-        protected override void OnPaste(ControlBase from)
+        protected override void OnPaste(GUIControl from)
         {
             base.OnPaste(from);
             InsertText(Platform.Neutral.GetClipboardText());
@@ -244,7 +244,7 @@ namespace Gwen.Control
         /// Handler for Copy event.
         /// </summary>
         /// <param name="from">Source control.</param>
-        protected override void OnCopy(ControlBase from)
+        protected override void OnCopy(GUIControl from)
         {
             if (!HasSelection) return;
             base.OnCopy(from);
@@ -256,7 +256,7 @@ namespace Gwen.Control
         /// Handler for Cut event.
         /// </summary>
         /// <param name="from">Source control.</param>
-        protected override void OnCut(ControlBase from)
+        protected override void OnCut(GUIControl from)
         {
             if (!HasSelection) return;
             base.OnCut(from);
@@ -269,7 +269,7 @@ namespace Gwen.Control
         /// Handler for Select All event.
         /// </summary>
         /// <param name="from">Source control.</param>
-        protected override void OnSelectAll(ControlBase from)
+        protected override void OnSelectAll(GUIControl from)
         {
             //base.OnSelectAll(from);
             m_CursorEnd = 0;

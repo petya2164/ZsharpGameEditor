@@ -18,7 +18,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="DockedTabControl"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public DockedTabControl(ControlBase parent)
+        public DockedTabControl(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             Dock = Pos.Fill;
@@ -53,7 +53,7 @@ namespace Gwen.Control
 
             IsHidden = true;
             // This hiding our parent thing is kind of lousy.
-            Parent.IsHidden = true;
+            ParentControl.IsHidden = true;
         }
 
         public override void DragAndDrop_EndDragging(bool success, int x, int y)
@@ -61,14 +61,14 @@ namespace Gwen.Control
             IsHidden = false;
             if (!success)
             {
-                Parent.IsHidden = false;
+                ParentControl.IsHidden = false;
             }
         }
 
         public void MoveTabsTo(DockedTabControl target)
         {
             var children = TabStrip.Children.ToArray(); // copy because collection will be modified
-            foreach (ControlBase child in children)
+            foreach (GUIControl child in children)
             {
                 TabButton button = child as TabButton;
                 if (button == null)

@@ -8,13 +8,13 @@ namespace Gwen.Control
     /// <summary>
     /// Splitter control.
     /// </summary>
-    public class CrossSplitter : ControlBase
+    public class CrossSplitter : GUIControl
     {
         private readonly SplitterBar m_VSplitter;
         private readonly SplitterBar m_HSplitter;
         private readonly SplitterBar m_CSplitter;
 
-        private readonly ControlBase[] m_Sections;
+        private readonly GUIControl[] m_Sections;
 
         private float m_HVal; // 0-1
         private float m_VVal; // 0-1
@@ -41,10 +41,10 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="CrossSplitter"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public CrossSplitter(ControlBase parent)
+        public CrossSplitter(ZGE.Components.ZComponent parent)
             : base(parent)
         {
-            m_Sections = new ControlBase[4];
+            m_Sections = new GUIControl[4];
 
             m_VSplitter = new SplitterBar(this);
             m_VSplitter.SetPosition(0, 128);
@@ -124,19 +124,19 @@ namespace Gwen.Control
             m_CSplitter.MoveTo((Width - m_CSplitter.Width) * (m_HVal), (Height - m_CSplitter.Height) * (m_VVal));
         }
 
-        protected void OnCenterMoved(ControlBase control)
+        protected void OnCenterMoved(GUIControl control)
         {
             CalculateValueCenter();
             Invalidate();
         }
 
-        protected void OnVerticalMoved(ControlBase control)
+        protected void OnVerticalMoved(GUIControl control)
         {
             m_VVal = CalculateValueVertical();
             Invalidate();
         }
 
-        protected void OnHorizontalMoved(ControlBase control)
+        protected void OnHorizontalMoved(GUIControl control)
         {
             m_HVal = CalculateValueHorizontal();
             Invalidate();
@@ -198,14 +198,14 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="index">Section index (0-3).</param>
         /// <param name="panel">Control to assign.</param>
-        public void SetPanel(int index, ControlBase panel)
+        public void SetPanel(int index, GUIControl panel)
         {
             m_Sections[index] = panel;
 
             if (panel != null)
             {
                 panel.Dock = Pos.None;
-                panel.Parent = this;
+                panel.ParentControl = this;
             }
 
             Invalidate();
@@ -216,7 +216,7 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="index">Section index (0-3).</param>
         /// <returns>Specified section.</returns>
-        public ControlBase GetPanel(int index)
+        public GUIControl GetPanel(int index)
         {
             return m_Sections[index];
         }

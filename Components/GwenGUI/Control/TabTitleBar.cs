@@ -1,14 +1,16 @@
 ﻿using System;
 using Gwen.DragDrop;
+using ZGE.Components;
 
 namespace Gwen.Control
 {
     /// <summary>
     /// Titlebar for DockedTabControl.
     /// </summary>
+    [HideComponent]
     public class TabTitleBar : Label
     {
-        public TabTitleBar(ControlBase parent) : base(parent)
+        public TabTitleBar(ZGE.Components.ZComponent parent) : base(parent)
         {
             MouseInputEnabled = true;
             TextPadding = new Padding(5, 2, 5, 2);
@@ -28,7 +30,7 @@ namespace Gwen.Control
 
         public override void DragAndDrop_StartDragging(Package package, int x, int y)
         {
-            DragAndDrop.SourceControl = Parent;
+            DragAndDrop.SourceControl = ParentControl;
             DragAndDrop.SourceControl.DragAndDrop_StartDragging(package, x, y);
         }
 

@@ -94,11 +94,10 @@ namespace Gwen.Skin.Texturing
             m_Margin.Top = (int)(m_Margin.Top*drawMarginScale);
             m_Margin.Bottom = (int)(m_Margin.Bottom*drawMarginScale);
 
-            m_Width = w - x;
-            m_Height = h - y;
+            m_Width = w;
+            m_Height = h;
         }
-
-        // can't have this as default param
+        
         public void Draw(Renderer.RendererBase render, Rectangle r)
         {
             Draw(render, r, Color.White);

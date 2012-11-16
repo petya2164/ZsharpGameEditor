@@ -30,7 +30,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="NumericUpDown"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public NumericUpDown(ControlBase parent)
+        public NumericUpDown(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             SetSize(100, 20);
@@ -91,7 +91,7 @@ namespace Gwen.Control
         /// Handler for the button up event.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnButtonUp(ControlBase control)
+        protected virtual void OnButtonUp(GUIControl control)
         {
             Value = m_Value + 1;
         }
@@ -100,7 +100,7 @@ namespace Gwen.Control
         /// Handler for the button down event.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnButtonDown(ControlBase control)
+        protected virtual void OnButtonDown(GUIControl control)
         {
             Value = m_Value - 1;
         }

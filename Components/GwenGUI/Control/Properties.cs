@@ -7,7 +7,7 @@ namespace Gwen.Control
     /// <summary>
     /// Properties table.
     /// </summary>
-    public class Properties : ControlBase
+    public class Properties : GUIControl
     {
         private readonly SplitterBar m_SplitterBar;
 
@@ -25,7 +25,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="Properties"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Properties(ControlBase parent)
+        public Properties(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_SplitterBar = new SplitterBar(this);
@@ -55,7 +55,7 @@ namespace Gwen.Control
         /// Handles the splitter moved event.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnSplitterMoved(ControlBase control)
+        protected virtual void OnSplitterMoved(GUIControl control)
         {
             InvalidateChildren(false);
         }
@@ -83,7 +83,7 @@ namespace Gwen.Control
         /// <param name="prop">Property control.</param>
         /// <param name="value">Initial value.</param>
         /// <returns>Newly created row.</returns>
-        public PropertyRow Add(String label, Property.Base prop, String value)
+        public PropertyRow Add(String label, Property.PropertyBase prop, String value)
         {
             PropertyRow row = new PropertyRow(this, prop);
             row.Dock = Pos.Top;
@@ -96,7 +96,7 @@ namespace Gwen.Control
             return row;
         }
 
-        private void OnRowValueChanged(ControlBase control)
+        private void OnRowValueChanged(GUIControl control)
         {
             if (ValueChanged != null)
                 ValueChanged.Invoke(control);

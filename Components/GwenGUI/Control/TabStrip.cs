@@ -8,9 +8,9 @@ namespace Gwen.Control
     /// <summary>
     /// Tab strip - groups TabButtons and allows reordering.
     /// </summary>
-    public class TabStrip : ControlBase
+    public class TabStrip : GUIControl
     {
-        private ControlBase m_TabDragControl;
+        private GUIControl m_TabDragControl;
         private bool m_AllowReorder;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="TabStrip"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public TabStrip(ControlBase parent)
+        public TabStrip(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_AllowReorder = false;
@@ -61,7 +61,7 @@ namespace Gwen.Control
             Point LocalPos = CanvasPosToLocal(new Point(x, y));
 
             TabButton button = DragAndDrop.SourceControl as TabButton;
-            TabControl tabControl = Parent as TabControl;
+            TabControl tabControl = ParentControl as TabControl;
             if (tabControl != null && button != null)
             {
                 if (button.TabControl != tabControl)
@@ -71,7 +71,7 @@ namespace Gwen.Control
                 }
             }
 
-            ControlBase droppedOn = GetControlAt(LocalPos.X, LocalPos.Y);
+            GUIControl droppedOn = GetControlAt(LocalPos.X, LocalPos.Y);
             if (droppedOn != null)
             {
                 Point dropPos = droppedOn.CanvasPosToLocal(new Point(x, y));
@@ -180,7 +180,7 @@ namespace Gwen.Control
         {
             Point localPos = CanvasPosToLocal(new Point(x, y));
 
-            ControlBase droppedOn = GetControlAt(localPos.X, localPos.Y);
+            GUIControl droppedOn = GetControlAt(localPos.X, localPos.Y);
             if (droppedOn != null && droppedOn != this)
             {
                 Point dropPos = droppedOn.CanvasPosToLocal(new Point(x, y));

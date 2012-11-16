@@ -22,7 +22,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="TextBoxPassword"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public TextBoxPassword(ControlBase parent)
+        public TextBoxPassword(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_MaskCharacter = '*';

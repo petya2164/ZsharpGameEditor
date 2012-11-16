@@ -82,7 +82,7 @@
     <Compile Include="GwenGUI\ControlInternal\TreeToggleButton.cs" />
     <Compile Include="GwenGUI\ControlInternal\UpDownButton_Down.cs" />
     <Compile Include="GwenGUI\ControlInternal\UpDownButton_Up.cs" />
-    <Compile Include="GwenGUI\Control\Base.cs" />
+    <Compile Include="GwenGUI\Control\GUIControl.cs" />
     <Compile Include="GwenGUI\Control\Button.cs" />
     <Compile Include="GwenGUI\Control\Canvas.cs" />
     <Compile Include="GwenGUI\Control\CheckBox.cs" />
@@ -199,6 +199,7 @@
     <Compile Include="GwenUnitTest\UnitTest.cs" />
     <Compile Include="GwenUnitTest\Window.cs" />
     <Compile Include="Heightmap.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="Light.cs" />
     <Compile Include="Material.cs" />
     <Compile Include="Particles.cs" />

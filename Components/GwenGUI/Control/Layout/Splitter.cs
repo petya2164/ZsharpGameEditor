@@ -1,22 +1,24 @@
 ﻿using System;
+using ZGE.Components;
 
 namespace Gwen.Control.Layout
 {
     /// <summary>
     /// Base splitter class.
     /// </summary>
-    public class Splitter : ControlBase
+    [HideComponent]
+    public class Splitter : GUIControl
     {
-        private readonly ControlBase[] m_Panel;
+        private readonly GUIControl[] m_Panel;
         private readonly bool[] m_Scale;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Splitter"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Splitter(ControlBase parent) : base(parent)
+        public Splitter(ZGE.Components.ZComponent parent) : base(parent)
         {
-            m_Panel = new ControlBase[2];
+            m_Panel = new GUIControl[2];
             m_Scale = new bool[2];
             m_Scale[0] = true;
             m_Scale[1] = true;
@@ -28,7 +30,7 @@ namespace Gwen.Control.Layout
         /// <param name="panelIndex">Panel index (0-1).</param>
         /// <param name="panel">Panel contents.</param>
         /// <param name="noScale">Determines whether the content is to be scaled.</param>
-        public void SetPanel(int panelIndex, ControlBase panel, bool noScale)
+        public void SetPanel(int panelIndex, GUIControl panel, bool noScale)
         {
             if (panelIndex < 0 || panelIndex > 1)
                 throw new ArgumentException("Invalid panel index", "panelIndex");
@@ -38,7 +40,7 @@ namespace Gwen.Control.Layout
 
             if (null != m_Panel[panelIndex])
             {
-                m_Panel[panelIndex].Parent = this;
+                m_Panel[panelIndex].ParentControl = this;
             }
         }
 
@@ -47,7 +49,7 @@ namespace Gwen.Control.Layout
         /// </summary>
         /// <param name="panelIndex">Panel index (0-1).</param>
         /// <returns></returns>
-        ControlBase GetPanel(int panelIndex)
+        GUIControl GetPanel(int panelIndex)
         {
             if (panelIndex < 0 || panelIndex > 1)
                 throw new ArgumentException("Invalid panel index", "panelIndex");

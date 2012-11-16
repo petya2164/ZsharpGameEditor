@@ -7,7 +7,7 @@ namespace Gwen.Control
     /// <summary>
     /// Control with multiple tabs that can be reordered and dragged.
     /// </summary>
-    public class TabControl : ControlBase
+    public class TabControl : GUIControl
     {
         private readonly TabStrip m_TabStrip;
         private readonly ScrollBarButton[] m_Scroll;
@@ -48,7 +48,7 @@ namespace Gwen.Control
         /// Initializes a new instance of the <see cref="TabControl"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public TabControl(ControlBase parent)
+        public TabControl(ZGE.Components.ZComponent parent)
             : base(parent)
         {
             m_Scroll = new ScrollBarButton[2];
@@ -86,15 +86,15 @@ namespace Gwen.Control
             return AddPage(label, null);
         }
 
-        public TabButton AddPage(String label, ControlBase page)
+        public TabButton AddPage(String label, GUIControl page)
         {
             if (null == page)
             {
-                page = new ControlBase(this);
+                page = new GUIControl(this);
             }
             else
             {
-                page.Parent = this;
+                page.ParentControl = this;
             }
 
             TabButton button = new TabButton(m_TabStrip);
@@ -112,13 +112,13 @@ namespace Gwen.Control
         /// <param name="button">Page to add. (well, it's a TabButton which is a parent to the page).</param>
         public void AddPage(TabButton button)
         {
-            ControlBase page = button.Page;
-            page.Parent = this;
+            GUIControl page = button.Page;
+            page.ParentControl = this;
             page.IsHidden = true;
             page.Margin = new Margin(6, 6, 6, 6);
             page.Dock = Pos.Fill;
 
-            button.Parent = m_TabStrip;
+            button.ParentControl = m_TabStrip;
             button.Dock = Pos.Left;
             button.SizeToContents();
             if (button.TabControl != null)
@@ -146,12 +146,12 @@ namespace Gwen.Control
         /// Handler for tab selection.
         /// </summary>
         /// <param name="control">Event source (TabButton).</param>
-        internal virtual void OnTabPressed(ControlBase control)
+        internal virtual void OnTabPressed(GUIControl control)
         {
             TabButton button = control as TabButton;
             if (null == button) return;
 
-            ControlBase page = button.Page;
+            GUIControl page = button.Page;
             if (null == page) return;
 
             if (m_CurrentButton == button)
@@ -159,7 +159,7 @@ namespace Gwen.Control
 
             if (null != m_CurrentButton)
             {
-                ControlBase page2 = m_CurrentButton.Page;
+                GUIControl page2 = m_CurrentButton.Page;
                 if (page2 != null)
                 {
                     page2.IsHidden = true;
@@ -242,12 +242,12 @@ namespace Gwen.Control
             m_Scroll[1].SetPosition(m_Scroll[0].Right, 5);
         }
 
-        protected virtual void ScrollPressedLeft(ControlBase control)
+        protected virtual void ScrollPressedLeft(GUIControl control)
         {
             m_ScrollOffset -= 120;
         }
 
-        protected virtual void ScrollPressedRight(ControlBase control)
+        protected virtual void ScrollPressedRight(GUIControl control)
         {
             m_ScrollOffset += 120;
         }

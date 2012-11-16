@@ -1,12 +1,14 @@
 ﻿using System;
 using Gwen.ControlInternal;
 using Gwen.Input;
+using ZGE.Components;
 
 namespace Gwen.Control.Property
 {
     /// <summary>
     /// Color property.
     /// </summary>
+    [HideComponent]
     public class Color : Text
     {
         protected readonly ColorButton m_Button;
@@ -15,7 +17,7 @@ namespace Gwen.Control.Property
         /// Initializes a new instance of the <see cref="Color"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public Color(Control.ControlBase parent) : base(parent)
+        public Color(Control.GUIControl parent) : base(parent)
         {
             m_Button = new ColorButton(m_TextBox);
             m_Button.Dock = Pos.Right;
@@ -28,7 +30,7 @@ namespace Gwen.Control.Property
         /// Color-select button press handler.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnButtonPressed(Control.ControlBase control)
+        protected virtual void OnButtonPressed(Control.GUIControl control)
         {
             Menu menu = new Menu(GetCanvas());
             menu.SetSize(256, 180);
@@ -51,7 +53,7 @@ namespace Gwen.Control.Property
         /// Color changed handler.
         /// </summary>
         /// <param name="control">Event source.</param>
-        protected virtual void OnColorChanged(Control.ControlBase control)
+        protected virtual void OnColorChanged(Control.GUIControl control)
         {
             HSVColorPicker picker = control as HSVColorPicker;
             SetTextFromColor(picker.SelectedColor);
