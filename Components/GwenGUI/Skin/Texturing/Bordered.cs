@@ -110,8 +110,12 @@ namespace Gwen.Skin.Texturing
 
             render.DrawColor = col;
 
-            if (r.Width < m_Width && r.Height < m_Height)
+            int minWidth = m_Margin.Left + m_Margin.Right;
+            int minHeight = m_Margin.Top + m_Margin.Bottom;
+
+            if (r.Width < minWidth || r.Height < minHeight)
             {
+                // Just draw the full rect if the width or height is insufficient to draw the borders
                 render.DrawTexturedRect(m_Texture, r, m_Rects[0].uv[0], m_Rects[0].uv[1], m_Rects[8].uv[2], m_Rects[8].uv[3]);
                 return;
             }

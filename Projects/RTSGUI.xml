@@ -92,7 +92,7 @@ model.Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
       <TextExpression><![CDATA[return (App.Paused) ? "Paused" : "";]]></TextExpression>
     </RenderText>
     <Button Name="CreateBtn" Text="Create Unit" Y="100" X="5" Width="150" Height="40" />
-    <ProgressBar X="5" Y="70" Height="31" Name="Progress" Value="0.02" />
+    <ProgressBar X="5" Y="70" Height="31" Name="Progress" Value="0.01" />
     <NumericUpDown X="5" Name="MaxUnits" Y="45" />
   </GUI>
   <Scene>
