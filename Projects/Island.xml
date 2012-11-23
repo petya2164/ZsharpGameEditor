@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ZApplication Name="App" Title="Island" Camera="Camera1" MouseVisible="255" NoSound="1" Width="1000" Height="700">
-  <OnLoad></OnLoad>
-  <OnRender>
-    <RenderSetColor Color="0.1176471 0.5647059 1 1" />
-    <RenderMesh Mesh="Box" Enabled="True" />
-  </OnRender>
+  <Definitions />
   <Content>
     <Material Name="IslandMaterial">
       <Textures>
@@ -27,41 +23,25 @@
         <MeshHeightmap Heightmap="IslandHm" Scale="5 5 2" />
       </Producers>
     </Mesh>
-    <Model Name="Player" CollisionBounds="0.5 0.5 0 0">
-      <OnRender>
-        <RenderSetColor Color="0 0.5019608 0 1" />
-        <RenderMesh Mesh="Mesh1" />
-      </OnRender>
-      <OnUpdate>
-        <ZExpression>
-          <Expression><![CDATA[model.Rotation.Z += 80.0f * (float) App.DeltaTime;
-model.Position.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
-        </ZExpression>
-      </OnUpdate>
+    <Model Name="Player" Color="0 0.5019608 0 1" Mesh="Mesh1">
+      <OnUpdate><![CDATA[Rotation.Z += 180.0f * (float) App.DeltaTime;
+Position.Z = 3.0f*(float)Math.Sin(App.Time);]]></OnUpdate>
     </Model>
-    <Model Name="Island">
-      <OnRender>
-        <UseMaterial Material="IslandMaterial" />
-        <RenderMesh Mesh="IslandMesh" />
-      </OnRender>
-      <OnUpdate>
-        <ZExpression>
-          <Expression><![CDATA[//model.Rotation.Y += 80.0f * (float) App.DeltaTime;
-model.Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></Expression>
-        </ZExpression>
-      </OnUpdate>
+    <Model Name="Island" Material="IslandMaterial" Mesh="IslandMesh">
+      <OnUpdate><![CDATA[//Rotation.Y += 80.0f * (float) App.DeltaTime;
+Scale.Z = 3.0f*(float)Math.Sin(App.Time);]]></OnUpdate>
     </Model>
   </Content>
   <GUI>
-    <RenderText Text="FPS: " Position="5 0 0" Scale="1" Name="FPS">
+    <DynamicText Text="FPS: " Position="5 0 0" Scale="1" Name="FPS">
       <TextExpression><![CDATA[return "FPS: "+App.FpsEstimated.ToString("F0");]]></TextExpression>
-    </RenderText>
-    <RenderText Text="Time: " Position="5 -1 0" Scale="1" Name="AppTime">
+    </DynamicText>
+    <DynamicText Text="Time: " Position="5 -1 0" Scale="1" Name="AppTime">
       <TextExpression><![CDATA[return "Time: "+App.Time.ToString("F2");]]></TextExpression>
-    </RenderText>
-    <RenderText Text="Paused" Position="-5 -1 0" Scale="1" Name="IsPaused">
+    </DynamicText>
+    <DynamicText Text="Paused" Position="-5 -1 0" Scale="1" Name="IsPaused">
       <TextExpression><![CDATA[return (App.Paused) ? "Paused" : "";]]></TextExpression>
-    </RenderText>
+    </DynamicText>
   </GUI>
   <Scene>
     <Group Name="DesignPrimitives" />

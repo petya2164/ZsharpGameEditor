@@ -327,39 +327,34 @@ namespace ZGE.Components
         }
     }
 
-    public class RenderText : GUIComponent, IRenderable
+    public class DynamicText : GUIComponent, IRenderable
     {
-        public Font Font;
-        public delegate string TextMethod(ZComponent caller, string original);
+        public delegate string TextMethod(string original);
         [CategoryAttribute("Expressions")]
-        public ZCode<TextMethod> TextExpression = new ZCode<TextMethod>();
+        public event TextMethod TextExpression;
+
+        public Font Font;        
         public string Text = "";
         public Vector3 Position;
         public Vector3 Rotation;
         public float Scale = 1.0f;
 
-        public RenderText(ZComponent parent)
+        public DynamicText(ZComponent parent)
             : base(parent)
-        {
-            //TextExpression.Header = "public string #METHOD#(RenderText rt)";           
-        }
-
-        public virtual void Execute(ZComponent caller)
-        {
-            string txt = Text;
-            if (TextExpression != null && TextExpression.callback != null)
-                txt = TextExpression.callback(caller, Text);
-            if (txt == null || txt.Length == 0) return;
-            Font fnt = Font ?? Renderer.defaultFont;
-
-            fnt.Bind();
-            fnt.Print(Position.X, Position.Y, Scale, txt);
-        }
+        {                       
+        }        
 
         public void Render()
         {
             if (!Enabled) return;
-            Execute(this);                        
+            string txt = Text;
+            if (TextExpression != null)
+                txt = TextExpression(Text);
+            if (txt == null || txt.Length == 0) return;
+            Font fnt = Font ?? Renderer.defaultFont;
+
+            fnt.Bind();
+            fnt.Print(Position.X, Position.Y, Scale, txt);                                 
         }
     }
 

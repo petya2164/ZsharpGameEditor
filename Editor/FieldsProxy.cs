@@ -119,11 +119,20 @@ namespace ZGE
         EventDescriptorCollection ICustomTypeDescriptor.GetEvents(Attribute[] attributes)
         {
             return TypeDescriptor.GetEvents(_target, attributes, true);
+
+//             var events = new EventDescriptorCollection(null);
+//             foreach (EventDescriptor ev in TypeDescriptor.GetEvents(_target, attributes, true))
+//             {
+//                 //if (prop.IsReadOnly == false)
+//                 events.Add(ev);
+//             }
+//             return events;
         }
 
         EventDescriptorCollection ICustomTypeDescriptor.GetEvents()
         {
             return TypeDescriptor.GetEvents(_target, true);
+            //return ((ICustomTypeDescriptor) this).GetEvents(null);
         }
 
         private PropertyDescriptorCollection _propCache;
@@ -157,7 +166,7 @@ namespace ZGE
                 if (prop.IsReadOnly == false)
                     props.Add(prop);
             }
-            foreach (FieldInfo field in _target.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
+            foreach (FieldInfo field in _target.GetType().GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance))
             {
                 FieldPropertyDescriptor fieldDesc = new FieldPropertyDescriptor(field);
                 if (!filtering || fieldDesc.Attributes.Contains(attributes)) props.Add(fieldDesc);

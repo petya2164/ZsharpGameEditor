@@ -85,10 +85,10 @@
     </Compile>
     <Compile Include="Editor\CodeGenerator.cs" />
     <Compile Include="Editor\DialogHelper.cs" />
+    <Compile Include="Editor\EventsTab.cs" />
     <Compile Include="Editor\FieldsProperties.cs" />
     <Compile Include="Editor\FieldsProxy.cs" />
     <Compile Include="Editor\Project.cs" />
-    <Compile Include="Editor\Small.cs" />
     <Compile Include="Editor\StructConverter.cs" />
     <Compile Include="Editor\TextBoxStreamWriter.cs" />
     <Compile Include="Editor\Factory.cs" />
@@ -166,6 +166,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Resources\i0.png" />
+    <None Include="Resources\EventsTab.bmp" />
     <Content Include="Resources\Images_32bit.bmp" />
     <Content Include="Resources\xmlatt.gif" />
     <Content Include="Resources\xmlerr.gif" />

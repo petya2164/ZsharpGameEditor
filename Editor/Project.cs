@@ -8,6 +8,8 @@ using System.Xml;
 using System.Collections;
 using System.Windows.Forms;
 using System.Reflection;
+using System.ComponentModel;
+using ICSharpCode.TextEditor;
 
 
 namespace ZGE
@@ -17,10 +19,13 @@ namespace ZGE
         #region Fields
         public string filePath = null;
         //public string Name = null;
+        
         // Code Editor status
         public CodeLike currentCode = null;
+        public bool codeIsEvent = false;
         public ZNodeProperties codeProperties = null;
         public string codePropertyName = null;
+
         public ZApplication app = null;
         public XmlDocument xmlDoc = null;
         public ZTreeView treeView = null;
@@ -107,23 +112,43 @@ namespace ZGE
             currentCode = null;
             codeProperties = null;
             codePropertyName = null;
+            codeIsEvent = false;
+        }
+
+        public void SetEventCode(ZComponent parent, string propertyName, TextEditorControl codeBox)
+        {
+            if (parent != null)
+            {
+                codeIsEvent = true;
+                currentCode = app.FindEvent(parent, propertyName) as CodeLike;                
+                // CodeTextChanged will do nothing since codeProperties and codePropertyName are null                 
+                codeBox.Text = (currentCode != null) ? currentCode.Text : null;                
+                codeProperties = parent.Tag as ZNodeProperties;
+                codePropertyName = propertyName;                
+            }                               
         }
 
         public void SetCode(CodeLike code, ZComponent parent, string propertyName)
         {
+            codeIsEvent = false;
             currentCode = code;
-            if (parent != null)
-                codeProperties = parent.Tag as ZNodeProperties;
+            if (parent != null) codeProperties = parent.Tag as ZNodeProperties;
             codePropertyName = propertyName;
         }
 
         public void CodeChanged(string codeBoxText)
         {
-            if (currentCode != null && codeProperties != null && codePropertyName != null)
+            if (codeProperties != null && codePropertyName != null)
             {
-                currentCode.Text = codeBoxText;                
-                SaveCodeText(codePropertyName, codeBoxText, codeProperties.xmlNode);
-                OnXMLChanged();
+                if (codeIsEvent && currentCode == null)
+                    currentCode = new ZEvent(codeProperties.Component, codePropertyName);
+                if (currentCode != null)
+                {
+                    //Console.WriteLine("Changing code text.");
+                    currentCode.Text = codeBoxText;
+                    SaveCodeText(codePropertyName, codeBoxText, codeProperties.xmlNode);
+                    OnXMLChanged();
+                }                     
             }
         }
 
@@ -185,7 +210,7 @@ namespace ZGE
         {
             if (xmlDoc == null) return;
             app = codeGen.CreateApplication(xmlDoc, true);
-            app.Load(); // load the app to create its components
+            if (app != null) app.Load(); // load the app to create its components
             nodeMap = codeGen.nodeMap;  // we need the GUIDs in the nodeMap for recompilation
         }
 
@@ -248,17 +273,22 @@ namespace ZGE
             else
             {
                 // Check if this node is a List property of the parent
-                FieldInfo fi = parent.GetType().GetField(xmlNode.Name, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+                FieldInfo fi = CodeGenerator.GetField(parent.GetType(), xmlNode.Name);
                 //if (pi != null) Console.WriteLine(" Parent property found: {0}", pi.PropertyType.Name);
-                if (parent is ZComponent && fi != null && typeof(IList).IsAssignableFrom(fi.FieldType))
+                if (fi != null && typeof(IList).IsAssignableFrom(fi.FieldType))
                 {
                     //Console.WriteLine("List found: {0}", xmlNode.Name);
                     list = (IList) fi.GetValue(parent);
                 }
-                // Check if this node is a ZCode property of the parent
-                else if (parent is ZComponent && fi != null && typeof(CodeLike).IsAssignableFrom(fi.FieldType))
+                    // Check if this node is an event of the parent
+                else if (fi != null && typeof(Delegate).IsAssignableFrom(fi.FieldType))
                 {
-                    return next_index; //no TreeNode should be created for this
+                    return next_index; //no TreeNode was created for this event
+                }
+                // Check if this node is a ZCode property of the parent
+                else if (fi != null && typeof(CodeLike).IsAssignableFrom(fi.FieldType))
+                {
+                    return next_index; //no TreeNode was created for this CodeLike component
                 }
                 else
                 {
@@ -501,8 +531,10 @@ namespace ZGE
         public static List<Type> GetDerivedTypes(Type mainType, Type ancestor)
         {
             var assembly = Assembly.GetAssembly(mainType); 
-            string ns = "Gwen.UnitTest";         //exclude this namespace
-            return assembly.GetTypes().Where(type => type.Namespace != ns && Editor.IsToolboxItem(type) && ancestor.IsAssignableFrom(type)).ToList();
+            var exclude = new List<string> {"Gwen.UnitTest", "Gwen.ControlInternal"};
+                    //exclude this namespace
+            
+            return assembly.GetTypes().Where(type => !exclude.Contains(type.Namespace) && Editor.IsToolboxItem(type) && ancestor.IsAssignableFrom(type)).ToList();
         }
 
         public bool IsChildElementAllowed(TreeNode destNode, string childTypeName)
@@ -549,7 +581,7 @@ namespace ZGE
             if (app == null || treeView == null) return;
             //Console.WriteLine("FillContextMenu  reference {0} / {1}", fi.Name, fi.FieldType.Name);
             ZNodeProperties props = clickedNode.Tag as ZNodeProperties;
-            Console.WriteLine("FillContextMenu {0} ", clickedNode.Text);
+            //Console.WriteLine("FillContextMenu {0} ", clickedNode.Text);
             if (props == null) Console.WriteLine("FillContextMenu null props");
             if (props == null) return;           
 
@@ -841,6 +873,7 @@ namespace ZGE
                 Console.WriteLine(ex.ToString());
             }
         }
+
 
 
 

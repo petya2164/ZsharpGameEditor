@@ -90,18 +90,18 @@ namespace ZGE.Components
         #region XML Member lists
         [Browsable(false)]
         public List<Definition> Definitions = new List<Definition>();
-        [Browsable(false)]
-        public List<ZCommand> OnLoad = new List<ZCommand>();
-        [Browsable(false)]
-        public List<ZCommand> OnUnload = new List<ZCommand>();
-        [Browsable(false)]
-        public List<ZCommand> OnResize = new List<ZCommand>();
-        [Browsable(false)]
-        public List<ZCommand> OnBeginRenderPass = new List<ZCommand>();
-        [Browsable(false)]
-        public List<ZCommand> OnUpdate = new List<ZCommand>();
-        [Browsable(false)]
-        public List<ZCommand> OnRender = new List<ZCommand>();
+//         [Browsable(false)]
+//         public List<ZCommand> OnLoad = new List<ZCommand>();
+//         [Browsable(false)]
+//         public List<ZCommand> OnUnload = new List<ZCommand>();
+//         [Browsable(false)]
+//         public List<ZCommand> OnResize = new List<ZCommand>();
+//         [Browsable(false)]
+//         public List<ZCommand> OnBeginRenderPass = new List<ZCommand>();
+//         [Browsable(false)]
+//         public List<ZCommand> OnUpdate = new List<ZCommand>();
+//         [Browsable(false)]
+//         public List<ZCommand> OnRender = new List<ZCommand>();
         /*[Browsable(false)]
         public List<ZCommand> OnKeyDown = new List<ZCommand>();
         [Browsable(false)]
@@ -122,7 +122,7 @@ namespace ZGE.Components
         #region Internal lists
         [Browsable(false)]
         //Dictionary<string, CodeLike> codeMap = new Dictionary<string, CodeLike>();
-        List<CodeLike> codeList = new List<CodeLike>();
+        List<ZEvent> eventList = new List<ZEvent>();
         [Browsable(false)]
         public List<Model> modelList = new List<Model>();
         [Browsable(false)]
@@ -135,48 +135,49 @@ namespace ZGE.Components
         Dictionary<Type, HashSet<ZComponent>> typeMap = new Dictionary<Type, HashSet<ZComponent>>();
         #endregion
 
-        /*public delegate void EmptyHandler();
-        public delegate void FrameHandler(FrameEventArgs e);
+        #region Events
+
+        public delegate void EmptyHandler();
+        //public delegate void FrameHandler(FrameEventArgs e);
         public delegate void ResizeHandler(int x, int y, int width, int height);
         public delegate void KeyboardHandler(object sender, KeyboardKeyEventArgs e);
+        public delegate void MouseEvent(MouseDescriptor e);
 
         public event EmptyHandler OnLoad;
         public event EmptyHandler OnUnload;
         public event ResizeHandler OnResize;
-        public event FrameHandler OnUpdate;
-        public event FrameHandler OnRender;
+        public event EmptyHandler OnUpdate;
+        public event EmptyHandler OnRender;
 
         public event KeyboardHandler OnKeyDown;
-        public event KeyboardHandler OnKeyUp;*/
-        //static int serial = 0;
-        //int ID = 0;
+        public event KeyboardHandler OnKeyUp;      
+        
+        public event MouseEvent OnMouseDown;        
+        public event MouseEvent OnMouseUp;
 
-        #region Code expressions
-        public delegate void MouseMethod(MouseDescriptor e);
-        [CategoryAttribute("Expressions")]
-        public ZCode<MouseMethod> MouseDownExpr;
-        [CategoryAttribute("Expressions")]
-        public ZCode<MouseMethod> MouseUpExpr;
-        #endregion        
+        #endregion   
+     
+        static int serial = 0;
+        int ID = 0;
 
         public ZApplication(): base(null)
         {
             App = this; // there can be only one ZApplication at a time
             SetStaticReferences(); // set the other static references in Model classes
             // Create the expression after the App reference has been set
-            MouseDownExpr = new ZCode<MouseMethod>();
-            MouseUpExpr = new ZCode<MouseMethod>();
+            //MouseDownExpr = new ZCode<MouseMethod>();
+            //MouseUpExpr = new ZCode<MouseMethod>();
             Canvas = new Canvas();
-            //ID = serial++;
-            //Console.WriteLine(String.Format("ZApplication created: {0}", ID));
+            ID = serial++;
+            Console.WriteLine(String.Format("ZApplication created: {0}", ID));
         }
 
         ~ZApplication()
         {
-            //Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
+            Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
         }
 
-        // Used in generated code for DynamicGame
+        // Used in generated code for CustomGame
         public virtual void CreateNamedComponents() {}
         public virtual void InitializeComponents() {}
         public virtual void SetStaticReferences() {}
@@ -334,28 +335,39 @@ namespace ZGE.Components
         }
         #endregion
 
-        #region CodeLike manager
         public void AddContent(ZContent item)
         {
             if (!contentList.Contains(item))
                 contentList.Add(item);
         }
 
-        public void AddCodeLike(CodeLike item)
+        #region Event manager        
+
+        public void AddEvent(ZEvent item)
         {
-            if (!codeList.Contains(item))
-                codeList.Add(item);
+            if (!eventList.Contains(item))
+                eventList.Add(item);
         }
-        public void RemoveCodeLike(CodeLike item)
+        public void RemoveEvent(ZEvent item)
         {
-            codeList.Remove(item);
+            eventList.Remove(item);
         }
 
-        public CodeLike FindCodeLike(string GUID)
+        public ZEvent FindEvent(string GUID)
         {
-            CodeLike result = null;
-            result = codeList.Find(it => it.GUID == GUID);
+            ZEvent result = null;
+            result = eventList.Find(it => it.GUID == GUID);
             return result;
+        }
+        public ZEvent FindEvent(ZComponent parent, string eventName)
+        {
+            ZEvent result = null;
+            result = eventList.Find(it => it.Owner == parent && it.EventName == eventName);
+            return result;
+        }
+        public List<ZEvent> FindEvents(ZComponent parent)
+        {
+            return eventList.FindAll(it => it.Owner == parent);
         }
         #endregion
 
@@ -437,8 +449,7 @@ namespace ZGE.Components
                 // Then the camera
                 if (Camera == null || Camera.MouseDown(e) == false)
                 {
-                    if (MouseDownExpr != null && MouseDownExpr.callback != null)
-                        MouseDownExpr.callback(e);
+                    if (OnMouseDown != null) OnMouseDown(e);
 
                     // Selection & Dragbox Selection 
                 }
@@ -454,8 +465,7 @@ namespace ZGE.Components
                 // Then the camera
                 if (Camera == null || Camera.MouseUp(e) == false)
                 {
-                    if (MouseUpExpr != null && MouseUpExpr.callback != null)
-                        MouseUpExpr.callback(e);
+                    if (OnMouseUp != null) OnMouseUp(e);
 
                     // Selection & Dragbox Selection                
                     if (SelectionEnabled && e.Button == SelectButton)
@@ -544,7 +554,8 @@ namespace ZGE.Components
                 if (mo != null && mo.model != null) mo.CloneBehavior();
             }*/
 
-            OnLoad.ExecuteAll(this);
+            //OnLoad.ExecuteAll(this);
+            if (OnLoad != null) OnLoad();
 
             updateWatch.Start(); // start App.Time counter when the app is fully loaded
             renderWatch.Start();
@@ -561,7 +572,8 @@ namespace ZGE.Components
             {
                 if (Canvas != null) Canvas.SetSize(width, height);
             }            
-            OnResize.ExecuteAll(this);
+            //OnResize.ExecuteAll(this);
+            if (OnResize != null) OnResize(x,y,width,height);
         }
 
         public virtual void SetupGUI()
@@ -582,7 +594,8 @@ namespace ZGE.Components
             DeltaTime = delta / 1000.0;
             Time = updateWatch.Elapsed.TotalSeconds;
 
-            OnUpdate.ExecuteAll(this);
+            //OnUpdate.ExecuteAll(this);
+            if (OnUpdate != null) OnUpdate();
             foreach (ZComponent comp in Scene)
             {
                 IUpdateable obj = comp as IUpdateable;
@@ -613,7 +626,7 @@ namespace ZGE.Components
             for (int i = 0; i < RenderPasses; i++)
             {
                 CurrentRenderPass = i;
-                OnBeginRenderPass.ExecuteAll(this);
+                //OnBeginRenderPass.ExecuteAll(this);
 
                 //if (ViewportRatio==vprCustom && CurrentRenderTarget=null) 
                 //UpdateViewport();   
@@ -643,10 +656,11 @@ namespace ZGE.Components
                     GL.Disable(All.LIGHTING);
 
                 Renderer.Begin();
-                if (OnRender.Count > 0)
+                if (OnRender != null)
                 {
                     GL.PushMatrix();
-                    OnRender.ExecuteAll(this); // this comes first: render background or skybox here
+                    //OnRender.ExecuteAll(this); // this comes first: render background or skybox here
+                    OnRender();
                     GL.PopMatrix();
                     Renderer.ApplyDefaultMaterial(true); // clear the material for the scene
                 }

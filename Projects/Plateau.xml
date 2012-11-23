@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ZApplication Name="App" Title="Plateau" Camera="Camera1" VSync="On">
-  <OnLoad></OnLoad>
-  <OnRender></OnRender>
+<ZApplication Name="App" Title="Plateau" Camera="Camera1" VSync="On">  
   <Content>
     <Material Name="PlateauMaterial" Wireframe="True" Lighting="False">
       <Textures></Textures>
@@ -12,18 +10,12 @@
         <MeshHeightmap Heightmap="PlateauHm" Scale="5 5 1" />
       </Producers>
     </Mesh>
-    <Model Name="Plateau">
-      <OnRender>
-        <UseMaterial Material="PlateauMaterial" />
-        <RenderMesh Mesh="PlateauMesh" />
-      </OnRender>
-      <OnUpdate></OnUpdate>
-    </Model>
+    <Model Name="Plateau" Material="PlateauMaterial" Mesh="PlateauMesh"/>    
   </Content>
   <GUI>
-    <RenderText Text="FPS: " Position="5 0 0" Scale="1">
+    <DynamicText Text="FPS: " Position="5 0 0" Scale="1">
       <TextExpression><![CDATA[return "FPS: "+App.FpsCounter.ToString();]]></TextExpression>
-    </RenderText>
+    </DynamicText>
   </GUI>
   <Scene>
     <Group Name="DesignPrimitives" />

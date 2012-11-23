@@ -42,11 +42,9 @@ namespace ZGE
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolboxSplitter = new System.Windows.Forms.SplitContainer();
-            this.toolbox1 = new ToolboxLibrary.Toolbox();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.xmlTree = new ZGE.ZTreeView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.splitContainer5 = new System.Windows.Forms.SplitContainer();
             this.splitContainer6 = new System.Windows.Forms.SplitContainer();
@@ -69,6 +67,11 @@ namespace ZGE
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.resetBtn = new System.Windows.Forms.ToolStripButton();
             this.startBtn = new System.Windows.Forms.ToolStripButton();
+            this.codePanel = new System.Windows.Forms.Panel();
+            this.methodLabel = new System.Windows.Forms.Label();
+            this.eventLabel = new System.Windows.Forms.Label();
+            this.toolbox1 = new ToolboxLibrary.Toolbox();
+            this.xmlTree = new ZGE.ZTreeView();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -98,11 +101,13 @@ namespace ZGE
             this.splitContainer6.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.toolStrip1.SuspendLayout();
+            this.codePanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
             // 
@@ -115,8 +120,8 @@ namespace ZGE
             // 
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Panel2.Controls.Add(this.glControl1);
-            this.splitContainer1.Size = new System.Drawing.Size(833, 420);
-            this.splitContainer1.SplitterDistance = 220;
+            this.splitContainer1.Size = new System.Drawing.Size(861, 453);
+            this.splitContainer1.SplitterDistance = 285;
             this.splitContainer1.TabIndex = 6;
             // 
             // splitContainer2
@@ -134,8 +139,8 @@ namespace ZGE
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tableLayoutPanel1);
-            this.splitContainer2.Size = new System.Drawing.Size(220, 420);
-            this.splitContainer2.SplitterDistance = 240;
+            this.splitContainer2.Size = new System.Drawing.Size(285, 453);
+            this.splitContainer2.SplitterDistance = 258;
             this.splitContainer2.TabIndex = 7;
             // 
             // propertyGrid1
@@ -144,7 +149,7 @@ namespace ZGE
             this.propertyGrid1.HelpVisible = false;
             this.propertyGrid1.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid1.Name = "propertyGrid1";
-            this.propertyGrid1.Size = new System.Drawing.Size(220, 240);
+            this.propertyGrid1.Size = new System.Drawing.Size(285, 258);
             this.propertyGrid1.TabIndex = 0;
             this.propertyGrid1.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.propertyGrid1_SelectedGridItemChanged);
             this.propertyGrid1.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid1_PropertyValueChanged);
@@ -162,7 +167,7 @@ namespace ZGE
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(220, 176);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(285, 191);
             this.tableLayoutPanel1.TabIndex = 1;
             // 
             // sceneTreeView
@@ -170,7 +175,7 @@ namespace ZGE
             this.sceneTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.sceneTreeView.Location = new System.Drawing.Point(3, 3);
             this.sceneTreeView.Name = "sceneTreeView";
-            this.sceneTreeView.Size = new System.Drawing.Size(214, 145);
+            this.sceneTreeView.Size = new System.Drawing.Size(279, 160);
             this.sceneTreeView.TabIndex = 0;
             this.sceneTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.sceneTreeView_AfterSelect);
             // 
@@ -178,11 +183,11 @@ namespace ZGE
             // 
             this.compileCodeBtn.Dock = System.Windows.Forms.DockStyle.Fill;
             this.compileCodeBtn.Font = new System.Drawing.Font("Tahoma", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.compileCodeBtn.Location = new System.Drawing.Point(0, 151);
+            this.compileCodeBtn.Location = new System.Drawing.Point(0, 166);
             this.compileCodeBtn.Margin = new System.Windows.Forms.Padding(0);
             this.compileCodeBtn.MinimumSize = new System.Drawing.Size(150, 25);
             this.compileCodeBtn.Name = "compileCodeBtn";
-            this.compileCodeBtn.Size = new System.Drawing.Size(220, 25);
+            this.compileCodeBtn.Size = new System.Drawing.Size(285, 25);
             this.compileCodeBtn.TabIndex = 0;
             this.compileCodeBtn.Text = "Compile Code";
             this.compileCodeBtn.UseVisualStyleBackColor = true;
@@ -192,7 +197,7 @@ namespace ZGE
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 405);
+            this.label1.Location = new System.Drawing.Point(3, 438);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(27, 13);
             this.label1.TabIndex = 2;
@@ -204,7 +209,7 @@ namespace ZGE
             this.glControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.glControl1.Location = new System.Drawing.Point(0, 0);
             this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(609, 420);
+            this.glControl1.Size = new System.Drawing.Size(572, 453);
             this.glControl1.TabIndex = 0;
             this.glControl1.VSync = false;
             this.glControl1.Load += new System.EventHandler(this.glControl1_Load);
@@ -225,7 +230,7 @@ namespace ZGE
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.toolboxSplitter);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1057, 581);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1140, 612);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             // 
             // toolStripContainer1.LeftToolStripPanel
@@ -234,7 +239,7 @@ namespace ZGE
             this.toolStripContainer1.LeftToolStripPanel.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
             this.toolStripContainer1.Name = "toolStripContainer1";
-            this.toolStripContainer1.Size = new System.Drawing.Size(1081, 628);
+            this.toolStripContainer1.Size = new System.Drawing.Size(1164, 659);
             this.toolStripContainer1.TabIndex = 7;
             this.toolStripContainer1.Text = "toolStripContainer1";
             // 
@@ -249,7 +254,7 @@ namespace ZGE
             this.statusLabel});
             this.statusStrip1.Location = new System.Drawing.Point(0, 0);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(1081, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(1164, 22);
             this.statusStrip1.TabIndex = 8;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -262,6 +267,7 @@ namespace ZGE
             // toolboxSplitter
             // 
             this.toolboxSplitter.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.toolboxSplitter.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.toolboxSplitter.Location = new System.Drawing.Point(0, 0);
             this.toolboxSplitter.Name = "toolboxSplitter";
             // 
@@ -273,37 +279,27 @@ namespace ZGE
             // toolboxSplitter.Panel2
             // 
             this.toolboxSplitter.Panel2.Controls.Add(this.splitContainer3);
-            this.toolboxSplitter.Size = new System.Drawing.Size(1057, 581);
-            this.toolboxSplitter.SplitterDistance = 124;
+            this.toolboxSplitter.Size = new System.Drawing.Size(1140, 612);
+            this.toolboxSplitter.SplitterDistance = 180;
             this.toolboxSplitter.TabIndex = 2;
-            // 
-            // toolbox1
-            // 
-            this.toolbox1.DesignerHost = null;
-            this.toolbox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.toolbox1.FilePath = null;
-            this.toolbox1.Location = new System.Drawing.Point(0, 0);
-            this.toolbox1.Name = "toolbox1";
-            this.toolbox1.SelectedCategory = null;
-            this.toolbox1.Size = new System.Drawing.Size(124, 100);
-            this.toolbox1.TabIndex = 0;
             // 
             // splitContainer3
             // 
             this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.splitContainer3.Location = new System.Drawing.Point(0, 0);
             this.splitContainer3.Name = "splitContainer3";
             // 
             // splitContainer3.Panel1
             // 
             this.splitContainer3.Panel1.Controls.Add(this.tabControl1);
-            this.splitContainer3.Panel1MinSize = 220;
+            this.splitContainer3.Panel1MinSize = 125;
             // 
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.splitContainer5);
-            this.splitContainer3.Size = new System.Drawing.Size(1057, 581);
-            this.splitContainer3.SplitterDistance = 220;
+            this.splitContainer3.Size = new System.Drawing.Size(1140, 612);
+            this.splitContainer3.SplitterDistance = 275;
             this.splitContainer3.TabIndex = 1;
             // 
             // tabControl1
@@ -314,7 +310,7 @@ namespace ZGE
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(220, 581);
+            this.tabControl1.Size = new System.Drawing.Size(275, 612);
             this.tabControl1.TabIndex = 1;
             // 
             // tabPage1
@@ -323,34 +319,17 @@ namespace ZGE
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(212, 555);
+            this.tabPage1.Size = new System.Drawing.Size(267, 586);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Project";
             this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // xmlTree
-            // 
-            this.xmlTree.AllowDrop = true;
-            this.xmlTree.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.xmlTree.HideSelection = false;
-            this.xmlTree.ImageIndex = 0;
-            this.xmlTree.Indent = 15;
-            this.xmlTree.LabelEdit = true;
-            this.xmlTree.Location = new System.Drawing.Point(3, 3);
-            this.xmlTree.Name = "xmlTree";
-            this.xmlTree.SelectedImageIndex = 0;
-            this.xmlTree.Size = new System.Drawing.Size(206, 549);
-            this.xmlTree.StatusString = "";
-            this.xmlTree.TabIndex = 0;
-            this.xmlTree.SelectedNodeChanged += new System.EventHandler(this.xmlTree_SelectedNodeChanged);            
-            this.xmlTree.StatusStringChanged += new System.EventHandler(this.xmlTree_StatusStringChanged);
             // 
             // tabPage2
             // 
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(212, 555);
+            this.tabPage2.Size = new System.Drawing.Size(267, 586);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Code";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -369,8 +348,8 @@ namespace ZGE
             // splitContainer5.Panel2
             // 
             this.splitContainer5.Panel2.Controls.Add(this.splitContainer6);
-            this.splitContainer5.Size = new System.Drawing.Size(833, 581);
-            this.splitContainer5.SplitterDistance = 420;
+            this.splitContainer5.Size = new System.Drawing.Size(861, 612);
+            this.splitContainer5.SplitterDistance = 453;
             this.splitContainer5.TabIndex = 1;
             // 
             // splitContainer6
@@ -381,26 +360,31 @@ namespace ZGE
             // 
             // splitContainer6.Panel1
             // 
-            this.splitContainer6.Panel1.Controls.Add(this.codeBox);
+            this.splitContainer6.Panel1.Controls.Add(this.codePanel);
             this.splitContainer6.Panel1MinSize = 325;
             // 
             // splitContainer6.Panel2
             // 
             this.splitContainer6.Panel2.Controls.Add(this.outputBox);
-            this.splitContainer6.Size = new System.Drawing.Size(833, 157);
-            this.splitContainer6.SplitterDistance = 472;
+            this.splitContainer6.Size = new System.Drawing.Size(861, 155);
+            this.splitContainer6.SplitterDistance = 487;
             this.splitContainer6.TabIndex = 1;
             // 
             // codeBox
             // 
+            this.codeBox.Anchor = ((System.Windows.Forms.AnchorStyles) ((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.codeBox.AutoSize = true;
+            this.codeBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.codeBox.ConvertTabsToSpaces = true;
-            this.codeBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.codeBox.IsReadOnly = false;
-            this.codeBox.Location = new System.Drawing.Point(0, 0);
+            this.codeBox.Location = new System.Drawing.Point(0, 19);
+            this.codeBox.Margin = new System.Windows.Forms.Padding(0);
             this.codeBox.Name = "codeBox";
             this.codeBox.ShowLineNumbers = false;
             this.codeBox.ShowVRuler = false;
-            this.codeBox.Size = new System.Drawing.Size(472, 157);
+            this.codeBox.Size = new System.Drawing.Size(487, 136);
             this.codeBox.TabIndex = 2;
             this.codeBox.VRulerRow = 20;
             this.codeBox.TextChanged += new System.EventHandler(this.codeBox_TextChanged);
@@ -413,7 +397,7 @@ namespace ZGE
             this.outputBox.ForeColor = System.Drawing.SystemColors.Window;
             this.outputBox.Location = new System.Drawing.Point(0, 0);
             this.outputBox.Name = "outputBox";
-            this.outputBox.Size = new System.Drawing.Size(357, 157);
+            this.outputBox.Size = new System.Drawing.Size(370, 155);
             this.outputBox.TabIndex = 0;
             this.outputBox.Text = "";
             // 
@@ -588,11 +572,76 @@ namespace ZGE
             this.startBtn.Text = "Start / Stop";
             this.startBtn.Click += new System.EventHandler(this.startBtn_Click);
             // 
+            // codePanel
+            // 
+            this.codePanel.Controls.Add(this.eventLabel);
+            this.codePanel.Controls.Add(this.methodLabel);
+            this.codePanel.Controls.Add(this.codeBox);
+            this.codePanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.codePanel.Location = new System.Drawing.Point(0, 0);
+            this.codePanel.Name = "codePanel";
+            this.codePanel.Size = new System.Drawing.Size(487, 155);
+            this.codePanel.TabIndex = 3;
+            // 
+            // methodLabel
+            // 
+            this.methodLabel.AutoSize = true;
+            this.methodLabel.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.methodLabel.ForeColor = System.Drawing.Color.FromArgb(((int) (((byte) (0)))), ((int) (((byte) (0)))), ((int) (((byte) (192)))));
+            this.methodLabel.Location = new System.Drawing.Point(0, 0);
+            this.methodLabel.Margin = new System.Windows.Forms.Padding(0);
+            this.methodLabel.Name = "methodLabel";
+            this.methodLabel.Size = new System.Drawing.Size(152, 16);
+            this.methodLabel.TabIndex = 3;
+            this.methodLabel.Text = "[Method Signature]";
+            // 
+            // eventLabel
+            // 
+            this.eventLabel.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.eventLabel.AutoSize = true;
+            this.eventLabel.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.eventLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.eventLabel.Location = new System.Drawing.Point(383, 0);
+            this.eventLabel.Margin = new System.Windows.Forms.Padding(0);
+            this.eventLabel.Name = "eventLabel";
+            this.eventLabel.Size = new System.Drawing.Size(104, 17);
+            this.eventLabel.TabIndex = 4;
+            this.eventLabel.Text = "[Event Name]";
+            this.eventLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // toolbox1
+            // 
+            this.toolbox1.DesignerHost = null;
+            this.toolbox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.toolbox1.FilePath = null;
+            this.toolbox1.Location = new System.Drawing.Point(0, 0);
+            this.toolbox1.Name = "toolbox1";
+            this.toolbox1.SelectedCategory = null;
+            this.toolbox1.Size = new System.Drawing.Size(180, 100);
+            this.toolbox1.TabIndex = 0;
+            // 
+            // xmlTree
+            // 
+            this.xmlTree.AllowDrop = true;
+            this.xmlTree.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.xmlTree.HideSelection = false;
+            this.xmlTree.ImageIndex = 0;
+            this.xmlTree.Indent = 15;
+            this.xmlTree.LabelEdit = true;
+            this.xmlTree.Location = new System.Drawing.Point(3, 3);
+            this.xmlTree.Name = "xmlTree";
+            this.xmlTree.SelectedImageIndex = 0;
+            this.xmlTree.Size = new System.Drawing.Size(261, 580);
+            this.xmlTree.StatusString = "";
+            this.xmlTree.TabIndex = 0;
+            this.xmlTree.StatusStringChanged += new System.EventHandler(this.xmlTree_StatusStringChanged);
+            this.xmlTree.SelectedNodeChanged += new System.EventHandler(this.xmlTree_SelectedNodeChanged);
+            // 
             // Editor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1081, 628);
+            this.ClientSize = new System.Drawing.Size(1164, 659);
             this.Controls.Add(this.toolStripContainer1);
             this.Icon = ((System.Drawing.Icon) (resources.GetObject("$this.Icon")));
             this.Name = "Editor";
@@ -636,6 +685,8 @@ namespace ZGE
             this.toolStrip2.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            this.codePanel.ResumeLayout(false);
+            this.codePanel.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -681,6 +732,9 @@ namespace ZGE
         private System.Windows.Forms.Button compileCodeBtn;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ToolStripButton resetBtn;
+        private System.Windows.Forms.Panel codePanel;
+        private System.Windows.Forms.Label eventLabel;
+        private System.Windows.Forms.Label methodLabel;
 
     }
 }

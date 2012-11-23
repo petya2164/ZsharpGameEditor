@@ -57,8 +57,7 @@ namespace ZGE
 
             if (ret == null)
                 throw new ArgumentException("Cannot Create Instance");
-
-            // Display every entry's key and value. 
+            
             foreach (DictionaryEntry de in propertyValues)
             {
                 if (de.Value != null)

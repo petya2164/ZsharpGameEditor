@@ -53,6 +53,7 @@ namespace ZGE
             InitializeComponent();
             CodeGenerator.editor = this;
             Project.editor = this;
+            EventPropertyDescriptor.editor = this;
 
             // Use C# highlighting strategy
             codeBox.Document.HighlightingStrategy =
@@ -62,7 +63,9 @@ namespace ZGE
             Type[] targets = { typeof(Vector2), typeof(Vector3), typeof(Vector4), typeof(Color4) };
             foreach (Type t in targets)
             {
+                // To create a new instance of the struct
                 TypeDescriptor.AddAttributes(t, new TypeConverterAttribute(typeof(StructConverter)));
+                // To show the fields as properties
                 TypeDescriptor.AddProvider(new FieldsToPropertiesTypeDescriptionProvider(t), t);
             }              
 
@@ -93,8 +96,11 @@ namespace ZGE
                 this.Size = new Size(w, h);
             }           
 
-            LoadToolboxComponents();           
+            LoadToolboxComponents();
+            EventsTab tab = new EventsTab();
+            propertyGrid1.PropertyTabs.AddTabType(typeof(EventsTab), PropertyTabScope.Global);
 
+            // What a shame that you cannot set this event handler from the designer ;)
             glControl1.MouseWheel += new MouseEventHandler(glControl1_MouseWheel);
         }
 
@@ -275,6 +281,7 @@ namespace ZGE
             ZComponent.App = null;
             codeBox.Text = "";
             codeBox.Refresh();
+            SetCodeLabels(null);
             // TODO: All resources should be released at this point / verify finalizers!
         }
 
@@ -366,6 +373,7 @@ namespace ZGE
                     writer.Write(project.XMLText);                
                 }
                 statusLabel.Text = "Project saved.";
+                Console.WriteLine("Project saved.");
             }
         }                 
 
@@ -535,7 +543,7 @@ namespace ZGE
         {
             // Standalone compilation
             if (project == null || project.xmlDoc == null) return;
-            outputBox.Text = "";
+            //outputBox.Text = "";
             statusLabel.Text = "Compiling standalone game...";
             if (codegen.BuildStandaloneApplication(project.xmlDoc, Path.Combine(Application.StartupPath, project.Name+".exe")))            
             {
@@ -601,6 +609,7 @@ namespace ZGE
             {
 #endif
                 this.Cursor = Cursors.WaitCursor;
+                //project.ClearCode();
                 //Console.WriteLine("SelectedComponent is {0}", SelectedComponent.GetType().AssemblyQualifiedName);
                 if (project.RecompileApplication(codegen, xmlTree))
                 {
@@ -694,8 +703,11 @@ namespace ZGE
 
         private void propertyGrid1_SelectedGridItemChanged(object sender, SelectedGridItemChangedEventArgs e)
         {
+            if (propertyGrid1.SelectedTab.TabName != "Events") return;
+            
             //Console.WriteLine("GridItem Changed.");
-            GridItem g = e.NewSelection;
+            GridItem g = e.NewSelection;            
+            
             if (typeof(CodeLike).IsAssignableFrom(g.PropertyDescriptor.PropertyType))
             {
                 //Console.WriteLine("CodeLike selected.");
@@ -707,15 +719,65 @@ namespace ZGE
                     //codeBox.Invalidate();
                     codeBox.Refresh();
                     project.SetCode(code, selectedComponent as ZComponent, g.PropertyDescriptor.Name);
+                    SetCodeLabels(g.PropertyDescriptor);
                 }
             }
+            else if (typeof(Delegate).IsAssignableFrom(g.PropertyDescriptor.PropertyType))
+            {
+                //Console.WriteLine("Event selected.");
+
+                if (project != null)
+                {
+                    project.ClearCode(); // prevent codeBox_TextChanged from changing the previously selected code                                            
+                    project.SetEventCode(selectedComponent as ZComponent, g.PropertyDescriptor.Name, codeBox);
+                    codeBox.Refresh();
+                    SetCodeLabels(g.PropertyDescriptor);
+                }
+            }
+        }
+
+        private void SetCodeLabels(PropertyDescriptor prop)
+        {
+            if (prop == null)
+            {
+                methodLabel.Text = "[Method Signature]";
+                eventLabel.Text = "[Event Name]";
+                return;
+            }
+            string methodName = prop.Name;
+            ZComponent comp = selectedComponent as ZComponent;
+            if (typeof(Delegate).IsAssignableFrom(prop.PropertyType))
+            {                 
+                methodLabel.Text = codegen.GetMethodHeader(methodName, prop.PropertyType, false);                
+            }
+            else if (typeof(CodeLike).IsAssignableFrom(prop.PropertyType))
+            {
+                methodLabel.Text = prop.PropertyType.Name;
+            }
+            if (comp != null)
+            {
+                if (comp.HasName())
+                    eventLabel.Text = comp.Name + "/" + methodName.TrimEnd();
+                else
+                {
+                    ZNodeProperties zprops = comp.Tag as ZNodeProperties;
+                    if (zprops != null && zprops.xmlNode.ParentNode != null)
+                        eventLabel.Text = String.Format("{0}/{1}/{2}", zprops.xmlNode.ParentNode.Name, comp.GetType().Name, methodName);
+                    else
+                        eventLabel.Text = String.Format("{0}/{1}", comp.GetType().Name, methodName);
+                }
+            }
+            else
+                eventLabel.Text = methodName;
+
+            eventLabel.Left = codePanel.Width - eventLabel.Width;
         }
 
         private void codeBox_TextChanged(object sender, EventArgs e)
         {
             if (project != null)
-                project.CodeChanged(codeBox.Text);            
+                project.CodeChanged(codeBox.Text);
         }
-
+          
     }
 }

@@ -72,10 +72,10 @@ namespace ZGE.Components
                 defaultMaterial.Apply(currentMaterial);
         }
 
-        public static void ApplyMaterial(Material newMat)
-        {
-            if (newMat != null) newMat.Apply(currentMaterial);
-        }        
+//         public static void ApplyMaterial(Material newMat)
+//         {
+//             if (newMat != null) newMat.Apply(currentMaterial);
+//         }        
 
         public static void Begin()
         {
@@ -96,96 +96,96 @@ namespace ZGE.Components
     }
 
 
-    public class RenderSprite : ZCommand
-    {
-        public RenderSprite(ZComponent parent): base(parent) { }
-        public override void Execute(ZComponent caller)
-        {
-            if (Renderer.unitQuad != null) Renderer.unitQuad.Render();
-        }
-    }
-
-    public class RenderMesh : ZCommand
-    {
-        public Mesh Mesh;
-
-        public RenderMesh(ZComponent parent) : base(parent) { }        
-
-        public override void Execute(ZComponent caller)
-        {
-            if (Mesh != null) Mesh.Render();
-        }
-    }
-
-    public class RenderSetColor : ZCommand
-    {
-        //[DefaultValue(Color.White)]
-        public Color Color;
-
-        public RenderSetColor(ZComponent parent)
-            : base(parent)
-        {
-            Color = Color.White;
-        }        
-
-        public override void Execute(ZComponent caller)
-        {
-            GL.Color3(Color);
-        }
-    }
-
-    public class RenderTransform : ZCommand
-    {
-        public Vector3 Translate;
-        public Vector3 Rotate;
-        public Vector3 Scale;
-
-        public RenderTransform(ZComponent parent): base(parent) {}
-
-        public override void Execute(ZComponent caller)
-        {
-            GL.Translate(Translate);
-
-            //Reverse order to make XYZ-rotation  
-            GL.Rotate(Rotate.Z, Vector3.UnitZ);
-            GL.Rotate(Rotate.Y, Vector3.UnitY);
-            GL.Rotate(Rotate.X, Vector3.UnitX);
-
-            GL.Scale(Scale);
-        }
-    }
-
-    public class RenderNet : ZCommand
-    {
-        public Mesh Mesh;
-        public int XCount;
-        public int YCount;
-        public bool VertexColors;
-        //public delegate void ModelMethod(Model model);
-        //public ZCode VertexExpression;
-
-        public RenderNet(ZComponent parent): base(parent) { }
-
-        public override void Execute(ZComponent caller)
-        {
-            if (Mesh == null)
-            {
-                Mesh = new Mesh(null); // Make it dynamic
-                Shape shape = new Shape();
-                shape.MakeNet(XCount, YCount);
-                if (VertexColors && shape.Colors == null)
-                    shape.CreateColors();
-                Mesh.CreateVBO(shape);
-            }
-
-            /*if (VertexExpression != null)
-            {
-                Mesh.ApplyExpression(VertexExpression);
-                //Vertex, Tex, Color
-                Mesh.ComputeNormals();
-            }*/
-
-            if (Mesh != null) Mesh.Render();
-        }
-    }
+//     public class RenderSprite : ZCommand
+//     {
+//         public RenderSprite(ZComponent parent): base(parent) { }
+//         public override void Execute(ZComponent caller)
+//         {
+//             if (Renderer.unitQuad != null) Renderer.unitQuad.Render();
+//         }
+//     }
+// 
+//     public class RenderMesh : ZCommand
+//     {
+//         public Mesh Mesh;
+// 
+//         public RenderMesh(ZComponent parent) : base(parent) { }        
+// 
+//         public override void Execute(ZComponent caller)
+//         {
+//             if (Mesh != null) Mesh.Render();
+//         }
+//     }
+// 
+//     public class RenderSetColor : ZCommand
+//     {
+//         //[DefaultValue(Color.White)]
+//         public Color Color;
+// 
+//         public RenderSetColor(ZComponent parent)
+//             : base(parent)
+//         {
+//             Color = Color.White;
+//         }        
+// 
+//         public override void Execute(ZComponent caller)
+//         {
+//             GL.Color3(Color);
+//         }
+//     }
+// 
+//     public class RenderTransform : ZCommand
+//     {
+//         public Vector3 Translate;
+//         public Vector3 Rotate;
+//         public Vector3 Scale;
+// 
+//         public RenderTransform(ZComponent parent): base(parent) {}
+// 
+//         public override void Execute(ZComponent caller)
+//         {
+//             GL.Translate(Translate);
+// 
+//             //Reverse order to make XYZ-rotation  
+//             GL.Rotate(Rotate.Z, Vector3.UnitZ);
+//             GL.Rotate(Rotate.Y, Vector3.UnitY);
+//             GL.Rotate(Rotate.X, Vector3.UnitX);
+// 
+//             GL.Scale(Scale);
+//         }
+//     }
+// 
+//     public class RenderNet : ZCommand
+//     {
+//         public Mesh Mesh;
+//         public int XCount;
+//         public int YCount;
+//         public bool VertexColors;
+//         //public delegate void ModelMethod(Model model);
+//         //public ZCode VertexExpression;
+// 
+//         public RenderNet(ZComponent parent): base(parent) { }
+// 
+//         public override void Execute(ZComponent caller)
+//         {
+//             if (Mesh == null)
+//             {
+//                 Mesh = new Mesh(null); // Make it dynamic
+//                 Shape shape = new Shape();
+//                 shape.MakeNet(XCount, YCount);
+//                 if (VertexColors && shape.Colors == null)
+//                     shape.CreateColors();
+//                 Mesh.CreateVBO(shape);
+//             }
+// 
+//             /*if (VertexExpression != null)
+//             {
+//                 Mesh.ApplyExpression(VertexExpression);
+//                 //Vertex, Tex, Color
+//                 Mesh.ComputeNormals();
+//             }*/
+// 
+//             if (Mesh != null) Mesh.Render();
+//         }
+//     }
 }

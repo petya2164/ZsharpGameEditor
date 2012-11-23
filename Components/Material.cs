@@ -42,6 +42,11 @@ namespace ZGE.Components
 
         }
 
+        public void Apply()
+        {
+            Apply(Renderer.currentMaterial);
+        }
+
         public void Apply(Material oldMat)
         {
             GL.Color4(Color);
@@ -331,16 +336,15 @@ namespace ZGE.Components
     }
 
 
-    public class UseMaterial : ZCommand
-    {
-        public Material Material;
-
-        public UseMaterial(ZComponent parent): base(parent) {}
-
-        public override void Execute(ZComponent caller)
-        {
-            if (Material != null)
-                Renderer.ApplyMaterial(Material);
-        }
-    }
+//     public class UseMaterial : ZCommand
+//     {
+//         public Material Material;
+// 
+//         public UseMaterial(ZComponent parent): base(parent) {}
+// 
+//         public override void Execute(ZComponent caller)
+//         {
+//             if (Material != null) Material.Apply();
+//         }
+//     }
 }

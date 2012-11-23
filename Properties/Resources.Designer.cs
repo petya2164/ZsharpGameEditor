@@ -60,6 +60,13 @@ namespace ZSGameEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap EventsTab {
+            get {
+                object obj = ResourceManager.GetObject("EventsTab", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap i0 {
             get {
                 object obj = ResourceManager.GetObject("i0", resourceCulture);
