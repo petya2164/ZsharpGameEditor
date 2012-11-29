@@ -2,7 +2,26 @@
 <ZApplication Name="App" Title="RTS Example" Camera="Camera1" Width="1000" Height="700" Resources="2000" SelectionEnabled="False">
   <Definitions>
     <CustomCode>
-      <Code><![CDATA[public int Resources = 1000;]]></Code>
+      <Code><![CDATA[public int Resources = 1000;
+
+public float TerrainHeight(Vector3 pos)
+{
+    Vector3 scale = IslandScale.Scale;
+    return scale.Z*IslandHm.GetHeight(pos.X / scale.X, pos.Y / scale.Y);
+}
+
+public bool AdjustAltitude(Model m, float offset)
+{
+    bool belowSeaLevel = false;
+    float height = TerrainHeight(m.Position);
+    if (height < 0.6f) // below sea level
+    {
+        belowSeaLevel = true;
+        height = 0.6f;
+    }    
+    m.Position.Z = height + offset;
+    return belowSeaLevel;
+}]]></Code>
     </CustomCode>
   </Definitions>
   <Content>
@@ -24,25 +43,31 @@
     <Heightmap Name="IslandHm" FileName="islandHeight.png" />
     <Mesh Name="IslandMesh">
       <Producers>
-        <MeshHeightmap Heightmap="IslandHm" Scale="100 100 10" />
+        <MeshHeightmap Heightmap="IslandHm" Scale="100 100 10" Name="IslandScale" />
       </Producers>
     </Mesh>
     <Model Name="Unit" Mesh="UnitMesh" Color="1 0 0 1">
       <OnUpdate><![CDATA[//if (Position.Z > 0.0f)
 //    Position.Z -= 20.0f*(float) App.DeltaTime;
 
-float height = 10.0f*App.IslandHm.GetHeight(Position.X / 100.0f, Position.Y / 100.0f);
-if (height < 0.6f) // below sea level
+if (App.AdjustAltitude(this, 1.0f)) // below sea level
 {
-    GoToDestination = false;
-    height = 0.6f;
+    GoToDestination = false;    
 }
-//if (Position.Z < height + 1.0f)
-Position.Z = height + 1.0f;
+
 ]]></OnUpdate>
     </Model>
     <Model Name="Island" Material="IslandMaterial" Mesh="IslandMesh" />
     <Model Name="Water" Color="0.1176471 0.5647059 1 1" Mesh="Box" />
+    <Mesh Name="Cylinder">
+      <Producers>
+        <MeshCylinder Height="3" ZSamples="2" LowerRadius="5" UpperRadius="5" RadialSamples="10" />
+      </Producers>
+    </Mesh>
+    <Material Name="OilMaterial" Color="0.2509804 0 0 1" Wireframe="False">
+      <Textures />
+    </Material>
+    <Model Name="Resource" Mesh="Cylinder" Material="OilMaterial" />
   </Content>
   <GUI>
     <DynamicText Text="FPS: " Position="5 0 0" Scale="1" Name="FPS">
@@ -59,13 +84,29 @@ Position.Z = height + 1.0f;
     </DynamicText>
     <Button Name="CreateBtn" Text="Create Unit" Y="100" X="5" Width="150" Height="40">
       <Clicked><![CDATA[var spawned = Unit.CreateClone(null);
-spawned.Position = ZMath.RandomVector(100.0f,100.0f,0);]]></Clicked>
+spawned.Name = "Spawned";
+spawned.Position = ZMath.RandomVector(100.0f,100.0f,0);
+AdjustAltitude(spawned, 1.0f);]]></Clicked>
     </Button>
     <ProgressBar X="5" Y="70" Height="31" Name="Progress" Value="0.01" />
     <NumericUpDown X="5" Name="MaxUnits" Y="45" />
+    <Button Name="StartBtn" Y="145" X="5" Width="150" Text="Start Game" Height="40" IsToggle="True">
+      <Clicked><![CDATA[App.Pause();
+if (App.Paused) StartBtn.Text = "Restart Game";
+else StartBtn.Text = "PAUSE";]]></Clicked>
+    </Button>
   </GUI>
   <Scene>
-    <Group Name="DesignPrimitives" />
+    <Group Name="DesignPrimitives">
+      <ZTimer Interval="1" Name="SpawnTimer">
+        <OnTimer><![CDATA[//var spawned = Unit.CreateClone(EnemyUnits);
+//spawned.Name = "Enemy Unit";
+//spawned.Color = Color.Blue;
+var spawned = Resource.CreateClone(null);
+spawned.Position = ZMath.RandomVector(98.0f,98.0f,0);
+AdjustAltitude(spawned,-2.8f);]]></OnTimer>
+      </ZTimer>
+    </Group>
     <Group Name="Cameras">
       <InteractiveCamera Name="Camera1" Position="0 -155 130" UpVector="0 0 1" ClipFar="10000" ClipNear="1" />
     </Group>
@@ -76,8 +117,10 @@ spawned.Position = ZMath.RandomVector(100.0f,100.0f,0);]]></Clicked>
       <GameObject Model="Unit" Name="Unit3" Position="-3 -1 10" />
       <GameObject Model="Unit" Name="Unit4" Position="3 -1 10" Color="0.7529412 0.7529412 0.7529412 1" />
     </Group>
+    <Group Name="EnemyUnits" />
     <GameObject Model="Island" Name="Island1" Position="0 0 0" Scale="1 1 1" />
     <GameObject Model="Water" Name="Water1" Position="0 0 0.6" Enabled="True" />
+    <GameObject Model="Resource" Name="Oil" Position="10 0 6" />
   </Scene>
   <OnMouseUp><![CDATA[if (e.Button == SelectButton)
 {  

@@ -84,8 +84,8 @@ namespace ZGE.Components
 
     public class MeshSphere : MeshProducer
     {
-        public int ZSamples;
-        public int RadialSamples;
+        public int ZSamples = 3;
+        public int RadialSamples = 6;
 
         public MeshSphere(ZComponent parent): base(parent) {}
 
@@ -215,5 +215,145 @@ namespace ZGE.Components
             Mesh mesh = content as Mesh;
             mesh.CreateVBO(shape);
         }
-    }    
+    }
+
+    public class MeshCylinder : MeshProducer
+    {
+        public int ZSamples = 2;
+        public int RadialSamples = 6;
+        public float UpperRadius = 1.0f;
+        public float LowerRadius = 1.0f;
+        public float Height = 1.0f;
+
+        public MeshCylinder(ZComponent parent) : base(parent) { }
+
+        public override void ProduceOutput(ZContent content)
+        {
+            //const float Radius = 1.0f;
+            if (ZSamples < 2 || RadialSamples < 3) return;
+
+            Shape shape = new Shape();
+
+            int ZSm1 = ZSamples - 1;
+            int ZSm2 = ZSamples - 2;
+            int ZSm3 = ZSamples - 3;
+
+            int RSp1 = RadialSamples + 1;
+            int VQuantity = ZSamples * RSp1 + 2; // slices + 2 poles
+            int TQuantity = 2 * RadialSamples * (ZSm1 + 1);// sides + 2 disks
+            shape.CreateData(VQuantity, TQuantity, false, false);
+
+            // generate geometry
+            float InvRS = 1.0f / RadialSamples;
+            float ZFactor = 1.0f / ZSm1;
+
+            // Generate points on the unit circle to be used in computing the shape
+            // points on a cylinder slice.
+            var afSin = new float[RSp1];
+            var afCos = new float[RSp1];
+
+            for (int r = 0; r < RadialSamples; r++)
+            {
+                float angle = (MathHelper.TwoPi) * InvRS * r;
+                afCos[r] = (float) Math.Cos(angle);
+                afSin[r] = (float) Math.Sin(angle);
+            }
+
+            afSin[RadialSamples] = afSin[0];
+            afCos[RadialSamples] = afCos[0];
+
+            // generate the cylinder itself
+            int i = 0;
+            for (int z = 0; z < ZSamples; z++)
+            {
+                float ZFraction = z * ZFactor;  // in [0,1]
+                float fZ = Height * ZFraction;
+
+                // compute center of slice
+                Vector3 SliceCenter = new Vector3(0.0f, 0.0f, fZ);
+
+                // compute radius of slice
+                //float SliceRadius = (float) Math.Sqrt(Math.Abs(Radius * Radius - fZ * fZ));
+                float SliceRadius = ZMath.Lerp(LowerRadius, UpperRadius, ZFraction);
+
+                // compute slice vertices with duplication at end point
+                int save = i;
+                for (int r = 0; r < RadialSamples; r++)
+                {
+                    // RadialFraction = R*InvRS;  // in [0,1)
+                    Vector3 radial = new Vector3(afCos[r], afSin[r], 0.0f);
+                    shape.Vertices[i] = SliceCenter + SliceRadius * radial;
+                    //Vector3.Normalize(ref shape.Vertices[i], out shape.Normals[i]);
+                    shape.Normals[i] = radial;      // TODO: normals can be tilted (if the 2 radii are different) 
+                    i++;
+                }
+                shape.Vertices[i] = shape.Vertices[save];
+                shape.Normals[i] = shape.Normals[save];
+
+                i++;
+            }
+
+            // south pole
+            shape.Vertices[i] = Vector3.Zero;
+            shape.Normals[i] = -1.0f * Vector3.UnitZ;
+
+            i++;
+
+            // north pole
+            shape.Vertices[i] = Height * Vector3.UnitZ;
+            shape.Normals[i] = Vector3.UnitZ;
+
+            //  Assert( i == VQuantity );
+
+            // generate connectivity
+            int idx = 0;
+            int zstart = 0;
+            for (int z = 0; z < ZSamples-1; z++)
+            {
+                int i0 = zstart;
+                int i1 = i0 + 1;
+                zstart += RSp1;
+                int i2 = zstart;
+                int i3 = i2 + 1;
+                for (i = 0; i < RadialSamples; i++)
+                {
+                    shape.Indices[idx + 0] = i0; i0++;
+                    shape.Indices[idx + 1] = i1;
+                    shape.Indices[idx + 2] = i2;
+                    shape.Indices[idx + 3] = i1; i1++;
+                    shape.Indices[idx + 4] = i3; i3++;
+                    shape.Indices[idx + 5] = i2; i2++;
+                    idx += 6;
+                }
+            }
+
+            // south pole triangles
+            int VQm2 = VQuantity - 2;
+            for (i = 0; i < RadialSamples; i++)
+            {
+                shape.Indices[idx + 0] = i;
+                shape.Indices[idx + 1] = VQm2;
+                shape.Indices[idx + 2] = i + 1;
+                idx += 3;
+            }
+
+            // north pole triangles
+            int VQm1 = VQuantity - 1;
+            int offset = ZSm1 * RSp1;
+            for (i = 0; i < RadialSamples; i++)
+            {
+                shape.Indices[idx + 0] = VQm1;
+                shape.Indices[idx + 1] = i + offset;
+                shape.Indices[idx + 2] = i + 1 + offset;
+                idx += 3;
+            }
+
+            //  assert( aiLocalIndex == m_aiIndex + 3*iTQuantity );
+
+
+            shape.Scale(Scale);
+            Mesh mesh = content as Mesh;
+            mesh.CreateVBO(shape);
+        }
+    }
 }

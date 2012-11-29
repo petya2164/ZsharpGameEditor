@@ -815,7 +815,7 @@ namespace ZGE
                         nameAttribute.Value = modelName;
                         newXmlNode.Attributes.Append(nameAttribute);
                         model.Name = modelName;
-                        newTreeNode.Name = String.Format("{0} - {1}", childNodeName, modelName);
+                        newTreeNode.Text = String.Format("{0} - {1}", childNodeName, modelName);
                     }
 
                     // create child XML nodes for generic member lists                    
@@ -851,7 +851,7 @@ namespace ZGE
                 //props.XmlNodePropertyChanged += new XmlNodePropertyChangedEventHandler(treeView.UpdateNodeText);
 
                 ZTreeView.HighlightTreeNode(newTreeNode, props);
-                ZTreeView.HighlightTreeNode(parentNode, parentProps);
+                ZTreeView.HighlightTreeNode(parentNode, parentProps);                
                 parentNode.Expand();
                 newTreeNode.Expand();
                 treeView.SelectedNode = newTreeNode;

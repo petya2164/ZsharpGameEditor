@@ -815,7 +815,7 @@ namespace ZGE
             if (type.BaseType != typeof(Object)) // This NonPublic field could be declared in the parent class
                 return GetField(type.BaseType, fieldName);
             return null;            
-        }
+        }           
 
         public static void RestoreEvent(ZEvent ev, ZComponent comp, string methodName)
         {
@@ -935,6 +935,26 @@ namespace ZGE
             // update the Owner reference to newObj
             foreach (ZEvent ev in ZComponent.App.FindEvents(oldObj))
                 ev.Owner = newObj;
+
+            // If it is a ZApplication
+            if (typeof(ZApplication).IsAssignableFrom(newObj.GetType()))
+            {
+                // Check named references in CustomGame                
+                foreach(FieldInfo fi in newObj.GetType().GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+                {
+                    // If the named reference is null, then try to find the component
+                    // This is necessary for all newly-added or renamed components
+                    if (fi.GetValue(newObj) == null)                       
+                    {
+                        ZComponent comp = ZComponent.App.Find(fi.Name);
+                        if (comp != null && fi.FieldType == comp.GetType())
+                        {
+                            Console.WriteLine("Setting new named reference {0} / {1}", fi.Name, fi.FieldType.Name);
+                            fi.SetValue(newObj, comp);
+                        }                        
+                    } 
+                }               
+            }
 
             // If the oldObj was selected in the editor, then we have to replace it with newObj 
             if (editor.SelectedComponent == oldObj)

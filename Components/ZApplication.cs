@@ -157,8 +157,8 @@ namespace ZGE.Components
 
         #endregion   
      
-        static int serial = 0;
-        int ID = 0;
+        //static int serial = 0;
+        //int ID = 0;
 
         public ZApplication(): base(null)
         {
@@ -168,13 +168,13 @@ namespace ZGE.Components
             //MouseDownExpr = new ZCode<MouseMethod>();
             //MouseUpExpr = new ZCode<MouseMethod>();
             Canvas = new Canvas();
-            ID = serial++;
-            Console.WriteLine(String.Format("ZApplication created: {0}", ID));
+            //ID = serial++;
+            //Console.WriteLine(String.Format("ZApplication created: {0}", ID));
         }
 
         ~ZApplication()
         {
-            Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
+            //Console.WriteLine(String.Format("ZApplication finalized: {0}", ID));
         }
 
         // Used in generated code for CustomGame
@@ -243,7 +243,9 @@ namespace ZGE.Components
             nameCache.TryGetValue(name, out result);
             if (result != null) return result;
             // Otherwise, consider all components
-            result = allComponents.Where(it => it.Name == name).First();
+            var list = allComponents.Where(it => it.Name == name).ToList();
+            if (list.Count > 0) result = list[0];
+            if (list.Count > 1) Console.WriteLine("Multiple components({0}) with the same name: {1}", list.Count, name);
             // Cache the result
             if (result != null) nameCache[name] = result;
             return result;
@@ -596,7 +598,8 @@ namespace ZGE.Components
 
             //OnUpdate.ExecuteAll(this);
             if (OnUpdate != null) OnUpdate();
-            foreach (ZComponent comp in Scene)
+            // Iterate over a copy because the Scene might be modified during Update
+            foreach (ZComponent comp in Scene.ToList())    
             {
                 IUpdateable obj = comp as IUpdateable;
                 if (obj != null) obj.Update();

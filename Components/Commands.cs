@@ -146,51 +146,51 @@ namespace ZGE.Components
 //         }
 //     }
 // 
-//     public class ZTimer : ZCommand
-//     {
-//         public double Interval;
-//         public int RepeatCount; 
-// 
-//         [Browsable(false)]
-//         public List<ZCommand> OnTimer = new List<ZCommand>();
-//         [ReadOnlyAttribute(true)]
-//         public int Iteration;
-//         [ReadOnlyAttribute(true)]
-//         public double Time;
-//         [ReadOnlyAttribute(true)]
-//         public bool Stopped;
-// 
-//         public ZTimer(ZComponent parent)
-//             : base(parent)
-//         {            
-//             Reset();
-//         }
-// 
-//         public void Reset()
-//         {
-//             Iteration = 0;
-//             Time = 0.0f;
-//             Stopped = false;
-//         }
-// 
-//         public override void Execute(ZComponent caller)
-//         {
-//             if (Interval > 0.0f && Stopped == false)
-//             {
-//                 Time += App.DeltaTime;
-//                 if (Time >= Interval)
-//                 {
-//                     Time -= Interval;
-//                     OnTimer.ExecuteAll(caller);
-//                     Iteration++;
-//                     if (RepeatCount != -1)
-//                     {
-//                         Stopped = (Iteration > RepeatCount);
-//                     }
-//                 }
-//             }
-//         }
-//     }
+    public class ZTimer : ZComponent, IUpdateable
+    {
+        public double Interval;
+        public int RepeatCount; 
+
+        public delegate void EmptyHandler();
+        [Browsable(false)]
+        public event EmptyHandler OnTimer;
+        [ReadOnlyAttribute(true)]
+        public int Iteration;
+        [ReadOnlyAttribute(true)]
+        public double Time;
+        [ReadOnlyAttribute(true)]
+        public bool Stopped;
+
+        public ZTimer(ZComponent parent): base(parent)
+        {            
+            Reset();
+        }
+
+        public void Reset()
+        {
+            Iteration = 0;
+            Time = 0.0;
+            Stopped = false;
+        }
+
+        public void Update()
+        {
+            if (Interval > 0.0f && Stopped == false)
+            {
+                Time += App.DeltaTime;
+                while (Time >= Interval)
+                {
+                    Time -= Interval;
+                    if (OnTimer != null) OnTimer();
+                    Iteration++;
+                    if (RepeatCount != 0)  // endless timer
+                    {
+                        Stopped = (Iteration > RepeatCount);
+                    }
+                }
+            }
+        }
+    }
 // 
 //     public class CallComponent : ZCommand
 //     {

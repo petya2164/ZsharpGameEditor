@@ -692,6 +692,7 @@ namespace ZGE
                 {
                     ZComponent.App.RefreshName(comp, g.Value as string, e.OldValue as string);
                     if (nodeProps != null) xmlTree.UpdateNodeText(nodeProps);
+
                     // TODO: Also update named references in XML attributes
                 }
                 if (comp == app && g.PropertyDescriptor.Name == "VSync")

@@ -64,5 +64,10 @@ namespace ZGE.Components
             if (x > max) return max;
             return x;
         }
+
+        public static float Lerp(float a, float b, float blend)
+        {
+            return blend * (b - a) + a;           
+        }
     }
 }
