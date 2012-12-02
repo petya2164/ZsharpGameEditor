@@ -154,6 +154,8 @@ namespace ZGE.Components
         
         public event MouseEvent OnMouseDown;        
         public event MouseEvent OnMouseUp;
+        public event MouseEvent OnMouseMove;
+        public event MouseEvent OnMouseWheel;
 
         #endregion   
      
@@ -499,7 +501,7 @@ namespace ZGE.Components
                 // Then the camera
                 if (Camera == null || Camera.MouseMove(e) == false)
                 {
-
+                    if (OnMouseMove != null) OnMouseMove(e);
                 }
             }            
         }
@@ -513,7 +515,7 @@ namespace ZGE.Components
                 // Then the camera
                 if (Camera == null || Camera.MouseWheel(e) == false)
                 {
-
+                    if (OnMouseWheel != null) OnMouseWheel(e);
                 }
             }            
         }
