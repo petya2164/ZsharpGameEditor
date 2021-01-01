@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,8 +14,6 @@ using System.Drawing;
 using OpenTK;
 using System.Windows.Forms;
 using System.Collections;
-
-
 
 namespace ZGE
 {
@@ -58,11 +56,11 @@ namespace ZGE
         }
     }
 
-    class StaticVariable: Variable
+    class StaticVariable : Variable
     {
-        public StaticVariable(Type type, string typeName, string name, bool create):
+        public StaticVariable(Type type, string typeName, string name, bool create) :
             base(type, typeName, name, create)
-        {            
+        {
         }
 
         public override void WriteCode(StringBuilder sb)
@@ -83,6 +81,7 @@ namespace ZGE
         {
             this.header = header;
         }
+
         public void AddLine(string line)
         {
             body.Add(line);
@@ -238,7 +237,9 @@ namespace ZGE
         public List<string> usingStatements = new List<string>();
         public List<Namespace> namespaces = new List<Namespace>();
 
-        public CompileUnit() { }
+        public CompileUnit()
+        {
+        }
 
         public void AddUsing(string ns)
         {
@@ -269,7 +270,7 @@ namespace ZGE
         public string objName { get; set; }
         public string objTypeName { get; set; }
         public string fieldName { get; set; }
-        public string value { get; set; }        
+        public string value { get; set; }
     }
 
     public class CodeGenerator
@@ -293,7 +294,7 @@ namespace ZGE
         public string GenerateCodeFromXml(XmlDocument xml, bool standalone, bool fullBuild, Dictionary<XmlNode, string> nodeMap)
         {
             XmlNode rootElement = xml.DocumentElement;
-            
+
             if (standalone && fullBuild == false) fullBuild = true; // no incremental build for standalone
             this.standalone = standalone;
             this.fullBuild = fullBuild;
@@ -313,6 +314,7 @@ namespace ZGE
             cu.AddUsing("using System.Text;");
             cu.AddUsing("using System.Drawing;");
             cu.AddUsing("using OpenTK;");
+            cu.AddUsing("using OpenTK.Input;");
             cu.AddUsing("using OpenTK.Graphics;");
             cu.AddUsing("using OpenTK.Graphics.OpenGL;");
             cu.AddUsing("using ZGE.Components;");
@@ -331,14 +333,14 @@ namespace ZGE
                 //main.constructor.AddLine("if (createAll) InitializeComponents();");
                 main.init = new Method("public override void InitializeComponents()");
                 main.init.AddLine("CreateNamedComponents();");
-                main.createNamed = new Method("public override void CreateNamedComponents()");                
+                main.createNamed = new Method("public override void CreateNamedComponents()");
             }
             else
-            {                
+            {
                 main.restore = new Method("public void RestoreComponents(ZApplication oldApp)");
-                main.restore.AddLine("CodeGenerator.Restore(this, oldApp);");                
+                main.restore.AddLine("CodeGenerator.Restore(this, oldApp);");
             }
-            
+
 
             types = Factory.GetTypesFromNamespace(Assembly.GetAssembly(typeof(ZApplication)), "ZGE.Components");
             types.AddRange(Factory.GetTypesFromNamespace(Assembly.GetAssembly(typeof(ZApplication)), "Gwen.Control"));
@@ -355,7 +357,7 @@ namespace ZGE
                 mm.AddLine("{");
                 mm.AddLine("    game.Run(app.UpdateFrequency);");
                 mm.AddLine("}");
-            }            
+            }
 
             string code = cu.GetFullCode();
             // Save the file for debugging
@@ -367,6 +369,7 @@ namespace ZGE
         }
 
         static List<string> specialVars = new List<string> { "Title", "Width", "Height", "Mode", "VSync" };
+
         private void ParseAttributes(Class targetClass, Variable obj, XmlNode xmlNode)
         {
             if (xmlNode.Attributes != null)
@@ -382,15 +385,15 @@ namespace ZGE
                         Type type = fi.FieldType;
                         if (xmlNode.Name == "ZApplication" && specialVars.Contains(attribute.Name))
                             SetAttribute(targetClass.constructor, type, val, obj.name, attribute.Name);
-                        else    
+                        else
                             SetAttribute(targetClass.init, type, val, obj.name, attribute.Name);
-                    }                    
+                    }
                     else
                     {
                         // Also try a Property with a public setter
                         PropertyInfo pi = obj.type.GetProperty(attribute.Name, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
                         if (pi != null && pi.GetSetMethod() != null)
-                        {                            
+                        {
                             SetAttribute(targetClass.init, pi.PropertyType, val, obj.name, attribute.Name);
                         }
                         else
@@ -409,7 +412,7 @@ namespace ZGE
                             }
                             else
                                 Console.WriteLine(" Field not found: {0} - {1}", attribute.Name, val);
-                        }                        
+                        }
                     }
                 }
             }
@@ -426,7 +429,7 @@ namespace ZGE
             // Use the objType from the new, dynamically generated assembly to find the unresolved field
             FieldInfo fi = objType.GetField(field.fieldName, BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
             if (fi != null)
-            {                
+            {
                 SetAttribute(field.targetClass.init, fi.FieldType, field.value, field.objName, field.fieldName);
             }
             else
@@ -437,7 +440,7 @@ namespace ZGE
                 {
                     SetAttribute(field.targetClass.init, pi.PropertyType, field.value, field.objName, field.fieldName);
                 }
-                else                        
+                else
                     Console.WriteLine(" Custom field not found: {0} - {1}", field.fieldName, field.value);
             }
         }
@@ -448,7 +451,7 @@ namespace ZGE
                 targetMethod.AddLine(String.Format("{0}.{1} = \"{2}\";", objName, fieldName, val));
             else if (type == typeof(bool))
                 targetMethod.AddLine(String.Format("{0}.{1} = {2};", objName, fieldName, val.ToLowerInvariant()));
-            else if (type.IsPrimitive)  // a cast might be necessary (e.g. float)                        
+            else if (type.IsPrimitive)  // a cast might be necessary (e.g. float)
                 targetMethod.AddLine(String.Format("{0}.{1} = ({2}){3};", objName, fieldName, GetPlainTypeName(type), val));
             else if (type.IsEnum)
                 targetMethod.AddLine(String.Format("{0}.{1} = {2}.{3};", objName, fieldName, type.Name, val));
@@ -513,7 +516,7 @@ namespace ZGE
                         }
                         else
                             targetClass.init.AddLine(String.Format("var {0} = new {1}({2});", objName, typeName, parent.name));
-                    }                    
+                    }
                 }
                 else
                 {
@@ -528,11 +531,11 @@ namespace ZGE
                             targetClass.init.AddLine(String.Format("{0} = ({1}) {2}.Clone();", objName, typeName, model));
                         }
                         else
-                        {                              
+                        {
                             targetClass.createNamed.AddLine(String.Format("{0} = new {1}({2});", objName, typeName, parent.name));
                         }
                     }
-                    else if (xmlNode.Name == "Model") 
+                    else if (xmlNode.Name == "Model")
                     {
                         targetClass.restore.AddLine("");
                         targetClass.restore.AddLine(String.Format("{0} = new {1}({2});", objName, typeName, parent.name));
@@ -548,7 +551,7 @@ namespace ZGE
                         targetClass.restore.AddLine(String.Format("    CodeGenerator.Restore(temp, gameObj);"));
                         targetClass.restore.AddLine(String.Format("    if (oldApp.SelectedObject == gameObj) this.SelectedObject = temp;"));
                         targetClass.restore.AddLine("}");
-                    }                    
+                    }
                 }
 
                 if (fullBuild)
@@ -563,7 +566,7 @@ namespace ZGE
                             nodeMap.TryGetValue(xmlNode, out currentGuid);
                             targetClass.createNamed.AddLine(String.Format("{0}.GUID = \"{1}\";", obj.name, currentGuid));
                         }
-                    }                    
+                    }
                     if (parent != null)
                     {
                         // We always need an Owner
@@ -577,12 +580,12 @@ namespace ZGE
                             targetClass.init.AddLine(String.Format("{0}.SetOwner({1}, (IList) {1}.{2});", obj.name, parent.name, targetList));
                         }
                         else
-                        {                            
+                        {
                             //targetClass.init.AddLine(String.Format("{0}.Children.Add({1});", parent.name, obj.name));
                             targetClass.init.AddLine(String.Format("{0}.SetOwner({1}, null);", obj.name, parent.name));
                         }
                     }
-                }               
+                }
             }
             return obj;
         }
@@ -640,8 +643,8 @@ namespace ZGE
                 {
                     Type type = fi.FieldType;
                     string currentGuid = "";
-                    if (standalone == false) nodeMap.TryGetValue(xmlNode, out currentGuid);                    
-                    
+                    if (standalone == false) nodeMap.TryGetValue(xmlNode, out currentGuid);
+
                     string methodName = targetClass.GetNextMethodName();
                     //bool isStatic = targetClass.baseClass.StartsWith("Prototype");
                     string header = GetMethodHeader(methodName, type, false);
@@ -649,17 +652,17 @@ namespace ZGE
                     targetClass.methods.Add(met);
                     //if (isStatic)
                     //{
-                        //Automatically cast the caller to the type of the Model class
-                        //met.AddLine(String.Format("{0} model = caller as {0};", targetClass.name));
+                    //Automatically cast the caller to the type of the Model class
+                    //met.AddLine(String.Format("{0} model = caller as {0};", targetClass.name));
                     //}
                     met.AddLine(xmlNode.InnerText);
                     // BIND THE CALLBACK
                     if (targetClass.type == typeof(Model))
                         targetClass.init.AddLine(String.Format("{0} += {1};", fi.Name, methodName)); // init method points to BindCallbacks()
-                    
+
                     if (fullBuild)
                     {
-                        // Add the generated method as an event handler                       
+                        // Add the generated method as an event handler
                         if (targetClass.type == typeof(ZApplication))
                             ns.mainClass.init.AddLine(String.Format("{0}.{1} += {2};", parent.name, fi.Name, methodName));
                         if (standalone == false) // Create a ZEvent (always in CustomGame)
@@ -693,13 +696,13 @@ namespace ZGE
                     if (type == typeof(CustomCodeDefinition)) // handle custom code definitions
                     {
                         targetClass.definitions.Add(xmlNode.InnerText);
-                    }                        
+                    }
                     else if (type == typeof(VirtualMethod))
                     {
-                        string methodName = targetClass.GetNextMethodName();                           
+                        string methodName = targetClass.GetNextMethodName();
                         object[] attributes = fi.GetCustomAttributes(typeof(MethodSignature), false);
                         if (attributes.Length == 1 && attributes[0] is MethodSignature)
-                        {                          
+                        {
                             MethodSignature ms = attributes[0] as MethodSignature;
                             Method met = new Method(ms.Signature);
                             targetClass.methods.Add(met);
@@ -709,20 +712,20 @@ namespace ZGE
                         {
                             Console.WriteLine("Missing MethodSignature attribute on VirtualMethod: {0}.{0}", parent.name, xmlNode.Name);
                             return;
-                        }   
+                        }
                     }
-//                     if (standalone == false && fullBuild == true) // assign the GUIDs to the CodeLike components
-//                     {                        
-//                         ns.mainClass.init.AddLine(String.Format("{0}.{1}.GUID = \"{2}\";", parent.name, fi.Name, currentGuid));
-// 
-//                     }
+                    //                     if (standalone == false && fullBuild == true) // assign the GUIDs to the CodeLike components
+                    //                     {
+                    //                         ns.mainClass.init.AddLine(String.Format("{0}.{1}.GUID = \"{2}\";", parent.name, fi.Name, currentGuid));
+                    //
+                    //                     }
                     // if not shader
                     if (standalone == false && fullBuild == true) // no need for the code text in a standalone build
                     {
                         string escaped = xmlNode.InnerText.Replace("\"", "\"\"");  // escape inner strings " -> ""
                         ns.mainClass.init.AddLine(String.Format("{0}.{1}.Text = @\"{2}\";", parent.name, fi.Name, escaped));
                     }
-                    //Console.WriteLine("Code Text:\n{0}", code.Text);                    
+                    //Console.WriteLine("Code Text:\n{0}", code.Text);
                     return; //return here, so no TreeNode will be created for the CodeLike component
                 }
                 else
@@ -738,7 +741,7 @@ namespace ZGE
                         string modelName = obj.name + "Model";
                         Class model = new Class(typeof(Model), modelName, "Model", obj.name, false);
                         //String.Format("Prototype<{0}>", modelName)
-                        
+
                         model.constructor = new Method("public " + modelName + "(ZComponent parent): base(parent)");
                         var staticApp = new StaticVariable(typeof(ZApplication), "CustomGame", "App", false);
                         model.memberVars.Add(staticApp);
@@ -759,14 +762,14 @@ namespace ZGE
                 {
                     ProcessNode(targetClass, obj, list, childNode);
                 }
-            }            
+            }
         }
 
         /*private static void FindFields(IList<FieldInfo> fields, Type t)
         {
             var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly;
 
-            fields.AddRange(t.GetFields(flags));            
+            fields.AddRange(t.GetFields(flags));
 
             var baseType = t.BaseType;
             if (baseType != null)
@@ -786,7 +789,7 @@ namespace ZGE
                 }
                 // Check if this node is a List property of the parent
                 FieldInfo src = oldType.GetField(dest.Name, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                
+
                 if (src != null && src.FieldType == dest.FieldType)
                 {
                     //Console.WriteLine("Setting Field of {0}: {1} {2}->{3}", dest.DeclaringType.Name, dest.Name, src.FieldType.Name, dest.FieldType.Name);
@@ -814,22 +817,22 @@ namespace ZGE
             if (field != null) return field;
             if (type.BaseType != typeof(Object)) // This NonPublic field could be declared in the parent class
                 return GetField(type.BaseType, fieldName);
-            return null;            
-        }           
+            return null;
+        }
 
         public static void RestoreEvent(ZEvent ev, ZComponent comp, string methodName)
         {
             if (comp == null || ev == null || ev.Owner == null) return;
             //if (ev.Owner is ZApplication || ev.Owner is Model) ev.Owner = comp;      //This would be too late: moved to restore
-                
-            // Find the field that is backing the event 
+
+            // Find the field that is backing the event
             // GetEvent would not work as we have to null and reset the event (the old delegate must be released)
-            FieldInfo field = GetField(ev.Owner.GetType(), ev.EventName);            
+            FieldInfo field = GetField(ev.Owner.GetType(), ev.EventName);
             if (field != null)
                 field.SetValue(ev.Owner, Delegate.CreateDelegate(field.FieldType, comp, methodName));
-            else            
-                Console.WriteLine("Field-like event not found {0} / {1}", ev.Owner.GetType().Name, ev.EventName);            
-        } 
+            else
+                Console.WriteLine("Field-like event not found {0} / {1}", ev.Owner.GetType().Name, ev.EventName);
+        }
 
         public static void Restore(ZComponent newObj, ZComponent oldObj)
         {
@@ -849,9 +852,9 @@ namespace ZGE
             {
                 ZComponent.App.RemoveComponent(oldObj);     // remove the old component
                 //ZComponent.App.AddNewComponent(newObj);        // add the new component
-                
+
                 // We should always set the Owner <= old Owner has been copied to newObj
-                
+
                 if (newObj.OwnerList != null)  // replace old object in OwnerList
                 {
                     //newObj.OwnerList = oldObj.OwnerList;
@@ -864,7 +867,7 @@ namespace ZGE
                     if (idx != -1) newObj.Owner.Children[idx] = newObj;
                 }
                 oldObj.ReplaceOwner(null);
-                
+
 
                 if (typeof(Model).IsAssignableFrom(newObj.GetType()))
                 {
@@ -893,13 +896,13 @@ namespace ZGE
                         }
                     }
                 }
-            }           
-            
+            }
+
             // Correct the Treeview tags
             ZNodeProperties props = newObj.Tag as ZNodeProperties;
             if (props != null)
             {
-                props.Component = newObj;          
+                props.Component = newObj;
 
                 TreeNode treeNode = props.treeNode;
                 if (treeNode != null)
@@ -909,7 +912,7 @@ namespace ZGE
                         // Clear the reference to oldObj in the ZNodeProperties of all children / member lists
                         if (props1 != null && props1.Parent == oldObj)
                         {
-                            props1.Parent = newObj;                            
+                            props1.Parent = newObj;
                         }
                         /*foreach (TreeNode grandchildNode in childNode.Nodes)
                         {
@@ -918,7 +921,7 @@ namespace ZGE
                             {
                                 props2.parent_component = newObj;
                                 // oldObj can also be the Owner of its grandchildren (in various member lists)
-                                // this reference must be updated to newObj 
+                                // this reference must be updated to newObj
                                 ZComponent grandchild = props2.component as ZComponent;
                                 if (grandchild != null && grandchild.Owner == oldObj) grandchild.Owner = newObj;
                             }
@@ -927,8 +930,8 @@ namespace ZGE
             }
 
             // oldObj can also be the Owner of its grandchildren (in various member lists)
-            // the Owner reference must be updated to newObj in all components 
-            foreach(ZComponent comp in ZComponent.App.GetAllComponents())
+            // the Owner reference must be updated to newObj in all components
+            foreach (ZComponent comp in ZComponent.App.GetAllComponents())
                 if (comp.Owner == oldObj) comp.ReplaceOwner(newObj);
 
             // oldObj can also be the Owner of ZEvent instances
@@ -939,36 +942,37 @@ namespace ZGE
             // If it is a ZApplication
             if (typeof(ZApplication).IsAssignableFrom(newObj.GetType()))
             {
-                // Check named references in CustomGame                
-                foreach(FieldInfo fi in newObj.GetType().GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+                // Check named references in CustomGame
+                foreach (FieldInfo fi in newObj.GetType().GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                 {
                     // If the named reference is null, then try to find the component
                     // This is necessary for all newly-added or renamed components
-                    if (fi.GetValue(newObj) == null)                       
+                    if (fi.GetValue(newObj) == null)
                     {
                         ZComponent comp = ZComponent.App.Find(fi.Name);
                         if (comp != null && fi.FieldType == comp.GetType())
                         {
                             Console.WriteLine("Setting new named reference {0} / {1}", fi.Name, fi.FieldType.Name);
                             fi.SetValue(newObj, comp);
-                        }                        
-                    } 
-                }               
+                        }
+                    }
+                }
             }
 
-            // If the oldObj was selected in the editor, then we have to replace it with newObj 
+            // If the oldObj was selected in the editor, then we have to
+            // replace it with newObj
             if (editor.SelectedComponent == oldObj)
             {
                 editor.SelectedComponent = newObj;
                 //Console.WriteLine("SelectedComponent changed to {0}", newObj.GetType().AssemblyQualifiedName);
-            }                       
+            }
         }
 
         // This is used for on-the-fly code compilation (similar to an incremental build)
         internal ZApplication RecompileApplication(XmlDocument xmlDoc, Dictionary<XmlNode, string> nodeMap, ZApplication oldApp)
         {
             if (xmlDoc == null || oldApp == null) return null;
-            
+
             string code = GenerateCodeFromXml(xmlDoc, false, false, nodeMap);
 
             var res = BuildAssembly("dummy", code, true);
@@ -978,31 +982,31 @@ namespace ZGE
             }
             else
             {
-//                 foreach (Model gameObj in project.app.modelList)
-//                 {
-//                     Console.WriteLine("GO found: {0} - {1} Proto: {2} {3}", gameObj.GetType().Name, gameObj.Name, gameObj.Prototype.ToString(), gameObj.GUID);                
-//                 }
+                //                 foreach (Model gameObj in project.app.modelList)
+                //                 {
+                //                     Console.WriteLine("GO found: {0} - {1} Proto: {2} {3}", gameObj.GetType().Name, gameObj.Name, gameObj.Prototype.ToString(), gameObj.GUID);
+                //                 }
 
 
                 // If there weren't any errors, create an instance of "CustomGame"
                 var type = res.CompiledAssembly.GetType("ZGE.CustomGame");
-                var app = (ZApplication) Activator.CreateInstance(type);
+                var app = (ZApplication)Activator.CreateInstance(type);
                 if (app != null)
-                {                      
+                {
                     ZComponent.App = app;  // Just to make sure
                     MethodInfo mi = type.GetMethod("RestoreComponents");
                     if (mi != null)
-                    {                        
+                    {
                         mi.Invoke(app, new object[] { oldApp });
                         Console.WriteLine("ZApplication recompiled, components updated.");
                     }
                     else
                         Console.WriteLine("The \"RestoreComponents\" method is missing, components cannot be updated :(");
 
-                    return app;                   
+                    return app;
 
                     /*foreach (var pair in codeMap)
-                    {                        
+                    {
                         MethodInfo mi = type.GetMethod(pair.Value);
                         if (mi != null)
                         {
@@ -1010,14 +1014,14 @@ namespace ZGE
                             Console.WriteLine("Setting callback: " + pair.Value);
                             pair.Key.callback = (ZCode.ModelMethod) Delegate.CreateDelegate(typeof(ZCode.ModelMethod), behavior, mi);
                         }
-                    }*/                    
+                    }*/
                 }
                 else
                     Console.WriteLine("Recompiled ZApplication cannot be instantiated :(");
             }
             return null;
-        }        
-            
+        }
+
         public ZApplication CreateApplication(XmlDocument xml, bool fullBuild)
         {
             var res = BuildApplication(xml, false, fullBuild, null);
@@ -1025,23 +1029,23 @@ namespace ZGE
 
             // If there weren't any errors, get an instance of "CustomGame"
             var type = res.CompiledAssembly.GetType("ZGE.CustomGame");
-            var app = (ZApplication) Activator.CreateInstance(type);
+            var app = (ZApplication)Activator.CreateInstance(type);
             if (app != null)
-            {                    
-                Console.WriteLine("New ZApplication created.");                    
+            {
+                Console.WriteLine("New ZApplication created.");
                 return app;
             }
             else
             {
-                Console.WriteLine("New ZApplication cannot be instantiated :(");         
+                Console.WriteLine("New ZApplication cannot be instantiated :(");
                 return null;
-            }           
+            }
         }
 
         public bool BuildStandaloneApplication(XmlDocument xml, string exePath)
         {
             var res = BuildApplication(xml, true, true, exePath);
-            return (res != null);                           
+            return (res != null);
         }
 
 
@@ -1051,7 +1055,8 @@ namespace ZGE
             string code = GenerateCodeFromXml(xml, standalone, fullBuild, null);
 
             bool inMemory = !standalone;
-            // Do an inMemory build first if there are unresolved custom fields 
+            // Do an inMemory build first if there are unresolved custom
+            // fields
             if (unresolved.Count > 0 && standalone) inMemory = true;
 
             CompilerResults res = BuildAssembly(exePath ?? "dummy", code, inMemory);
@@ -1062,7 +1067,7 @@ namespace ZGE
             if (unresolved.Count > 0)
             {
                 foreach (UnresolvedField field in unresolved)
-                    FixUnresolvedAttribute(field, res.CompiledAssembly);                
+                    FixUnresolvedAttribute(field, res.CompiledAssembly);
 
                 unresolved.Clear();
                 code = cu.GetFullCode();
@@ -1138,18 +1143,16 @@ namespace ZGE
             if (executable == null) return;
             if ((run == null) || (run.HasExited))
             {
-
                 run = new Process();
                 run.StartInfo.FileName = executable;
                 run.EnableRaisingEvents = true;
                 if (onExit != null)
-                    run.Exited += onExit;                
+                    run.Exited += onExit;
                 run.Start();
                 if (onStart != null)
                     onStart(this, null);
-                
             }
-        }        
+        }
 
         /// <summary>
         /// Just in case the red X in the upper right isn't good enough,

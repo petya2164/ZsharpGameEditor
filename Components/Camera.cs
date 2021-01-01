@@ -124,12 +124,16 @@ namespace ZGE.Components
         public enum VerticalPanningMode { AlongGroundPlane, AlongUpVector };
 
         public VerticalPanningMode VerticalPanning = VerticalPanningMode.AlongGroundPlane;
+        public bool PanningEnabled = true;
         public MouseButton PanButton = MouseButton.Middle;
+        public bool RotationEnabled = true;
         public MouseButton RotateButton = MouseButton.Right;        
 
         public float RotationSpeed = 1.0f;
         public float PanSpeed = 1.5f;
         public float ZoomSpeed = 0.5f;
+        public bool ZoomEnabled = true;
+
         Vector3 startVector;
         //Vector3 defaultEyeVector = new Vector3(0,0,1);
         //Vector3 defaultUpVector = new Vector3(0,1,0);
@@ -152,13 +156,13 @@ namespace ZGE.Components
 
         public override bool MouseDown(MouseDescriptor e) 
         {
-            if (e[PanButton])
+            if (PanningEnabled && e[PanButton])
             {
                 //Console.WriteLine("Start Panning - X: {0} Y: {1}", e.X, e.Y);
                 panStartPos = new Vector2((float) e.X, (float) e.Y);
                 return true;
             }
-            if (e[RotateButton])
+            if (RotationEnabled && e[RotateButton])
             {
                 //Console.WriteLine("Start Rotating - X: {0} Y: {1}", e.X, e.Y);
                 startVector = MapToSphere((float)e.X, (float)e.Y);
@@ -187,12 +191,12 @@ namespace ZGE.Components
         }
         public override bool MouseUp(MouseDescriptor e) 
         {
-            if (e[PanButton])
+            if (PanningEnabled && e[PanButton])
             {
                 //Console.WriteLine("End Panning - X: {0} Y: {1}", e.X, e.Y);
                 return true;
             }
-            if (e[RotateButton])
+            if (RotationEnabled && e[RotateButton])
             {
                 //Console.WriteLine("End Rotating - X: {0} Y: {1}", e.X, e.Y);
                 return true;
@@ -201,7 +205,7 @@ namespace ZGE.Components
         }
         public override bool MouseMove(MouseDescriptor e) 
         {
-            if (e[PanButton])
+            if (PanningEnabled && e[PanButton])
             {
                 //Console.WriteLine("Panning - X: {0} Y: {1}", e.X, e.Y);
                 Vector2 newPos = new Vector2((float) e.X, (float) e.Y);
@@ -209,7 +213,7 @@ namespace ZGE.Components
                 panStartPos = newPos;
                 return true;
             }
-            if (e[RotateButton])
+            if (RotationEnabled && e[RotateButton])
             {
                 //Console.WriteLine("Rotating - X: {0} Y: {1}", e.X, e.Y);
                 //RotateWithQuaternion((float)e.X, (float)e.Y);
@@ -223,13 +227,17 @@ namespace ZGE.Components
         }
         public override bool MouseWheel(MouseDescriptor e) 
         {
-            //Console.WriteLine("Mouse wheel delta: " + e.WheelDelta.ToString());
-            Vector3 eyeVector = Position - Target;
-            float len = eyeVector.Length;
-            len -= ZoomSpeed * e.WheelDelta * 0.001f * len;
-            eyeVector.Normalize();            
-            Position = Target + eyeVector * len;
-            return true;
+            if (ZoomEnabled)
+            {
+                //Console.WriteLine("Mouse wheel delta: " + e.WheelDelta.ToString());
+                Vector3 eyeVector = Position - Target;
+                float len = eyeVector.Length;
+                len -= ZoomSpeed * e.WheelDelta * 0.001f * len;
+                eyeVector.Normalize();
+                Position = Target + eyeVector * len;
+                return true;
+            }
+            return false;
         }
 
         public void PanTarget(Vector2 newPos)

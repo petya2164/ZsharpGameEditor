@@ -1,8 +1,10 @@
-﻿#region --- License ---
+#region --- License ---
+
 /* Copyright (c) 2006, 2007 Stefanos Apostolopoulos
  * See license.txt for license info
  */
-#endregion
+
+#endregion --- License ---
 
 using System;
 using System.Collections.Generic;
@@ -132,10 +134,10 @@ namespace ZGE.Components
         {
             /*var
               VertCount,TriCount : integer;
-              
+
               XStep,YStep,CurX,CurY : single;
               Ind : PMeshVertexIndex;
-              
+
               CurI,X,Y : integer;*/
 
             int vertCount = (2 + xCount) * (2 + yCount);
@@ -224,13 +226,13 @@ namespace ZGE.Components
             int ix = indexOffset;
             for (i = 0; i < source.vertices.Length; i++)
             {
-                Vector3.Transform(ref source.vertices[i], ref mx, out vertices[vx]); 
+                Vector3.Transform(ref source.vertices[i], ref mx, out vertices[vx]);
                 vx++;
             }
 
             for (i = 0; i < source.indices.Length; i++)
             {
-                indices[ix] = source.indices[i] + vertexOffset; 
+                indices[ix] = source.indices[i] + vertexOffset;
                 ix++;
             }
 
@@ -242,7 +244,7 @@ namespace ZGE.Components
                     texcoords[vx] = source.texcoords[i];
                     vx++;
                 }
-            }          
+            }
         }
 
         public void ApplyHeightMap(float[,] hm, int width, int height)
@@ -250,18 +252,18 @@ namespace ZGE.Components
             if (vertices == null) return;
 
             int xCount = width - 2;
-            int yCount = height - 2;            
-            
+            int yCount = height - 2;
+
             int i = 0;
-            int x, y;            
+            int x, y;
             for (y = 0; y <= yCount + 1; y++)
-            {                
+            {
                 for (x = 0; x <= xCount + 1; x++)
                 {
                     //Vertex interval -0.5 .. 0.5
-                    vertices[i].Z = hm[x,y];                    
+                    vertices[i].Z = hm[x,y];
                     i++;
-                }                
+                }
             }
         }
 

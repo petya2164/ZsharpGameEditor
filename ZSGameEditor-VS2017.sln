@@ -1,7 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-# SharpDevelop 3.2.1.6466
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.329
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZSGameEditor", "ZSGameEditor.csproj", "{AFFDBE91-D3E9-4D4C-A05B-11A551FF5EED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpGL", "..\SharpGL-vs2008\Core\SharpGL\SharpGL.csproj", "{5EF45533-E2C7-46F2-B4A3-B8F36CD406E0}"
@@ -53,5 +54,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B8B60B66-1379-4B56-AE9B-1303F8259D06}
 	EndGlobalSection
 EndGlobal

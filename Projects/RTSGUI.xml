@@ -27,6 +27,7 @@ public bool AdjustAltitude(Model m, float offset)
 
 public void ShowBuildMenu(int x, int y)
 {
+    HideArmyMenu();
     cursorRef = new Vector2(x,y);
     x = x - 30;
     y = y + 10;
@@ -45,6 +46,25 @@ public void HideBuildMenu()
     CreateCityBtn.IsHidden = true;
     CreateFortressBtn.IsHidden = true;
     CreateArmyBtn.IsHidden = true;
+}
+
+public void ShowArmyMenu(int x, int y)
+{
+    HideBuildMenu();
+    cursorRef = new Vector2(x,y);
+    x = x - 30;
+    y = y + 10;
+    AddUnitBtn.X = x; AddUnitBtn.Y = y;
+    AddUnitBtn.IsHidden = false;
+    y = y + 21;
+    RemoveUnitBtn.X = x; RemoveUnitBtn.Y = y;
+    RemoveUnitBtn.IsHidden = false;
+}
+
+public void HideArmyMenu()
+{
+    AddUnitBtn.IsHidden = true;
+    RemoveUnitBtn.IsHidden = true;
 }]]></Code>
     </CustomCode>
   </Definitions>
@@ -127,6 +147,20 @@ if (App.AdjustAltitude(this, 0.2f)) // below sea level
 {
     GoToDestination = false;    
 }]]></OnUpdate>
+        <CustomCode><![CDATA[public int unitCount = 1;
+
+public void AddUnit()
+{
+    unitCount++;
+    Scale.Z = unitCount;
+}
+
+public void RemoveUnit()
+{
+    if (unitCount < 2) return;
+    unitCount--;
+    Scale.Z = unitCount;
+}]]></CustomCode>
       </Model>
     </Group>
   </Content>
@@ -155,6 +189,7 @@ AdjustAltitude(spawned, 0.2f);]]></Clicked>
     <NumericUpDown X="5" Name="MaxUnits" Y="45" />
     <Button Name="StartBtn" Y="145" X="5" Width="150" Text="Start Game" Height="40" IsToggle="True" IsDisabled="False" IsHidden="False">
       <Clicked><![CDATA[HideBuildMenu();
+HideArmyMenu();
 App.Pause();
 if (App.Paused) StartBtn.Text = "Restart Game";
 else StartBtn.Text = "PAUSE";]]></Clicked>
@@ -178,7 +213,7 @@ spawned.Position = PickCoordinates;
 HideBuildMenu();]]></Clicked>
     </Button>
     <Button Text="Army" Name="CreateArmyBtn" Width="60" X="500" Y="44">
-      <Clicked><![CDATA[var spawned = Army.CreateClone(Units) as ArmyModel;
+      <Clicked><![CDATA[var spawned = Army.CreateClone(Armies) as ArmyModel;
 playerArmies.Add(spawned);
 spawned.Name = "Army "+playerArmies.Count.ToString();
 //spawned.Name = "Enemy Unit";
@@ -186,6 +221,22 @@ spawned.Name = "Army "+playerArmies.Count.ToString();
 spawned.Position = PickCoordinates;
 //AdjustAltitude(spawned, 0.2f);
 HideBuildMenu();]]></Clicked>
+    </Button>
+    <Button Width="85" X="400" Name="AddUnitBtn" Text="Add Unit">
+      <Clicked><![CDATA[ArmyModel selArmy = SelectedObject as ArmyModel;
+if (selArmy != null)
+{
+    selArmy.AddUnit();
+}
+HideArmyMenu();]]></Clicked>
+    </Button>
+    <Button Name="RemoveUnitBtn" Width="85" X="400" Y="22" Text="Remove Unit">
+      <Clicked><![CDATA[ArmyModel selArmy = SelectedObject as ArmyModel;
+if (selArmy != null)
+{
+    selArmy.RemoveUnit();
+}
+HideArmyMenu();]]></Clicked>
     </Button>
   </GUI>
   <Scene>
@@ -200,15 +251,10 @@ AdjustAltitude(spawned,-0.2f);]]></OnTimer>
       </ZTimer>
     </Group>
     <Group Name="Cameras">
-      <InteractiveCamera Name="Camera1" Position="0 -19 37" UpVector="0 0 1" ClipFar="10000" ClipNear="1" />
+      <InteractiveCamera Name="Camera1" Position="0 -19 37" UpVector="0 0 1" ClipFar="10000" ClipNear="1" RotationEnabled="False" />
     </Group>
     <Group Name="Lights" />
-    <Group Name="Units">
-      <GameObject Model="Unit" Name="Unit1" Position="-4 5 10" Color="0.5803922 0 0.827451 1" />
-      <GameObject Model="Unit" Name="Unit2" Position="4 3 10" />
-      <GameObject Model="Unit" Name="Unit3" Position="-3 -1 10" />
-      <GameObject Model="Unit" Name="Unit4" Position="3 -1 10" Color="0.7529412 0.7529412 0.7529412 1" />
-    </Group>
+    <Group Name="Armies"></Group>
     <Group Name="EnemyUnits" />
     <Group Name="OilFields" />
     <GameObject Model="Island" Name="Island1" Position="0 0 0" Scale="1 1 1" />
@@ -218,9 +264,8 @@ AdjustAltitude(spawned,-0.2f);]]></OnTimer>
       <GameObject Model="City" Position="0 5 10" Name="City1" />
       <GameObject Model="Fortress" Name="Fortress1" Position="0 0 12" />
     </Group>
-    <GameObject Model="Army" Position="-4 0 12" Name="Army1" />
   </Scene>
-  <OnMouseUp><![CDATA[if (!Paused && (e.Button == SelectButton))
+  <OnMouseUp><![CDATA[if (!Paused)
 {  
     ArmyModel selArmy = SelectedObject as ArmyModel;
     
@@ -230,20 +275,31 @@ AdjustAltitude(spawned,-0.2f);]]></OnTimer>
     {
         //Console.WriteLine("MousePick result: {0}", comp.Name);
         ArmyModel newArmy = comp as ArmyModel;
-        if (newArmy != null)
+        if (e.Button == SelectButton)
         {
-            SelectedObject = newArmy;
-            HideBuildMenu();
+            if (newArmy != null)
+            {
+                SelectedObject = newArmy;
+                HideBuildMenu();
+            }
+            else if (selArmy != null && comp == Island1)
+            {
+                selArmy.Destination = PickCoordinates;
+                selArmy.GoToDestination = true;
+            }
         }
-        else if (comp == Island1)        
+        else if (e.Button == MouseButton.Right)
         {
-            ShowBuildMenu(e.X, e.Y);
-        }
-        else if (selArmy != null)
-        {
-            selArmy.Destination = PickCoordinates;
-            selArmy.GoToDestination = true;
-        }
+            if (newArmy != null)
+            {
+                SelectedObject = newArmy;
+                ShowArmyMenu(e.X, e.Y);
+            }
+            if (comp == Island1)        
+            {
+                ShowBuildMenu(e.X, e.Y);
+            }            
+        }        
     }
 } ]]></OnMouseUp>
   <OnMouseMove><![CDATA[if (!Paused && CreateCityBtn.IsHidden == false)
